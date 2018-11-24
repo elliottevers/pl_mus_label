@@ -222,7 +222,7 @@ class OscServer(QObject):
 
         ip = "127.0.0.1"
         
-        port = 9990
+        port = 2346
 
         server = osc_server.ThreadingOSCUDPServer(
             (ip, port),
@@ -252,5 +252,3 @@ if __name__ == '__main__':
     window.show()
 
     sys.exit(app.exec_())
-
-    
