@@ -6,6 +6,7 @@
 
 # convert to WAV - conversion/mp3_to_wav.py
 
+# install (with pip) tensorflow-gpu on device with GPU, install CUDA 7.1.4 libraries
 # melody extraction - # TODO: melody_extraction.py
 
 # human assisted smoothing

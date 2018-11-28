@@ -10,15 +10,15 @@ ms_to_pitch = collections.OrderedDict()
 #
 # filename_output = 'train01.mid'
 
-# filename_input = '/Users/elliottevers/Documents/git-repos.nosync/Vocal-Melody-Extraction/out_seg.txt'
-#
-# filename_output = 'lodi.mid'
+filename_input = '/Users/elliottevers/Downloads/out_seg.txt'
 
-filename_input = 'lodi_melodia.txt'
+filename_output = 'lodi.mid'
 
-filename_output = 'lodi_melodia.mid'
+# filename_input = 'lodi_melodia.txt'
 
-in_ms = True
+# filename_output = 'lodi_melodia.mid'
+
+in_ms = False
 
 samples_per_second = 50.
 
@@ -29,7 +29,6 @@ if in_ms:
         for line in file_local:
             value_hz = int(float(line.split()[1]))
             if value_hz > 0:
-                # ms_to_pitch[float(line.split()[0])] = np.abs(int(float(line.split()[2])))
                 ms_to_pitch[float(line.split()[0])] = int(float(line.split()[1]))
 else:
     current_ms = 0
