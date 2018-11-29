@@ -5,6 +5,23 @@ from typing import List, Dict, Any, Optional, Tuple
 import music21
 from music21 import interval
 
+# class VampExtractor:
+#     def __init__(self, filename_audio):
+#         self.data, self.rate = librosa.load(filename_audio)
+#
+#     @staticmethod
+#     def extract_chords() -> List[Dict[float, Any]]:
+#         return vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
+#
+#     @staticmethod
+#     def extract_segments() -> List[Dict[float, Any]]:
+#         return vamp.collect(data, rate, 'qm-vamp-plugins:qm-segmenter')['list']
+#
+#     @staticmethod
+#     def extract_tempo() -> List[Dict[float, Any]]:
+#         return vamp.collect(data, rate, 'vamp-example-plugins:fixedtempo')['list']
+
+
 data, rate = librosa.load("lodi.wav")
 
 # extract melody
@@ -13,11 +30,15 @@ file_midi = MidiFile('lodi.mid')
 
 filename_output = 'lodi_chords.mid'
 
+song_name = 'lodi'
+
+filename_output_master_raw = song_name + '_master_raw.mid'
+
 # extract harmony
 ms_to_label_chord: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
 
 # extract segments
-segments = vamp.collect(data, rate, 'qm-vamp-plugins:qm-segmenter')
+segments: List[Dict[float, Any]] = vamp.collect(data, rate, 'qm-vamp-plugins:qm-segmenter')['list']
 
 # extract BPM
 tempo = vamp.collect(data, rate, 'vamp-example-plugins:fixedtempo')
@@ -27,6 +48,7 @@ tempo = vamp.collect(data, rate, 'vamp-example-plugins:fixedtempo')
 bpm = 60
 
 resolution = 1000
+
 
 ms_to_pitches_chord: Dict[float, List[music21.pitch.Pitch]] = dict()
 
@@ -41,9 +63,6 @@ for chord in ms_to_label_chord:
 
     ms_to_pitches_chord[float(chord['timestamp'])] = list(chord_pitches)
 
-
-# TODO: assume 4 pitches per chord, add root note to triads
-# TODO: add support for arbitrary amount of pitches per chord
 
 ms_to_pitches_chord_filtered: Dict[float, List[music21.pitch.Pitch]] = dict()
 
@@ -120,19 +139,60 @@ track_chords.append(
     Message('note_off', note=int(0), velocity=127, time=int(duration_ms_last_note * 1000), channel=4)
 )
 
-# chords = chords['list']
-
-# track_chords =
-
-# timestamp (begin) -> segment label (represent with percussive midi data)
-
-# scalar
-# tempo_fixed =
-
 
 file_midi_chords = MidiFile(ticks_per_beat=resolution)
 
 file_midi_chords.tracks.append(track_chords)
 
-file_midi_chords.save(filename_output)
+channel_number_segment_boundaries = 10
 
+track_segment_boundaries = MidiTrack()
+
+track_segment_boundaries.append(MetaMessage('set_tempo', tempo=1000000, time=0))
+
+program_cymbal = 49
+
+track_segment_boundaries.append(Message('program_change', program=program_cymbal))
+
+track_segment_boundaries.append(Message('note_on', note=0, velocity=127, time=0, channel=channel_number_segment_boundaries))
+
+duration_ms_last_note = 0
+
+note_midi_last_note = 0
+
+time_ms_last = 0
+
+note_b_flat = 58
+
+for time_ms in [float(seg['timestamp']) for seg in segments]:
+
+    duration_ms_last_note = time_ms - time_ms_last
+
+    track_segment_boundaries.append(Message('note_off', channel=channel_number_segment_boundaries, note=note_b_flat, velocity=127, time=int(duration_ms_last_note * 1000)))
+
+    track_segment_boundaries.append(Message('note_on', channel=channel_number_segment_boundaries, note=note_b_flat, velocity=127, time=0))
+
+    time_ms_last = time_ms
+
+
+track_segment_boundaries.append(Message('note_off', note=note_b_flat, velocity=127, time=0))
+
+
+file_midi_chords.tracks.append(track_segment_boundaries)
+
+
+
+test = 1
+
+
+file_midi_master_raw = MidiFile(ticks_per_beat=resolution)
+
+# for track in [track_melody, track_chords, track_segment_boundaries]:
+for track in [track_chords, track_segment_boundaries]:
+    file_midi_master_raw.tracks.append(track)
+
+file_midi_master_raw.save(filename_output_master_raw)
+
+
+# if __name__ == "__main__":
+#     main()
