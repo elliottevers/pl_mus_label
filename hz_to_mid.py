@@ -12,7 +12,7 @@ ms_to_pitch = collections.OrderedDict()
 
 filename_input = '/Users/elliottevers/Downloads/out_seg.txt'
 
-filename_output = 'lodi.mid'
+filename_output = 'lodi_vocals.mid'
 
 # filename_input = 'lodi_melodia.txt'
 

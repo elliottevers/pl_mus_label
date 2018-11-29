@@ -26,7 +26,7 @@ data, rate = librosa.load("lodi.wav")
 
 # extract melody
 # TODO: hit Flask endpoint that serves melody extraction model
-file_midi = MidiFile('lodi.mid')
+file_midi = MidiFile('lodi_vocals.mid')
 
 filename_output = 'lodi_chords.mid'
 
