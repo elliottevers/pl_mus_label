@@ -42,7 +42,6 @@ for interval in intervals_major:
 
 intervals_major_octave.append(12)
 
-
 # up
 
 note_current = note_midi_root
@@ -68,19 +67,32 @@ while note_current >= range_full_guitar[0]:
         if note_current >= range_full_guitar[0]:
             notes_scale.add(note_current)
 
+PERFECT_FOURTH = 5
+
+interval_skip = PERFECT_FOURTH
+
+notes_pivot = []
+
+strings = [string6, string5, string4, string3, string2, string1]
 
 
+for i, _ in enumerate(strings):
+    notes_pivot.append(note_midi_root + i * interval_skip)
 
+for i, note in enumerate(reversed(notes_pivot)):
+    for j in range(0, interval_skip):
+        fingering[note + j] = {'string': i + 1}
 
-for note in range_full_guitar:
-
-    notes_scale.append(note)
 
 for note in range_full_guitar:
     if note < note_midi_root:
-        fingering[note] = {'string': 6, 'fret': '???'}
+        fingering[note] = {'string': 6, 'fret': string6.index(note)}
+    if note > notes_pivot[-1] + interval_skip:
+        fingering[note] = {'string': 1, 'fret': string1.index(note)}
 
-# main shape
-for i in range(1, 6):
-    for j in range(1, frets_per_string_const):
-        fingering = trichord_order_major[i - 1][j - 1]
+for note, placement in fingering.items():
+    if 'fret' not in placement:
+        placement['fret'] = strings[6 - placement['string']].index(note)
+
+
+
