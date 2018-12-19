@@ -95,4 +95,8 @@ for note, placement in fingering.items():
         placement['fret'] = strings[6 - placement['string']].index(note)
 
 
+import json
+
+with open('/Users/elliottevers/Downloads/fingering.json', 'w') as fp:
+    json.dump(fingering, fp)
 
