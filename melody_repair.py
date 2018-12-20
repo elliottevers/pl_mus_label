@@ -6,6 +6,7 @@ from music21 import midi, converter, environment, tempo
 from music21 import note as note21, stream as stream21
 from mido import MidiFile
 import mido
+import pandas as pd
 
 # us = environment.UserSettings()
 # us.create()
@@ -30,6 +31,8 @@ stream_test = stream21.Stream()
 #
 # stream.show('midi')
 
+# exit(0)
+
 from mido import Message, MidiFile, MidiTrack
 
 mid = MidiFile()
@@ -38,17 +41,26 @@ mid.tracks.append(track)
 
 track.append(Message('program_change', program=12, time=0))
 
+# times = []
+
+# time_absolute = 0
+
 for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
+    # times.append(int(round(mido.second2tick(msg.time, 1024, 120))))
+    # times.append(msg.time)
+    # time_absolute += msg.time
     if msg.type == 'note_on':
-        time_ticks = int(round(mido.second2tick(msg.time, 96, 120)))
+        # track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=msg.time))
+        time_ticks = int(round(mido.second2tick(msg.time, 512, mido.bpm2tempo(120))))
         track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=time_ticks))
 
     if msg.type == 'note_off':
-        time_ticks = int(round(mido.second2tick(msg.time, 96, 120)))
+        # track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=msg.time))
+        time_ticks = int(round(mido.second2tick(msg.time, 512, mido.bpm2tempo(120))))
         track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=time_ticks))
 
 
-mid.save('/Users/elliottevers/Downloads/yolo.mid')
+mid.save('/Users/elliottevers/Downloads/ella_seconds_mido.mid')
 
 # mid.save('/Users/elliottevers/Downloads/monophonic_mido.mid')
 
