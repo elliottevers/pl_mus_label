@@ -8,6 +8,13 @@ from mido import MidiFile
 import mido
 import pandas as pd
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(style="darkgrid")
+
+
 # us = environment.UserSettings()
 # us.create()
 #
@@ -45,22 +52,55 @@ track.append(Message('program_change', program=12, time=0))
 
 # time_absolute = 0
 
+# ticks_absolute = 0
+
+iter_tick = 0
+
+tick_last = 0
+
+ticks = []
+
+notes_midi = []
+
 for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
-    # times.append(int(round(mido.second2tick(msg.time, 1024, 120))))
-    # times.append(msg.time)
-    # time_absolute += msg.time
     if msg.type == 'note_on':
-        # track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=msg.time))
-        time_ticks = int(round(mido.second2tick(msg.time, 512, mido.bpm2tempo(120))))
-        track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=time_ticks))
+        ticks_since_onset_last = int(round(mido.second2tick(msg.time, 512, mido.bpm2tempo(120))))
+        # ticks_absolute += ticks_since_onset_last
+        track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
+        for tick_empty in range(1, ticks_since_onset_last + 1):
+            # counting ticks during 'note_off' messages
+            iter_tick += 1
+            ticks.append(tick_last + tick_empty)
+            notes_midi.append(None)
 
     if msg.type == 'note_off':
-        # track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=msg.time))
-        time_ticks = int(round(mido.second2tick(msg.time, 512, mido.bpm2tempo(120))))
-        track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=time_ticks))
+        ticks_since_onset_last = int(round(mido.second2tick(msg.time, 512, mido.bpm2tempo(120))))
+        # ticks_absolute += ticks_since_onset_last
+        track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
+        for tick in range(1, ticks_since_onset_last + 1):
+            # counting ticks during 'note_on' messages
+            iter_tick += 1
+            ticks.append(tick_last + tick)
+            notes_midi.append(msg.note)
+
+    tick_last = iter_tick
 
 
-mid.save('/Users/elliottevers/Downloads/ella_seconds_mido.mid')
+# ticks_absolute/ 1024 = seconds
+
+df = pd.DataFrame(
+    dict(
+        ticks=ticks,
+        events=notes_midi
+    )
+)
+
+
+sns.relplot(x="ticks", y="events", kind="line", ci="sd", data=df)
+
+plt.show()
+
+# mid.save('/Users/elliottevers/Downloads/ella_seconds_mido.mid')
 
 # mid.save('/Users/elliottevers/Downloads/monophonic_mido.mid')
 
@@ -169,12 +209,6 @@ for part in stream:
     for note in part.notes:
         # stream.remove(note)
         notes_filtered.append(note)
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set(style="darkgrid")
 
 
 # from seaborn import
