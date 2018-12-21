@@ -3,16 +3,18 @@
 # HAS TO BE MONOPHONIC
 
 from music21 import midi, converter, environment, tempo
-from music21 import note as note21, stream as stream21
+from music21 import note as note21, stream as stream21, analysis, graph
 from mido import MidiFile
 import mido
 import pandas as pd
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set(style="darkgrid")
+import matplotlib
+import sys
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# sns.set(style="darkgrid")
 
 
 # us = environment.UserSettings()
@@ -30,6 +32,60 @@ sns.set(style="darkgrid")
 
 # TODO: can we 1) create another stream 2) take notes out of first 3) add them to second and create midify the stream and have it sound the same as first?
 
+
+stream = converter.parse('/Users/elliottevers/Downloads/ella_dream_chords.mid')
+
+# ksAnalyzer = analysis.discrete.KrumhanslSchmuckler()
+
+# wa = analysis.windowed.WindowedAnalysis(stream.parts[0], ksAnalyzer)
+
+# solutions, colors, meta = wa.process(1, 1, includeTotalWindow=False)
+
+# graph.plot
+
+# >> > s = corpus.parse('bach/bwv66.6')
+# >> > p = graph.plot.WindowedKey(s.parts[0])
+# >> > p.doneAction = None  # _DOCS_HIDE
+# >> > p.run()  # with defaults and proper configuration, will open graph
+
+p = graph.plot.WindowedKey(stream.parts[0])
+# >> > p.processorClass = analysis.discrete.KrumhanslKessler
+# >> > p.processorClass = analysis.discrete.AardenEssen
+# >> > p.processorClass = analysis.discrete.SimpleWeights
+p.processorClass = analysis.discrete.BellmanBudge
+# >> > p.processorClass = analysis.discrete.TemperleyKostkaPayne
+p.doneAction = 'show'
+# p.run()
+
+# a = analysis.discrete.KrumhanslSchmuckler(stream)
+# solution = a.getSolution(stream)
+
+bbAnalyzer = analysis.discrete.BellmanBudge()
+
+wa = analysis.windowed.WindowedAnalysis(stream.parts[0], bbAnalyzer)
+
+
+# def process(self, minWindow=1, maxWindow=1, windowStepSize=1,
+#             windowType='overlap', includeTotalWindow=True):
+
+solutions, colors, meta = wa.process(
+    minWindow=4,
+    maxWindow=8,
+    windowStepSize=4,
+    windowType='adjacentAverage',
+    includeTotalWindow=False
+)
+
+print(p.processor.solutionsFound)
+
+# print(len(solutions))
+
+# stream.plot('key')
+
+# stream.show()
+# stream.show('midi')
+
+exit(0)
 
 stream_test = stream21.Stream()
 
