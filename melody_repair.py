@@ -48,12 +48,6 @@ mid.tracks.append(track)
 
 track.append(Message('program_change', program=12, time=0))
 
-# times = []
-
-# time_absolute = 0
-
-# ticks_absolute = 0
-
 iter_tick = 0
 
 tick_last = 0
@@ -62,10 +56,15 @@ ticks = []
 
 notes_midi = []
 
+ppq = 512
+
+bpm = 120
+
+len_sixteenth_note_ticks = ppq/4
+
 for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
     if msg.type == 'note_on':
-        ticks_since_onset_last = int(round(mido.second2tick(msg.time, 512, mido.bpm2tempo(120))))
-        # ticks_absolute += ticks_since_onset_last
+        ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
         track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
         for tick_empty in range(1, ticks_since_onset_last + 1):
             # counting ticks during 'note_off' messages
@@ -74,29 +73,75 @@ for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
             notes_midi.append(None)
 
     if msg.type == 'note_off':
-        ticks_since_onset_last = int(round(mido.second2tick(msg.time, 512, mido.bpm2tempo(120))))
-        # ticks_absolute += ticks_since_onset_last
+        ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
         track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
         for tick in range(1, ticks_since_onset_last + 1):
             # counting ticks during 'note_on' messages
             iter_tick += 1
             ticks.append(tick_last + tick)
-            notes_midi.append(msg.note)
+            if ticks_since_onset_last < len_sixteenth_note_ticks * 2:
+                notes_midi.append(None)
+            else:
+                notes_midi.append(msg.note)
 
     tick_last = iter_tick
 
 
 # ticks_absolute/ 1024 = seconds
 
-df = pd.DataFrame(
-    dict(
-        ticks=ticks,
-        events=notes_midi
-    )
+df = pd.Series(
+    notes_midi,
+    index=np.array(ticks)
 )
 
+# Filter out notes less than 16ths
+len_sixteenth_note_ticks = ppq/4
 
-sns.relplot(x="ticks", y="events", kind="line", ci="sd", data=df)
+iter_tick = 0
+
+tick_note_onset = df.first_valid_index()
+
+
+# while note_current == note_next:
+#     note_current = df.loc[iter_tick]
+#
+#     note_next = df.loc[iter_tick] + 1
+#
+#     note_current
+#     note_next
+#     iter_tick += 1
+#
+# for tick in df.index:
+#     note = df.loc[tick]
+#     tick_onset = 0
+#     while (note)
+#     if num_ticks < len_sixteenth_note_ticks:
+#         for empty_tick in range(num_ticks):
+#             tick_onset + num_ticks
+# for msg in track:
+#     test = 1
+# if len_note_ticks < len_sixteenth_note_ticks:
+#     for tick in range_note_ticks:
+#         df.loc[tick] = None
+
+# Use rms, or variance, and choose threshold
+
+#  If long note, short semi-tone away blip in either direction, then back to original long note, replace the deviation
+
+
+# TODO: filter values using din
+# render back to track
+
+# print(df.std())
+
+# exit(0)
+
+sns.relplot(kind="line", ci="sd", data=df.loc[0:50_000])
+
+sns.relplot(kind="line", ci="sd", data=df.loc[50_000:100_000])
+
+sns.relplot(kind="line", ci="sd", data=df.loc[100_000:150_000])
+
 
 plt.show()
 
