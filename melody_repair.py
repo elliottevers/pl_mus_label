@@ -66,7 +66,7 @@ for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
     if msg.type == 'note_on':
         ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
         track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
-        for tick_empty in range(1, ticks_since_onset_last + 1):
+        for tick_empty in range(ticks_since_onset_last):
             # counting ticks during 'note_off' messages
             iter_tick += 1
             ticks.append(tick_last + tick_empty)
@@ -75,10 +75,11 @@ for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
     if msg.type == 'note_off':
         ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
         track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
-        for tick in range(1, ticks_since_onset_last + 1):
+        for tick in range(ticks_since_onset_last):
             # counting ticks during 'note_on' messages
             iter_tick += 1
             ticks.append(tick_last + tick)
+            # Filter out notes less than 16ths
             if ticks_since_onset_last < len_sixteenth_note_ticks * 2:
                 notes_midi.append(None)
             else:
@@ -94,53 +95,118 @@ df = pd.Series(
     index=np.array(ticks)
 )
 
-# Filter out notes less than 16ths
-len_sixteenth_note_ticks = ppq/4
+df_seg1 = df.loc[0:50_000]
+
+mean = df_seg1.mean()
+
+std = df_seg1.std()
+
+
+# TODO: turn ticks back into midi file
+
+# generate list of notes
+
+velocity = 90
 
 iter_tick = 0
 
-tick_note_onset = df.first_valid_index()
+onset_tick = 0
+
+mid = MidiFile()
+track = MidiTrack()
+mid.tracks.append(track)
+
+while iter_tick < len(df_seg1) - 1:
+    tick_next = iter_tick + 1
+    pitch_next = df_seg1.at[tick_next]
+
+    if df_seg1.at[iter_tick] != pitch_next:
+        # onset_new = tick_next
+        type = 'note_off' if pitch_next is None else 'note_on'
+
+        track.append(
+            mido.Message(
+                type,
+                note=int(df_seg1.at[tick_next]) if df_seg1.at[tick_next] > 0 else 0,
+                velocity=int(velocity),
+                time=int(tick_next - onset_tick)
+            )
+        )
+
+        onset_tick = iter_tick + 1
+
+    iter_tick = tick_next
 
 
-# while note_current == note_next:
-#     note_current = df.loc[iter_tick]
-#
-#     note_next = df.loc[iter_tick] + 1
-#
-#     note_current
-#     note_next
-#     iter_tick += 1
-#
-# for tick in df.index:
-#     note = df.loc[tick]
-#     tick_onset = 0
-#     while (note)
-#     if num_ticks < len_sixteenth_note_ticks:
-#         for empty_tick in range(num_ticks):
-#             tick_onset + num_ticks
-# for msg in track:
-#     test = 1
-# if len_note_ticks < len_sixteenth_note_ticks:
-#     for tick in range_note_ticks:
-#         df.loc[tick] = None
+mid.save('/Users/elliottevers/Downloads/segment.mid')
+
+exit(0)
+
+# for i in df.index:
+#     val = df.at[i]
+#     df.at[i, 'notes_midi'] = None if abs(val - mean) > 2 * std else val
+
+# for thing in df:
+#     if thing > 0:
+#         testing = 1
+
+sns.relplot(kind="line", data=df_seg1)
+
+plt.show()
+
+exit(0)
 
 # Use rms, or variance, and choose threshold
 
 #  If long note, short semi-tone away blip in either direction, then back to original long note, replace the deviation
 
 
-# TODO: filter values using din
+notes_midi = []
+
+ticks = []
+
+for msg in track:
+    if msg.type == 'note_off':
+        ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
+        track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
+        for tick in range(1, ticks_since_onset_last + 1):
+            # counting ticks during 'note_on' messages
+            iter_tick += 1
+            ticks.append(tick_last + tick)
+
+            note = msg.note
+
+            # filter out notes 2 standard deviations above mean
+            if note > mean + 2 * std:
+                notes_midi.append(None)
+            else:
+                notes_midi.append(note)
+
+    tick_last = iter_tick
+
+# TODO: plot variance and original signal on same graph
 # render back to track
 
 # print(df.std())
 
 # exit(0)
 
-sns.relplot(kind="line", ci="sd", data=df.loc[0:50_000])
 
-sns.relplot(kind="line", ci="sd", data=df.loc[50_000:100_000])
+df_seg1 = df.loc[0:50_000]
 
-sns.relplot(kind="line", ci="sd", data=df.loc[100_000:150_000])
+exit(0)
+
+df_rolling = df_seg1.rolling(100).std()
+
+fig, ax = plt.subplots()
+
+sns.relplot(kind="line", data=df_seg1, ax=ax)
+
+sns.relplot(kind="line", data=df_rolling)
+
+# sns.relplot(kind="line", ci="sd", data=df.loc[50_000:100_000])
+#
+# sns.relplot(kind="line", ci="sd", data=df.loc[100_000:150_000])
 
 
 plt.show()
