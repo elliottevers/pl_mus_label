@@ -62,6 +62,8 @@ bpm = 120
 
 len_sixteenth_note_ticks = ppq/4
 
+# CONVERT MIDI FILE TO TICK TIMESERIES, FILTERING SHORT NOTES IN PROCESS
+
 for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
     if msg.type == 'note_on':
         ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
@@ -80,7 +82,7 @@ for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
             iter_tick += 1
             ticks.append(tick_last + tick)
             # Filter out notes less than 16ths
-            if ticks_since_onset_last < len_sixteenth_note_ticks * 2:
+            if ticks_since_onset_last < len_sixteenth_note_ticks:
                 notes_midi.append(None)
             else:
                 notes_midi.append(msg.note)
@@ -112,26 +114,44 @@ iter_tick = 0
 
 onset_tick = 0
 
+note_last = 0
+
 mid = MidiFile()
 track = MidiTrack()
 mid.tracks.append(track)
 
+import math
+
+# CONVERT TICK TIMESERIES TO MIDI FILE
+
 while iter_tick < len(df_seg1) - 1:
     tick_next = iter_tick + 1
+
+    pitch_current = df_seg1.at[iter_tick]
+
     pitch_next = df_seg1.at[tick_next]
 
-    if df_seg1.at[iter_tick] != pitch_next:
-        # onset_new = tick_next
-        type = 'note_off' if pitch_next is None else 'note_on'
-
+    if pitch_current != pitch_next and not (math.isnan(pitch_current) and math.isnan(pitch_next)):
+        note = int(df_seg1.at[tick_next]) if df_seg1.at[tick_next] > 0 else 0
         track.append(
             mido.Message(
-                type,
-                note=int(df_seg1.at[tick_next]) if df_seg1.at[tick_next] > 0 else 0,
-                velocity=int(velocity),
+                'note_off',  # type,
+                note=note_last,
+                velocity=0,  # int(velocity),
                 time=int(tick_next - onset_tick)
             )
         )
+        track.append(
+            mido.Message(
+                'note_on',  # type,
+                note=note,
+                velocity=int(velocity),  # int(velocity),
+                time=0
+            )
+        )
+
+        if velocity > 0:
+            note_last = note
 
         onset_tick = iter_tick + 1
 
@@ -139,6 +159,10 @@ while iter_tick < len(df_seg1) - 1:
 
 
 mid.save('/Users/elliottevers/Downloads/segment.mid')
+
+stream = converter.parse('/Users/elliottevers/Downloads/segment.mid')
+
+stream.show('midi')
 
 exit(0)
 
