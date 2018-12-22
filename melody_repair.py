@@ -62,13 +62,19 @@ truncate_pickup_measure = True
 
 # exit(0)
 
-from mido import Message, MidiFile, MidiTrack
+from mido import Message, MidiFile, MidiTrack, MetaMessage
 
 mid = MidiFile()
 track = MidiTrack()
 mid.tracks.append(track)
 
-track.append(Message('program_change', program=12, time=0))
+track.append(
+    Message(
+        'program_change',
+        program=22,
+        time=0
+    )
+)
 
 iter_tick = 0
 
@@ -78,15 +84,39 @@ ticks = []
 
 notes_midi = []
 
-ppq = 512
+# bpm 75, ppq 1024 -> 4 mins, 5 sec
+# bpm 75, ppq 1024 * 2 -> 8 mins, 10 sec
 
-bpm = 120
+ppq = 1000  # ppq = 512
+
+bpm = 60  # bpm = 120
+
+track.append(
+    MetaMessage(
+        'time_signature',
+        time=0
+    )
+)
+
+track.append(
+    MetaMessage(
+        'set_tempo',
+        tempo=mido.bpm2tempo(60),
+        time=0
+    )
+)
 
 len_sixteenth_note_ticks = ppq/4
 
 # CONVERT MIDI FILE TO TICK TIMESERIES, FILTERING SHORT NOTES IN PROCESS
 
-for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
+# stream = converter.parse('/Users/elliottevers/Downloads/monophonic.mid')
+
+# stream.show('midi')
+
+# exit(0)
+
+for msg in MidiFile('/Users/elliottevers/Downloads/ella_dream_vocals_2.mid'):  # MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
     if msg.type == 'note_on':
         ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
         track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
@@ -104,14 +134,17 @@ for msg in MidiFile('/Users/elliottevers/Downloads/monophonic.mid'):
             iter_tick += 1
             ticks.append(tick_last + tick)
             # Filter out notes less than 16ths
-            if ticks_since_onset_last < len_sixteenth_note_ticks:
-                notes_midi.append(None)
-            else:
-                notes_midi.append(msg.note)
+            # if ticks_since_onset_last < len_sixteenth_note_ticks:
+            #     notes_midi.append(None)
+            # else:
+            #     notes_midi.append(msg.note)
 
     tick_last = iter_tick
 
 
+mid.save('/Users/elliottevers/Downloads/correct_length.mid')
+
+exit(0)
 # ticks_absolute/ 1024 = seconds
 
 df = pd.Series(
@@ -130,8 +163,6 @@ std = df_seg1.std()
 
 # generate list of notes
 
-velocity = 90
-
 iter_tick = 0
 
 onset_tick = 0
@@ -146,28 +177,34 @@ import math
 
 # CONVERT TICK TIMESERIES TO MIDI FILE
 
-while iter_tick < len(df_seg1) - 1:
+df_convert = df
+
+while iter_tick < len(df_convert) - 1:
+    velocity = 90
+
     tick_next = iter_tick + 1
 
-    pitch_current = df_seg1.at[iter_tick]
+    pitch_current = df_convert.at[iter_tick]
 
-    pitch_next = df_seg1.at[tick_next]
+    pitch_next = df_convert.at[tick_next]
 
     if pitch_current != pitch_next and not (math.isnan(pitch_current) and math.isnan(pitch_next)):
-        note = int(df_seg1.at[tick_next]) if df_seg1.at[tick_next] > 0 else 0
+        note = int(df_convert.at[tick_next]) if df_convert.at[tick_next] > 0 else 0
+        if note == 0:
+            velocity = 0
         track.append(
             mido.Message(
-                'note_off',  # type,
+                'note_off',
                 note=note_last,
-                velocity=0,  # int(velocity),
+                velocity=0,
                 time=int(tick_next - onset_tick)
             )
         )
         track.append(
             mido.Message(
-                'note_on',  # type,
+                'note_on',
                 note=note,
-                velocity=int(velocity),  # int(velocity),
+                velocity=int(velocity),
                 time=0
             )
         )
@@ -182,8 +219,8 @@ while iter_tick < len(df_seg1) - 1:
 # for msg in track:
 #     testing = 1
 
-if truncate_pickup_measure:
-    track[0].time = 0
+# if truncate_pickup_measure:
+#     track[0].time = 0
 
 mid.save('/Users/elliottevers/Downloads/segment.mid')
 
@@ -201,9 +238,9 @@ exit(0)
 #     if thing > 0:
 #         testing = 1
 
-sns.relplot(kind="line", data=df_seg1)
-
-plt.show()
+# sns.relplot(kind="line", data=df_seg1)
+#
+# plt.show()
 
 exit(0)
 
