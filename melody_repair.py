@@ -6,6 +6,7 @@ import pandas as pd
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import matplotlib
 import sys
 
@@ -489,6 +490,8 @@ stream_recovered = stream21.Stream()
 
 mt = midi.MidiTrack(1)
 
+
+# create alternate stream, put notes from converted stream into it, hopefully sounds same as automatically parsed file
 for part in stream:
     duration_entire_ticks = midi.translate.durationToMidi(part.duration)
 
