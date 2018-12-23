@@ -1,35 +1,44 @@
-# DATA SOURCE
+import filter.midi as filter
+import convert.midi as midi
+import mido
+import pandas as pd
 
-# download from Spotify/YouTube - download_spotify.py
+filename_input = '/Users/elliottevers/Downloads/ella_dream_vocals_2.mid'
 
-# PREPROCESSING/INTERACTIVE INFORMATION EXTRACTION
+bpm_file = 75
 
-# convert to WAV - conversion/mp3_to_wav.py
+file = mido.MidiFile(filename_input)
 
-# install (with pip) tensorflow-gpu on device with GPU, install CUDA 7.1.4 libraries
-# melody extraction - # TODO: melody_extraction.py
+ppq = file.ticks_per_beat
 
-# human assisted smoothing
+# df = filter.filter_length(
+#     4,
+#     file.tracks[0],
+#     ppq,
+#     bpm_file
+# )
 
-# chord detection # TODO: chord_detection.py
+df, boundaries = midi.mid_to_series(
+    file.tracks[0]
+)
 
-# TODO: think of any useful human assistance
+# import seaborn as sns
+#
+# import matplotlib.pyplot as plt
+#
+# sns.relplot(kind="line", data=df[1:500_000])
+#
+# plt.show()
+#
+# exit(0)
 
-# symbolic key detection
+output_mid = mido.MidiFile()
 
-# human assisted tonic detection
+output_track = midi.series_to_mid(
+    df,
+    90
+)
 
-# synthetic segmentation
+output_mid.tracks.append(output_track)
 
-# human assisted boundary detection
-
-# EVALUATION
-
-# render MusicXML (chord symbols + full voicings)
-
-# MuseScore playback
-
-# HUMAN DISCRIMINATION
-
-# HUMAN GENERATION
-
+file.save('/Users/elliottevers/Downloads/main.mid')
