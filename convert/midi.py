@@ -60,15 +60,14 @@ def mid_to_series(
             ticks_since_onset_last = msg.time
             # track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
             interval = []
-            interval.append(tick_last + 1)
-            tick = 0
+            interval.append(iter_tick + 1)
             for tick in range(ticks_since_onset_last):
                 # counting ticks during 'note_on' messages
                 iter_tick += 1
                 ticks.append(tick_last + tick)
                 notes_midi.append(msg.note)
 
-            interval.append(tick_last + tick)
+            interval.append(iter_tick)
             notes_intervals_tick.append({msg.note: interval})
         tick_last = iter_tick
 
@@ -88,7 +87,7 @@ def series_to_mid(df, init_velocity):
 
     track = mido.MidiTrack()
 
-    while iter_tick < len(df) - 1:
+    while iter_tick < len(df.index) - 1:
 
         velocity = init_velocity
 
