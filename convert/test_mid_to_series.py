@@ -227,6 +227,44 @@ class TestMid_to_series(TestCase):
             index=list(range(0, 4))
         )
 
+
+        gt5 = {
+            60: [0, 1],
+            67: [2, 3]
+        }
+
+
+        # gt6 = pd.Series(
+        #     [60, 67, 67, None],
+        #     index=list(range(0, 4))
+        # )
+
+        gt6 = {
+            60: [0, 1],
+            67: [1, 3]
+        }
+
+        # gt7 = pd.Series(
+        #     [60, 67, 67, None],
+        #     index=list(range(0, 4))
+        # )
+
+        gt7 = {
+            60: [0, 2],
+            67: [1, 3]
+        }
+
+        # gt8 = pd.Series(
+        #     [60, 67, 60, None],
+        #     index=list(range(0, 4))
+        # )
+
+        gt8 = {
+            60: [1, 2],
+            67: [0, 3]
+        }
+
+
         result1 = midi_convert.mid_to_series(file.tracks[0])[0]
 
         result2 = midi_convert.mid_to_series(file.tracks[1])[0]
@@ -234,6 +272,15 @@ class TestMid_to_series(TestCase):
         result3 = midi_convert.mid_to_series(file.tracks[2])[0]
 
         result4 = midi_convert.mid_to_series(file.tracks[3])[0]
+
+
+        result5 = midi_convert.mid_to_series(file.tracks[0])[1]
+
+        result6 = midi_convert.mid_to_series(file.tracks[1])[1]
+
+        result7 = midi_convert.mid_to_series(file.tracks[2])[1]
+
+        result8 = midi_convert.mid_to_series(file.tracks[3])[1]
 
         # thing1 = pd.Series(
         #     [4, 5, 6],
@@ -251,3 +298,8 @@ class TestMid_to_series(TestCase):
         assert result2.equals(gt2)
         assert result3.equals(gt3)
         assert result4.equals(gt4)
+
+        # assert result5.equals(gt5)
+        # assert result6.equals(gt6)
+        # assert result7.equals(gt7)
+        # assert result8.equals(gt8)

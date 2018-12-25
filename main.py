@@ -6,250 +6,19 @@ import pandas as pd
 import itertools
 import sys
 
+import seaborn as sns
+
+import matplotlib.pyplot as plt
+
 from subprocess import call as call_shell
 
 filename_input = '/Users/elliottevers/Downloads/ella_dream_vocals_2.mid'
 
-####
+filename_out = '/Users/elliottevers/Downloads/main.mid'
 
-file = mido.MidiFile(ticks_per_beat=2)
+bounds_graph_percentage = [0, 1]
 
-
-track1 = mido.MidiTrack()
-
-file.tracks.append(track1)
-
-track1.append(
-    mido.MetaMessage(
-        'set_tempo',
-        tempo=500000*2*2
-    )
-)
-
-
-track2 = mido.MidiTrack()
-
-file.tracks.append(track2)
-
-track2.append(
-    mido.MetaMessage(
-        'set_tempo',
-        tempo=500000*2*2
-    )
-)
-
-
-track3 = mido.MidiTrack()
-
-file.tracks.append(track3)
-
-track3.append(
-    mido.MetaMessage(
-        'set_tempo',
-        tempo=500000*2*2
-    )
-)
-
-
-track4 = mido.MidiTrack()
-
-file.tracks.append(track4)
-
-track4.append(
-    mido.MetaMessage(
-        'set_tempo',
-        tempo=500000*2*2
-    )
-)
-
-track1.append(
-    mido.Message(
-        'note_on',
-        note=60,
-        velocity=90,
-        time=0
-    )
-)
-
-track1.append(
-    mido.Message(
-        'note_off',
-        note=60,
-        velocity=0,
-        time=1
-    )
-)
-
-track1.append(
-    mido.Message(
-        'note_on',
-        note=67,
-        velocity=90,
-        time=1
-    )
-)
-
-track1.append(
-    mido.Message(
-        'note_off',
-        note=67,
-        velocity=0,
-        time=1
-    )
-)
-
-
-track2.append(
-    mido.Message(
-        'note_on',
-        note=60,
-        velocity=90,
-        time=0
-    )
-)
-
-track2.append(
-    mido.Message(
-        'note_off',
-        note=60,
-        velocity=0,
-        time=1
-    )
-)
-
-track2.append(
-    mido.Message(
-        'note_on',
-        note=67,
-        velocity=90,
-        time=0
-    )
-)
-
-track2.append(
-    mido.Message(
-        'note_off',
-        note=67,
-        velocity=0,
-        time=2
-    )
-)
-
-track3.append(
-    mido.Message(
-        'note_on',
-        note=60,
-        velocity=90,
-        time=0
-    )
-)
-
-track3.append(
-    mido.Message(
-        'note_on',
-        note=67,
-        velocity=90,
-        time=1
-    )
-)
-
-track3.append(
-    mido.Message(
-        'note_off',
-        note=60,
-        velocity=0,
-        time=1
-    )
-)
-
-track3.append(
-    mido.Message(
-        'note_off',
-        note=67,
-        velocity=0,
-        time=1
-    )
-)
-
-track4.append(
-    mido.Message(
-        'note_on',
-        note=60,
-        velocity=90,
-        time=0
-    )
-)
-
-track4.append(
-    mido.Message(
-        'note_on',
-        note=67,
-        velocity=90,
-        time=1
-    )
-)
-
-track4.append(
-    mido.Message(
-        'note_off',
-        note=67,
-        velocity=0,
-        time=1
-    )
-)
-
-track4.append(
-    mido.Message(
-        'note_off',
-        note=60,
-        velocity=0,
-        time=1
-    )
-)
-
-filename_out = '/Users/elliottevers/Downloads/simulated_data.mid'
-
-file.save(filename_out)
-
-call_shell(["open", "-a", "/Applications/MidiYodi 2018.1.app/", filename_out])
-
-exit(0)
-
-# case 1
-
-correct1 = pd.Series(
-    [60, None, 67, None],
-    index=list(range(0, 4))
-)
-
-correct2 = pd.Series(
-    [60, 67, 67, None],
-    index=list(range(0, 4))
-)
-
-correct3 = pd.Series(
-    [60, 67, 67, None],
-    index=list(range(0, 4))
-)
-
-correct4 = pd.Series(
-    [60, 67, 60, None],
-    index=list(range(0, 4))
-)
-
-midi_convert.mid_to_series(file.tracks[0]).equals(correct1)
-midi_convert.mid_to_series(file.tracks[1]).equals(correct2)
-midi_convert.mid_to_series(file.tracks[2]).equals(correct3)
-midi_convert.mid_to_series(file.tracks[3]).equals(correct4)
-
-
-# case 2
-
-# case 3
-
-# case 4
-
-####
+size_window = 4000
 
 bpm_file = 75
 
@@ -268,6 +37,24 @@ df, boundaries = midi_convert.mid_to_series(
     file.tracks[0]
 )
 
+len_df = len(df.index)
+
+bound_l = int(bounds_graph_percentage[0] * len(df.index))
+
+bound_u = int(bounds_graph_percentage[1] * len(df.index))
+
+df_rolling_std = df.rolling(size_window).std()
+
+df_diff = df.subtract(df_rolling_std)
+
+df[bound_l:bound_u].plot()
+
+df_diff[bound_l:bound_u].plot()
+
+plt.show()
+
+exit(0)
+
 # def filter_note_length(
 #         df,
 #         divisor_quarter_note,
@@ -283,15 +70,15 @@ df, boundaries = midi_convert.mid_to_series(
 #     ppq=ppq
 # )
 
-import seaborn as sns
-
-import matplotlib.pyplot as plt
-
-sns.relplot(kind="line", data=df.loc[407:419])
-
-plt.show()
-
-exit(0)
+# import seaborn as sns
+#
+# import matplotlib.pyplot as plt
+#
+# sns.relplot(kind="line", data=df.loc[407:419])
+#
+# plt.show()
+#
+# exit(0)
 
 output_mid = mido.MidiFile(ticks_per_beat=file.ticks_per_beat)
 
@@ -302,4 +89,6 @@ output_track = midi_convert.series_to_mid(
 
 output_mid.tracks.append(output_track)
 
-file.save('/Users/elliottevers/Downloads/main.mid')
+file.save(filename_out)
+
+call_shell(['open', '-a', '/Applications/MidiYodi 2018.1.app/', filename_out])

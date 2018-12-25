@@ -94,9 +94,12 @@ def series_to_mid(df, init_velocity):
         pitch_next = df.at[tick_next]
 
         if pitch_current != pitch_next and not (math.isnan(pitch_current) and math.isnan(pitch_next)):
+
             note = int(df.at[tick_next]) if df.at[tick_next] > 0 else 0
+
             if note == 0:
                 velocity = 0
+
             track.append(
                 mido.Message(
                     'note_off',
@@ -105,6 +108,7 @@ def series_to_mid(df, init_velocity):
                     time=int(tick_next - onset_tick)
                 )
             )
+
             track.append(
                 mido.Message(
                     'note_on',
