@@ -47,13 +47,13 @@ df_rolling_std = df.rolling(size_window).std()
 
 df_diff = df.subtract(df_rolling_std)
 
-df[bound_l:bound_u].plot()
-
-df_diff[bound_l:bound_u].plot()
-
-plt.show()
-
-exit(0)
+# df[bound_l:bound_u].plot()
+#
+# df_diff[bound_l:bound_u].plot()
+#
+# plt.show()
+#
+# exit(0)
 
 # def filter_note_length(
 #         df,

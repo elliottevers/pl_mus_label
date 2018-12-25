@@ -70,7 +70,7 @@ def mid_to_series(
     return pd.Series(
         notes_midi,
         index=ticks
-    ), notes_intervals_tick
+    )  #  , notes_intervals_tick
 
 
 def series_to_mid(df, init_velocity):
