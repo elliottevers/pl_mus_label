@@ -20,8 +20,11 @@ def mid_to_series(
 
     last_msg_type_note_on = False
 
+    stack_note_sounding = [None]
+
     for msg in track:
         if msg.type == 'note_on':
+            note = int(msg.note)
             # ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
             ticks_since_onset_last = msg.time
             # track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
@@ -29,12 +32,16 @@ def mid_to_series(
                 # counting ticks during 'note_off' messages
                 iter_tick += 1
                 ticks.append(tick_last + tick_empty)
-                notes_midi.append(note_last if last_msg_type_note_on else None)
-            note_last = int(msg.note)
-            last_msg_type_note_on = True
+                # notes_midi.append(note_current if last_msg_type_note_on else None)
+                notes_midi.append(stack_note_sounding[-1])
+            # note_current = stack_note_sounding[-1]
+            # last_msg_type_note_on = True
+            stack_note_sounding.append(note)
 
         if msg.type == 'note_off':
             note = int(msg.note)
+            # if stack_note_sounding[-1] == note:
+
             # ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
             ticks_since_onset_last = msg.time
             # track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
@@ -44,16 +51,20 @@ def mid_to_series(
                 # counting ticks during 'note_on' messages
                 iter_tick += 1
                 ticks.append(tick_last + tick)
-                notes_midi.append(note_last)  # notes_midi.append(note)
+                notes_midi.append(stack_note_sounding[-1])  # notes_midi.append(note)
 
             interval.append(iter_tick)
-            notes_intervals_tick.append({note: interval})
+            notes_intervals_tick.append({stack_note_sounding[-1]: interval})
+            if stack_note_sounding[-1] == note:
+                stack_note_sounding.pop()
             # note_last = note
-            last_msg_type_note_on = False
+            # last_msg_type_note_on = False
 
         tick_last = iter_tick
 
+    # assert stack_note_sounding[-1] is None
     ticks.append(tick_last)
+    # notes_midi.append(stack_note_sounding[-1])
     notes_midi.append(None)
 
     return pd.Series(
