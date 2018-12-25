@@ -4,35 +4,9 @@ import math
 import mido
 
 
-# def filter_length(
-#         divisor_quarter_note,
-#         track_to_filter,
-#         ppq,
-#         bpm
-# ):
-
 def mid_to_series(
         track
 ):
-
-    # track = MidiTrack()
-    #
-    # track.append(
-    #     MetaMessage(
-    #         'time_signature',
-    #         time=0
-    #     )
-    # )
-    #
-    # track.append(
-    #     MetaMessage(
-    #         'set_tempo',
-    #         tempo=mido.bpm2tempo(bpm),
-    #         time=0
-    #     )
-    # )
-
-    # len_note_filter = ppq / divisor_quarter_note
 
     iter_tick = 0
 
@@ -44,6 +18,8 @@ def mid_to_series(
 
     notes_intervals_tick: List[Dict[int, List]] = []
 
+    last_msg_type_note_on = False
+
     for msg in track:
         if msg.type == 'note_on':
             # ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
@@ -53,23 +29,32 @@ def mid_to_series(
                 # counting ticks during 'note_off' messages
                 iter_tick += 1
                 ticks.append(tick_last + tick_empty)
-                notes_midi.append(None)
+                notes_midi.append(note_last if last_msg_type_note_on else None)
+            note_last = int(msg.note)
+            last_msg_type_note_on = True
 
         if msg.type == 'note_off':
+            note = int(msg.note)
             # ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
             ticks_since_onset_last = msg.time
             # track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
-            interval = []
-            interval.append(iter_tick + 1)
+            interval = [iter_tick + 1]
+            # interval.append(iter_tick + 1)
             for tick in range(ticks_since_onset_last):
                 # counting ticks during 'note_on' messages
                 iter_tick += 1
                 ticks.append(tick_last + tick)
-                notes_midi.append(msg.note)
+                notes_midi.append(note_last)  # notes_midi.append(note)
 
             interval.append(iter_tick)
-            notes_intervals_tick.append({msg.note: interval})
+            notes_intervals_tick.append({note: interval})
+            # note_last = note
+            last_msg_type_note_on = False
+
         tick_last = iter_tick
+
+    ticks.append(tick_last)
+    notes_midi.append(None)
 
     return pd.Series(
         notes_midi,

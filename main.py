@@ -214,6 +214,41 @@ file.save(filename_out)
 call_shell(["open", "-a", "/Applications/MidiYodi 2018.1.app/", filename_out])
 
 exit(0)
+
+# case 1
+
+correct1 = pd.Series(
+    [60, None, 67, None],
+    index=list(range(0, 4))
+)
+
+correct2 = pd.Series(
+    [60, 67, 67, None],
+    index=list(range(0, 4))
+)
+
+correct3 = pd.Series(
+    [60, 67, 67, None],
+    index=list(range(0, 4))
+)
+
+correct4 = pd.Series(
+    [60, 67, 60, None],
+    index=list(range(0, 4))
+)
+
+midi_convert.mid_to_series(file.tracks[0]).equals(correct1)
+midi_convert.mid_to_series(file.tracks[1]).equals(correct2)
+midi_convert.mid_to_series(file.tracks[2]).equals(correct3)
+midi_convert.mid_to_series(file.tracks[3]).equals(correct4)
+
+
+# case 2
+
+# case 3
+
+# case 4
+
 ####
 
 bpm_file = 75
