@@ -1,6 +1,7 @@
 import mido
 from mido import Message, MetaMessage, MidiTrack
 import pandas as pd
+import itertools
 
 
 # def filter_length(
@@ -10,20 +11,22 @@ import pandas as pd
 #         bpm
 # ):
 
-def mid_to_series(
-        track
+def pad(
+    track,
+    bpm,
+    num_copies=2
 ):
 
-    track = MidiTrack()
+    track_padded = mido.MidiTrack()
 
-    track.append(
+    track_padded.append(
         MetaMessage(
             'time_signature',
             time=0
         )
     )
 
-    track.append(
+    track_padded.append(
         MetaMessage(
             'set_tempo',
             tempo=mido.bpm2tempo(bpm),
@@ -31,44 +34,10 @@ def mid_to_series(
         )
     )
 
-    len_note_filter = ppq / divisor_quarter_note
+    for _ in itertools.repeat(None, num_copies):
+        for msg in track:
+            if not msg.is_meta:
+                track_padded.append(msg)
 
-    iter_tick = 0
+    return track_padded
 
-    tick_last = 0
-
-    ticks = []
-
-    notes_midi = []
-
-    boundaries_notes
-
-    for msg in track_to_filter:
-        if msg.type == 'note_on':
-            ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
-            track.append(Message('note_on', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
-            for tick_empty in range(ticks_since_onset_last):
-                # counting ticks during 'note_off' messages
-                iter_tick += 1
-                ticks.append(tick_last + tick_empty)
-                notes_midi.append(None)
-
-        if msg.type == 'note_off':
-            ticks_since_onset_last = int(round(mido.second2tick(msg.time, ppq, mido.bpm2tempo(bpm))))
-            track.append(Message('note_off', note=msg.note, velocity=msg.velocity, time=ticks_since_onset_last))
-            for tick in range(ticks_since_onset_last):
-                # counting ticks during 'note_on' messages
-                iter_tick += 1
-                ticks.append(tick_last + tick)
-                # Filter out notes
-                # if ticks_since_onset_last < len_note_filter:
-                #     notes_midi.append(None)
-                # else:
-                #     notes_midi.append(msg.note)
-
-        tick_last = iter_tick
-
-    return pd.Series(
-        notes_midi,
-        index=ticks
-    ), notes_boundaries
