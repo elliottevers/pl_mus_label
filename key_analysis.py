@@ -14,24 +14,31 @@ stream = converter.parse('/Users/elliottevers/Downloads/ella_dream_chords.mid')
 
 p = graph.plot.WindowedKey(stream.parts[0])
 
-p.processorClass = analysis.discrete.BellmanBudge
+p.processorClass = analysis.discrete.KrumhanslKessler
 
-p.doneAction = 'show'
-# p.run()
+# p.doneAction = 'show'
+p.run()
 
-bbAnalyzer = analysis.discrete.BellmanBudge()
+# >>> p.processorClass = analysis.discrete.KrumhanslKessler
+# >>> p.processorClass = analysis.discrete.AardenEssen
+# >>> p.processorClass = analysis.discrete.SimpleWeights
+# >>> p.processorClass = analysis.discrete.BellmanBudge
+# >>> p.processorClass = analysis.discrete.TemperleyKostkaPayne
 
-wa = analysis.windowed.WindowedAnalysis(stream.parts[0], bbAnalyzer)
-
-
-solutions, colors, meta = wa.process(
-    minWindow=4,
-    maxWindow=8,
-    windowStepSize=4,
-    windowType='adjacentAverage',
-    includeTotalWindow=False
-)
-
-print(p.processor.solutionsFound)
+# bbAnalyzer = analysis.discrete.BellmanBudge()
+#
+# wa = analysis.windowed.WindowedAnalysis(stream.parts[0], bbAnalyzer)
+#
+#
+# solutions, colors, meta = wa.process(
+#     minWindow=4,
+#     maxWindow=12,
+#     windowStepSize=4,
+#     windowType='overlap',
+#     # windowType='adjacentAverage',
+#     includeTotalWindow=False
+# )
+#
+# print(p.processor.solutionsFound)
 
 
