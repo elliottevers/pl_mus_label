@@ -9,12 +9,13 @@ import pandas as pd
 import matplotlib
 import sys
 
+filename = '/Users/elliottevers/Downloads/kitty_honky_chords_doubled.mid'
 
-stream = converter.parse('/Users/elliottevers/Downloads/ella_dream_chords.mid')
+stream = converter.parse(filename)
 
 p = graph.plot.WindowedKey(stream.parts[0])
 
-p.processorClass = analysis.discrete.KrumhanslKessler
+p.processorClass = analysis.discrete.BellmanBudge
 
 # p.doneAction = 'show'
 p.run()

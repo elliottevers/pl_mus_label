@@ -59,11 +59,11 @@ file_out.tracks.append(track_doubled)
 
 file_out.save(filename_out)
 
-call_shell(['open', '-a', '/Applications/MidiYodi 2018.1.app/', filename_out])
+# call_shell(['open', '-a', '/Applications/MidiYodi 2018.1.app/', filename_out])
 
-exit(0)
+# exit(0)
 
-filename_in = '/Users/elliottevers/Downloads/ella_dream_chords_doubled.mid'
+filename_in = '/Users/elliottevers/Downloads/kitty_honky_chords_doubled.mid' # '/Users/elliottevers/Downloads/ella_dream_chords_doubled.mid'
 
 stream = converter.parse(filename_in)
 
@@ -73,25 +73,34 @@ stream = converter.parse(filename_in)
 #     melody=True
 # )
 
-# analyzer = analysis.discrete.BellmanBudge()
+analyzer = analysis.discrete.BellmanBudge()
 #
-# wa = analysis.windowed.WindowedAnalysis(stream.parts[0], analyzer)
+wa = analysis.windowed.WindowedAnalysis(stream.parts[0], analyzer)
 #
-# solutions, color = wa.analyze(
-#     64,
-#     'overlap'
-# )
+
+window_size = 256
+
+solutions, color = wa.analyze(
+    window_size,  # 64,
+    'overlap'
+)
 
 # (len(solutions) + 64 - 1)/2
 
-num_measures = 230
+# have to determine number of measures automatically
+
+num_measures = (len(solutions) + window_size - 1)/2  # 230
 
 notes = []
 
-# for i_measure in range(1, num_measures):
-#     notes.append(solutions[i_measure][0].midi)
+solutions = [tuple_pitch[0].midi for tuple_pitch in solutions]
 
-solutions = [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 60, 60, 60, 60, 60, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 65, 65, 70, 70, 70, 70, 70, 70, 70, 70, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
+for i_measure in range(1, int(num_measures)):
+    notes.append(solutions[i_measure])
+
+# [tuple_pitch[0].midi for tuple_pitch in solutions]
+
+# solutions_hardcoded = [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 60, 60, 60, 60, 60, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 65, 65, 70, 70, 70, 70, 70, 70, 70, 70, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
 
 # generate midi track of tones
 
@@ -144,7 +153,7 @@ file_overdubbed.tracks.append(track_main)
 
 file_overdubbed.tracks.append(track_overdub)
 
-filename_out = '/Users/elliottevers/Downloads/ella_dream_chords_and_key_centers.mid'
+filename_out = '/Users/elliottevers/Downloads/kitty_honky_chords_and_key_centers.mid'
 
 file_overdubbed.save(filename_out)
 
