@@ -1,30 +1,42 @@
 from mido import MidiFile, Message, MidiTrack
 from subprocess import call as call_shell
 
-dir_tracks = '/Users/elliottevers/Documents/tracks/export/ableton/'
 
-filename_out = dir_tracks + 'merged_2.mid'
+# dir_tracks = '/Users/elliottevers/Documents/tracks/export/ableton/'
+dir_tracks = '/Users/elliottevers/Documents/tracks/export/ableton/biab_sync/'
+filename_bass = dir_tracks + 'bass.mid'
+# filename_melody = dir_tracks + 'melody.mid'
+filename_chords = dir_tracks + 'chords.mid'
+# filename_segments = dir_tracks + 'segments.mid'
+# filename_keys = dir_tracks + 'keys.mid'
 
-channel_bass = 2
-channel_chords = 3
-channel_melody = 4
-channel_segments = 5
+filename_out = dir_tracks + 'merged.mid'
 
-file_melody = MidiFile(dir_tracks + 'vocals_test.mid')
+channel_bass = 1
+channel_chords = 2
+# channel_melody = 3
+# channel_segments = 4
+# channel_keys = 5
 
-file_bass = MidiFile(dir_tracks + 'bass_test.mid')
+# file_melody = MidiFile(filename_melody)
 
-file_chords = MidiFile(dir_tracks + 'chords_test.mid')
+file_bass = MidiFile(filename_bass)
 
-file_segments = MidiFile(dir_tracks + 'segments_test.mid')
+file_chords = MidiFile(filename_chords)
 
-melody = file_melody.tracks[0]
+# file_segments = MidiFile(filename_segments)
+
+# file_keys = MidiFile(filename_keys)
+
+# melody = file_melody.tracks[0]
 
 bass = file_bass.tracks[0]
 
 chords = file_chords.tracks[0]
 
-segments = file_segments.tracks[0]
+# segments = file_segments.tracks[0]
+
+# keys = file_keys.tracks[0]
 
 
 def copy_track(track, channel, program=None):
@@ -43,21 +55,24 @@ def copy_track(track, channel, program=None):
     return track_new
 
 
-melody_new = copy_track(track=melody, channel=channel_melody)
+# melody_new = copy_track(track=melody, channel=channel_melody)
 bass_new = copy_track(track=bass, channel=channel_bass)
 chords_new = copy_track(track=chords, channel=channel_chords)
-segments_new = copy_track(track=segments, channel=channel_segments, program=119)
+# segments_new = copy_track(track=segments, channel=channel_segments, program=119)
+# keys_new = copy_track(track=keys, channel=channel_keys)
 
 
-file_out = MidiFile(ticks_per_beat=file_melody.ticks_per_beat)
+file_out = MidiFile(ticks_per_beat=file_chords.ticks_per_beat)
 
-file_out.tracks.append(melody_new)
+# file_out.tracks.append(melody_new)
 
 file_out.tracks.append(bass_new)
 
 file_out.tracks.append(chords_new)
 
-file_out.tracks.append(segments_new)
+# file_out.tracks.append(segments_new)
+
+# file_out.tracks.append(keys_new)
 
 
 # mid = MidiFile()
