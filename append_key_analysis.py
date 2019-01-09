@@ -17,9 +17,13 @@ import matplotlib.pyplot as plt
 
 from subprocess import call as call_shell
 
-filename_in = '/Users/elliottevers/Downloads/ella_dream_chords.mid'
+# filename_in = '/Users/elliottevers/Downloads/ella_dream_chords.mid'
 
-filename_out = '/Users/elliottevers/Downloads/ella_dream_chords_doubled.mid'
+# filename_out = '/Users/elliottevers/Downloads/ella_dream_chords_doubled.mid'
+
+filename_in = '/Users/elliottevers/Downloads/Chordify_It-Wasn-t-God-Who-Made-Honky-Tonk-Angels-Kitty-Wells_Quantized_at_136_BPM.mid'
+
+filename_out = '/Users/elliottevers/Downloads/kitty_honky_chords_doubled.mid'
 
 # stream = converter.parse(filename_in)
 
@@ -31,11 +35,11 @@ filename_out = '/Users/elliottevers/Downloads/ella_dream_chords_doubled.mid'
 
 # size_window = 4000
 
-TRACK_CHORDS = 1
+TRACK_CHORDS = 1  # 1
 
-TRACK_BASS = 2
+TRACK_BASS = 2  # 2
 
-bpm_file = 75
+bpm_file = 136  # 75
 
 file = mido.MidiFile(filename_in)
 
@@ -55,9 +59,9 @@ file_out.tracks.append(track_doubled)
 
 file_out.save(filename_out)
 
-# call_shell(['open', '-a', '/Applications/MidiYodi 2018.1.app/', filename_out])
+call_shell(['open', '-a', '/Applications/MidiYodi 2018.1.app/', filename_out])
 
-# exit(0)
+exit(0)
 
 filename_in = '/Users/elliottevers/Downloads/ella_dream_chords_doubled.mid'
 
