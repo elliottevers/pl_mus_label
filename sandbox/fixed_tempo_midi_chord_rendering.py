@@ -7,7 +7,13 @@ import numpy as np
 
 data, rate = librosa.load("/Users/elliottevers/Documents/git-repos.nosync/audio/tswift.wav")
 
-# TODO: segments
+# TODO: melody extraction
+melody = vamp.collect(data, rate, "mtg-melodia:melodia")
+
+type(melody['vector'][1])
+
+testing = 1
+# TODO: segments - quantize to nearest two bar multiple
 # import vamp
 # import librosa
 # segments = vamp.collect(data, rate, 'qm-vamp-plugins:qm-segmenter')
@@ -15,7 +21,7 @@ data, rate = librosa.load("/Users/elliottevers/Documents/git-repos.nosync/audio/
 # test = 1
 
 # TODO: chords
-ms_to_label_chord: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
+# ms_to_label_chord: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
 
 # ms_to_label_chord: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
 
@@ -35,9 +41,9 @@ ms_to_label_chord: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chrom
 
 # TODO: music21 chord parsing
 
-
-chord = music21.harmony.ChordSymbol(ms_to_label_chord[1]['label'].replace('b', '-'))
+# chord = music21.harmony.ChordSymbol(ms_to_label_chord[1]['label'].replace('b', '-'))
 # chord.pitches  # ...
 
-
+# for ms timeseries, treat bar estimates as framework to quantize segments and chords to
+# TODO: symbolic segmentation - music21.search.segment.indexScoreParts?
 testing = 1
