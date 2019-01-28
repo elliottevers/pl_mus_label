@@ -1,4 +1,11 @@
 import music21
+import numpy as np
+from scipy import signal
+
+# make command line argument
+kernel_size = 199
+
+filtered = True
 
 dirname = '/Users/elliottevers/Documents/git-repos.nosync/music'
 
@@ -39,17 +46,36 @@ alphabet_map = {
 
 content = []
 
-with open(filepath_read, 'r') as f:
-    for line in f:
-        letter = line.rstrip()
-        if letter == 'i':
-            content.append(str(0))
-        elif letter == 'h':
-            content.append(str(0))
-        else:
-            content.append(str(music21.pitch.Pitch(alphabet_map[letter]).frequency))
+if not filtered:
+    with open(filepath_read, 'r') as f:
+        for line in f:
+            letter = line.rstrip()
+            if letter == 'i':
+                content.append(str(0))
+            elif letter == 'h':
+                content.append(str(0))
+            else:
+                content.append(str(music21.pitch.Pitch(alphabet_map[letter]).frequency))
 
-with open(filepath_write, 'w') as f:
-    for i_line, line in enumerate(content):
-        f.write(str(i_line + 1) + ',' + ' ' + line + ';' + '\n')
+    with open(filepath_write, 'w') as f:
+        for i_line, line in enumerate(content):
+            f.write(str(i_line + 1) + ',' + ' ' + line + ';' + '\n')
+else:
+    with open(filepath_read, 'r') as f:
+        for line in f:
+            letter = line.rstrip()
+            if letter == 'i':
+                content.append(0)
+            elif letter == 'h':
+                content.append(0)
+            else:
+                content.append(music21.pitch.Pitch(alphabet_map[letter]).frequency)
+
+    filtered = signal.medfilt(np.array(content, dtype=np.float), kernel_size=kernel_size)
+
+    filtered_list = filtered.tolist()
+
+    with open(filepath_write, 'w') as f:
+        for i_line, line in enumerate(filtered_list):
+            f.write(str(i_line + 1) + ',' + ' ' + str(line) + ';' + '\n')
 
