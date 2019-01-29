@@ -13,6 +13,7 @@ melody = vamp.collect(data, rate, "mtg-melodia:melodia")
 type(melody['vector'][1])
 
 testing = 1
+
 # TODO: segments - quantize to nearest two bar multiple
 # import vamp
 # import librosa

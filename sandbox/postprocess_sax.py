@@ -7,6 +7,8 @@ kernel_size = 199
 
 filtered = True
 
+interval_transposition = 'm2'
+
 dirname = '/Users/elliottevers/Documents/git-repos.nosync/music'
 
 filename_txt = 'test.txt'
@@ -69,7 +71,7 @@ else:
             elif letter == 'h':
                 content.append(0)
             else:
-                content.append(music21.pitch.Pitch(alphabet_map[letter]).frequency)
+                content.append(music21.pitch.Pitch(alphabet_map[letter]).transpose(interval_transposition).frequency)
 
     filtered = signal.medfilt(np.array(content, dtype=np.float), kernel_size=kernel_size)
 
