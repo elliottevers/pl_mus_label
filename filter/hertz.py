@@ -6,9 +6,15 @@ import os
 import typing
 import matplotlib.pyplot as plt
 
-dirname_melody = os.path.dirname('/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/music/information_retrieval/output/')
+dirname_repo = os.path.dirname('/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/music/')
+
+dirname_melody = os.path.join(dirname_repo, 'information_retrieval/output/')
 
 filename_melody = 'melody_tswift_teardrops.txt'
+
+dirname_out_multi_ts = os.path.join(
+    dirname_repo, 'filter/out/hz_filtered/'
+)
 
 filter = 'medfilt'
 
@@ -20,20 +26,24 @@ params = {
     ]
 }
 
-csv_extracted_melody = '/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/music/information_retrieval/output/melody_tswift_teardrops.csv'
+coll_txt_melody = os.path.join(
+    dirname_repo, 'postprocess/out/hz_raw/melody_tswift_teardrops.txt'
+)
 
-coll_txt_melody = '/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/music/information_retrieval/output/melody_tswift_teardrops.txt'
-
+# csv_extracted_melody = '/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/music/information_retrieval/output/melody_tswift_teardrops.csv'
 
 # coll flat file -> multiple coll flat files, based on filtering params
 # coll file -> numpy array -> pandas series -> (can we call scipy on series, can we have multiple ts?)
 # -> muliple coll files
 
 melody_df = pd.read_csv(
-    csv_extracted_melody,
+    coll_txt_melody,
     header=None,
     names=['ms_sample', 'hz_signal']
 )
+
+# get rid of semi-colons at end
+melody_df['hz_signal'] = melody_df['hz_signal'].map(lambda line: line.rstrip(';')).astype(np.float)
 
 melody_ts_master: pd.Series = melody_df.loc[:, 'hz_signal']
 
@@ -45,17 +55,15 @@ for name_argument, values in params.items():
                 dtype=np.float
             )
 
-coll_ts_melody = pd.read_csv(
-    coll_txt_melody,
-    header=None,
-    names=['ms_sample', 'hz_signal']
-    # dtype={0: np.float, 1: np.float}
-    # lineterminator=';\n'
+melody_df[melody_df.columns[-1]] = melody_df[melody_df.columns[-1]].astype(str).map(lambda entry: entry + ';')
+
+melody_df.to_csv(
+    os.path.join(
+        dirname_repo,
+        'filter/out/hz_filtered/melody_tswift_teardrops.txt'
+    ),
+    header=None
 )
-
-coll_ts_melody['hz_signal'] = coll_ts_melody['hz_signal'].map(lambda line: line.rstrip(';')).astype(np.float)
-
-# exit(0)
 
 # plotting
 # melody_df['hz_signal'].plot()

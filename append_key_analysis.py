@@ -1,6 +1,6 @@
 import filter.midi as filter
 import convert.midi as midi_convert
-import filter.series as series_filter, filter.midi as midi_filter, analysis.midi as midi_analysis
+import filter.series as series_filter, filter.midi as midi_filter, analysis_discrete.midi as midi_analysis
 import mido
 import pandas as pd
 import itertools
@@ -188,7 +188,7 @@ exit(0)
 
 # p = graph.plot.WindowedKey(stream.parts[0])
 #
-# p.processorClass = analysis.discrete.BellmanBudge
+# p.processorClass = analysis_discrete.discrete.BellmanBudge
 
 # p.doneAction = 'show'
 
