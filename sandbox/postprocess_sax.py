@@ -9,7 +9,8 @@ filtered = True
 
 interval_transposition = 'm2'
 
-dirname = '/Users/elliottevers/Documents/git-repos.nosync/music'
+# dirname = '/Users/elliottevers/Documents/git-repos.nosync/music'
+dirname = '/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/music/'
 
 filename_txt = 'test.txt'
 
