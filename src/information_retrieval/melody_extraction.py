@@ -1,23 +1,50 @@
-import vamp, librosa, os
+import vamp, librosa, os, json, pandas as pd, numpy as np
 
-prefix_melody = 'melody_'
+prefix_metadata = 'meta_'
 
 filename_wav = 'tswift_teardrops.wav'
 
-filename_csv_melody_out = ''.join([prefix_melody, filename_wav.split('.')[0], '.csv'])
+dirname_audio = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/'
 
-dirname_audio = os.path.dirname('/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/audio/youtube/')
+dirname_melody_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/music/src/information_retrieval/out/hz_raw/'
 
-dirname_melody_out = os.path.dirname('/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/music/information_retrieval/output/')
+filename_csv_melody_out = ''.join([filename_wav.split('.')[0], '.csv'])
+
+filename_json_metadata_out = ''.join([prefix_metadata, filename_wav.split('.')[0], '.csv'])
+
+dirname_audio = os.path.dirname(dirname_audio)
+
+dirname_melody_out = os.path.dirname(dirname_melody_out)
 
 data, rate = librosa.load(os.path.join(dirname_audio, filename_wav))
 
 melody = vamp.collect(data, rate, "mtg-melodia:melodia")
 
-with open(os.path.join(dirname_melody_out, filename_csv_melody_out), 'w') as f:
-    sample_rate = melody['vector'][0]
-    sum_sample_time = sample_rate  # initialize
-    for sample_hz in melody['vector'][1]:
-        line = str(sum_sample_time) + ',' + str(sample_hz) + '\n'
-        f.write(line.lstrip())
-        sum_sample_time += sample_rate
+metadata = dict()
+
+metadata['sample_rate'] = melody['vector'][0].to_float()
+
+metadata['length_samples'] = len(melody['vector'][1])
+
+metadata['length_ms'] = melody['vector'][0].to_float() * len(melody['vector'][1])
+
+df = pd.DataFrame(
+    melody['vector'][1],
+    columns=['sample']
+)
+
+df['ms'] = pd.DataFrame(
+    np.full(
+        (len(melody['vector'][1]), ),
+        melody['vector'][0].to_float(),
+        np.float32
+    )
+).cumsum()
+
+df = df[['ms', 'sample']]
+
+with open(os.path.join(dirname_melody_out, filename_json_metadata_out), 'w') as fp:
+    json.dump(metadata, fp)
+
+df.to_csv(os.path.join(dirname_melody_out, filename_csv_melody_out), header=False, index=False)
+

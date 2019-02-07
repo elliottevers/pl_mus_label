@@ -1,9 +1,5 @@
 import argparse
-import json
 
-import sys
-
-from message import messenger
 
 def main(args):
     # print('flag\n')
@@ -12,7 +8,20 @@ def main(args):
     # print(args.o + '\n')
     # print('argument\n')
     # print(args.argument + '\n')
-    testing = 1
+
+    import json
+
+    from message import messenger
+
+    messenger_flag = messenger.Messenger('flag')
+    messenger_option = messenger.Messenger('option')
+    messenger_argument = messenger.Messenger('argument')
+
+    messenger_flag.message([str(args.f)])
+    messenger_option.message([str(args.o)])
+    messenger_argument.message([str(args.argument)])
+
+    # testing = 1
     # test_val_json = {
     #     'flag': args.f,
     #     'option': args.o,
@@ -31,11 +40,8 @@ if __name__ == '__main__':
     #
     parser.add_argument('-f', help='help for flag', action='store_true')
     #
-    # args = parser.parse_args()
+    args = parser.parse_args()
     #
-    # main(args)
+    main(args)
 
     # print('message')
-    messenger = messenger.Messenger('message')
-
-    messenger.message(['oweiuowieruoweuwi'])
