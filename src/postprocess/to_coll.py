@@ -1,22 +1,37 @@
 import os
+import pandas as pd
+import numpy as np
 
-dirname_read = '/Users/elliottevers/Documents/Documents - Elliott’s MacBook Pro/git-repos.nosync/music/information_retrieval/output'
+dirname_repo = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/music/'
 
-filename_read = 'melody_tswift_teardrops.csv'
+dirname_read = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/music/src/information_retrieval/out/hz_raw/'
+
+filename_read = 'tswift_teardrops.csv'
 
 filename_out = ''.join([filename_read.split('.')[0], '.txt'])
 
-content = []
+csv_melody = 'src/information_retrieval/out/hz_raw/tswift_teardrops.csv'
 
-with open(os.path.join(dirname_read, filename_read), 'r') as f:
-    for line in f:
-        sample_hz = float(line.rstrip().split(',')[1])
-        if sample_hz <= 0:
-            sample_hz = 0
-        content.append(str(sample_hz))
+csv_melody = os.path.join(
+    dirname_repo, csv_melody
+)
 
-with open(os.path.join(dirname_read, filename_out), 'w') as f:
-    for i_line, line in enumerate(content):
-        f.write(str(i_line + 1) + ',' + ' ' + line + ';' + '\n')
+melody_df = pd.read_csv(
+    csv_melody,
+    header=None,
+    names=['ms', 'sample']
+)
 
-print(os.path.join(dirname_read, filename_out))
+melody_df[melody_df.columns[-1]] = melody_df[melody_df.columns[-1]].astype(str).map(lambda entry: entry + ';')
+
+melody_df.index = melody_df.index + 1
+
+melody_df.to_csv(
+    os.path.join(
+        dirname_repo,
+        os.path.join('src/postprocess/out/hz/', filename_out)
+    ),
+    header=False,
+    index=True,
+    columns=['sample']
+)

@@ -10,7 +10,7 @@ dirname_melody_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos
 
 filename_csv_melody_out = ''.join([filename_wav.split('.')[0], '.csv'])
 
-filename_json_metadata_out = ''.join([prefix_metadata, filename_wav.split('.')[0], '.csv'])
+filename_json_metadata_out = ''.join([prefix_metadata, filename_wav.split('.')[0], '.json'])
 
 dirname_audio = os.path.dirname(dirname_audio)
 
@@ -20,13 +20,11 @@ data, rate = librosa.load(os.path.join(dirname_audio, filename_wav))
 
 melody = vamp.collect(data, rate, "mtg-melodia:melodia")
 
-metadata = dict()
-
-metadata['sample_rate'] = melody['vector'][0].to_float()
-
-metadata['length_samples'] = len(melody['vector'][1])
-
-metadata['length_ms'] = melody['vector'][0].to_float() * len(melody['vector'][1])
+metadata = {
+    'sample_rate': melody['vector'][0].to_float(),
+    'length_samples': len(melody['vector'][1]),
+    'length_ms': melody['vector'][0].to_float() * len(melody['vector'][1])
+}
 
 df = pd.DataFrame(
     melody['vector'][1],
