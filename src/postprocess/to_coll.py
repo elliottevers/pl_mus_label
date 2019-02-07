@@ -22,6 +22,8 @@ melody_df = pd.read_csv(
     names=['ms', 'sample']
 )
 
+melody_df[melody_df['sample'] < 0] = 0
+
 melody_df[melody_df.columns[-1]] = melody_df[melody_df.columns[-1]].astype(str).map(lambda entry: entry + ';')
 
 melody_df.index = melody_df.index + 1
