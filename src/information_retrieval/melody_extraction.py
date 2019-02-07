@@ -23,7 +23,7 @@ melody = vamp.collect(data, rate, "mtg-melodia:melodia")
 metadata = {
     'sample_rate': melody['vector'][0].to_float(),
     'length_samples': len(melody['vector'][1]),
-    'length_ms': melody['vector'][0].to_float() * len(melody['vector'][1])
+    'length_ms': melody['vector'][0].to_float() * len(melody['vector'][1]) * 1000
 }
 
 df = pd.DataFrame(

@@ -22,6 +22,9 @@ melody_df = pd.read_csv(
     names=['ms', 'sample']
 )
 
+# TODO: take out once we verify Max can handle floats
+# melody_df['sample'] = melody_df['sample'].astype(int)
+
 melody_df[melody_df['sample'] < 0] = 0
 
 melody_df[melody_df.columns[-1]] = melody_df[melody_df.columns[-1]].astype(str).map(lambda entry: entry + ';')
