@@ -39,8 +39,9 @@ class MidiNote(Note):
         self.duration = duration_ticks
         self.velocity = velocity
 
+
 data, rate = librosa.load(
-    "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
+    filename_wav
 )
 #
 # # TODO: melody extraction
@@ -72,7 +73,7 @@ s_to_label_chords: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chrom
 
 # TODO: measures
 
-# beats: List[Dict[float, Any]] = vamp.collect(data, rate, 'qm-vamp-plugins:qm-barbeattracker')['list']
+beats: List[Dict[float, Any]] = vamp.collect(data, rate, 'qm-vamp-plugins:qm-barbeattracker')['list']
 #
 # testing = 1
 
@@ -85,9 +86,8 @@ chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '
 # TODO: symbolic segmentation - music21.search.segment.indexScoreParts?
 # testing = 1
 
-
-
 mid = MidiFile(
+    ticks_per_beat=1000
     # '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid'
 )
 
@@ -116,10 +116,23 @@ events_chords: Dict[float, List[MidiNote]] = dict()
 #     """ values() -> Tuple of sec,nsec representation. """
 #     pass
 
+# min(myList, key=lambda x:abs(x-myNumber))
 
-non_empty_chords = list(filter(lambda event_chord: event_chord['label'] != 'N', s_to_label_chords))
+def quantize_numeric_domain(events_chords: Dict[float, List[MidiNote]], beats: List[float]) -> Dict[float, List[MidiNote]]:
 
-for chord in non_empty_chords:
+    events_quantized: Dict[float, List[MidiNote]] = dict()
+
+    for s, chord in events_chords.items():
+        key_s_quantized = min(list(beats), key=lambda s_beat: abs(s_beat - s))
+        events_quantized[key_s_quantized] = chord
+
+    return events_quantized
+
+
+# non empty
+chords = list(filter(lambda event_chord: event_chord['label'] != 'N', s_to_label_chords))
+
+for chord in chords:
     duration_ticks = None  # TODO: calculate here, instead of during midi file creation
     velocity = 90
     chord_realized = music21.harmony.ChordSymbol(chord['label'].replace('b', '-'))
@@ -127,6 +140,8 @@ for chord in non_empty_chords:
         MidiNote(pitch.midi, duration_ticks, velocity) for pitch in chord_realized.pitches
     ]
 
+# quantized
+chords = quantize_numeric_domain(events_chords, [beat['timestamp'].to_float() for beat in beats])
 
 # exit(0)
 
@@ -165,9 +180,9 @@ def extract_bpm(filename: str):
 #     "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
 # )
 
-bpm = 100  # testing
+bpm = 60  # 100  # testing
 
-ppq = 384
+ppq = 1000  # 384
 
 # quarter_notes_per_minute = bpm
 #
