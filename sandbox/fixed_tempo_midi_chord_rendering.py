@@ -4,10 +4,44 @@ from mido import MidiFile, MidiTrack, Message, MetaMessage, bpm2tempo
 from typing import List, Dict, Any, Optional, Tuple
 import music21
 import numpy as np
+import pandas as pd
 
-# data, rate = librosa.load(
-#     "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
-# )
+from abc import ABC, abstractmethod
+
+filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
+
+filename_mid_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears_TEST.mid'
+
+
+class Note(ABC):
+
+    def __init__(self, pitch, duration):
+        super().__init__()
+        self.pitch = pitch
+        self.duration = duration
+
+    # @abstractmethod
+    # def do_something(self):
+    #     pass
+
+
+class MidiNote(Note):
+
+    pitch: int
+
+    duration: int
+
+    velocity: int
+
+    def __init__(self, pitch, duration_ticks, velocity):
+        super().__init__(pitch, duration_ticks)
+        self.pitch = pitch
+        self.duration = duration_ticks
+        self.velocity = velocity
+
+data, rate = librosa.load(
+    "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
+)
 #
 # # TODO: melody extraction
 # melody = vamp.collect(data, rate, "mtg-melodia:melodia")
@@ -26,7 +60,7 @@ import numpy as np
 # TODO: chords
 # ms_to_label_chord: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
 
-# ms_to_label_chord: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
+s_to_label_chords: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
 
 # testing = 1
 
@@ -44,20 +78,60 @@ import numpy as np
 
 # TODO: music21 chord parsing
 
-# chord = music21.harmony.ChordSymbol(ms_to_label_chord[1]['label'].replace('b', '-'))
+chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '-'))
 # chord.pitches  # ...
 
 # for ms timeseries, treat bar estimates as framework to quantize segments and chords to
 # TODO: symbolic segmentation - music21.search.segment.indexScoreParts?
-testing = 1
+# testing = 1
 
 
 
-mid = MidiFile('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid')
+mid = MidiFile(
+    # '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid'
+)
 
-exit(0)
+events_chords: Dict[float, List[MidiNote]] = dict()
+
+# number_list = range(-5, 5)
+# less_than_zero = list(filter(lambda x: x < 0, number_list))
+# print(less_than_zero)
+
+# def to_float(self):  # real signature unknown; restored from __doc__
+#     """ to_float() -> Floating point representation. """
+#     pass
+#
+#
+# def to_frame(self, samplerate):  # real signature unknown; restored from __doc__
+#     """ to_frame(samplerate) -> Sample count for given sample rate. """
+#     pass
+#
+#
+# def to_string(self):  # real signature unknown; restored from __doc__
+#     """ to_string() -> Return a user-readable string to the nearest millisecond in a form like HH:MM:SS.mmm """
+#     pass
+#
+#
+# def values(self):  # real signature unknown; restored from __doc__
+#     """ values() -> Tuple of sec,nsec representation. """
+#     pass
+
+
+non_empty_chords = list(filter(lambda event_chord: event_chord['label'] != 'N', s_to_label_chords))
+
+for chord in non_empty_chords:
+    duration_ticks = None  # TODO: calculate here, instead of during midi file creation
+    velocity = 90
+    chord_realized = music21.harmony.ChordSymbol(chord['label'].replace('b', '-'))
+    events_chords[chord['timestamp'].to_float()] = [
+        MidiNote(pitch.midi, duration_ticks, velocity) for pitch in chord_realized.pitches
+    ]
+
+
+# exit(0)
 
 track = MidiTrack()
+
 mid.tracks.append(track)
 
 track.append(
@@ -120,45 +194,8 @@ track.append(
     )
 )
 
-from abc import ABC, abstractmethod
 
-
-class Note(ABC):
-
-    def __init__(self, pitch, duration):
-        super().__init__()
-        self.pitch = pitch
-        self.duration = duration
-
-    # @abstractmethod
-    # def do_something(self):
-    #     pass
-
-
-class MidiNote(Note):
-
-    pitch: int
-
-    duration: int
-
-    velocity: int
-
-    def __init__(self, pitch, duration_ticks, velocity):
-        super().__init__(pitch, duration_ticks)
-        self.pitch = pitch
-        self.duration = duration_ticks
-        self.velocity = velocity
-
-
-
-# Note = Dict[]
-
-events_chords: Dict[int, List[MidiNote]]
-
-time_ms_last = 0
-
-
-def ms_to_ticks(ms, bpm=60, ppq=480):
+def ms_to_ticks(s, bpm=60, ppq=480):
 
     quarter_notes_per_minute = bpm
 
@@ -170,13 +207,18 @@ def ms_to_ticks(ms, bpm=60, ppq=480):
 
     ticks_per_ms = ticks_per_minute / ms_per_minute
 
-    return ticks_per_ms * ms
+    ms_per_second = 1000
+
+    return int(ticks_per_ms * ms_per_second * s)
 
 
-for time_ms in list(events_chords.keys()):
+time_s_last = list(events_chords.keys())[0]
 
-    diff_ticks_last_event = ms_to_ticks(time_ms) - ms_to_ticks(time_ms_last)
-    # for i_note, note in enumerate(events_chords[time_ms]):
+
+for time_s in list(events_chords.keys())[1:]:
+
+    diff_ticks_last_event = ms_to_ticks(time_s, bpm=bpm, ppq=ppq) - ms_to_ticks(time_s_last, bpm=bpm, ppq=ppq)
+    # for i_note, note in enumerate(events_chords[time_s]):
     #     if i_note == 0:
     #         track.append(
     #             Message(
@@ -196,7 +238,7 @@ for time_ms in list(events_chords.keys()):
     #             )
     #         )
 
-    for i_note, note in enumerate(events_chords[time_ms_last]):
+    for i_note, note in enumerate(events_chords[time_s_last]):
         if i_note == 0:
             track.append(
                 Message(
@@ -209,14 +251,14 @@ for time_ms in list(events_chords.keys()):
         else:
             track.append(
                 Message(
-                    'note_on',
+                    'note_off',
                     note=note.pitch,
                     velocity=note.velocity,
                     time=0
                 )
             )
 
-    for i_note, note in enumerate(events_chords[time_ms]):
+    for i_note, note in enumerate(events_chords[time_s]):
         track.append(
             Message(
                 'note_on',
@@ -226,4 +268,7 @@ for time_ms in list(events_chords.keys()):
             )
         )
 
-    time_ms_last = time_ms
+    time_s_last = time_s
+
+
+mid.save(filename_mid_out)
