@@ -40,6 +40,21 @@ class MidiNote(Note):
         self.velocity = velocity
 
 
+class MeshSong(object):
+
+    data: pd.DataFrame
+
+    def __init__(self, data):
+        self.data = pd.Series([])
+
+    def add_melody(self, melody: pd.Series, index_type='ms'):
+        self.data = pd.merge(self.data, melody, on=index_type)
+
+    def render(self, type='fixed_tempo') -> MidiFile:
+        return MidiFile()
+
+
+
 data, rate = librosa.load(
     filename_wav
 )
@@ -88,35 +103,10 @@ chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '
 
 mid = MidiFile(
     ticks_per_beat=1000
-    # '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid'
 )
 
 events_chords: Dict[float, List[MidiNote]] = dict()
 
-# number_list = range(-5, 5)
-# less_than_zero = list(filter(lambda x: x < 0, number_list))
-# print(less_than_zero)
-
-# def to_float(self):  # real signature unknown; restored from __doc__
-#     """ to_float() -> Floating point representation. """
-#     pass
-#
-#
-# def to_frame(self, samplerate):  # real signature unknown; restored from __doc__
-#     """ to_frame(samplerate) -> Sample count for given sample rate. """
-#     pass
-#
-#
-# def to_string(self):  # real signature unknown; restored from __doc__
-#     """ to_string() -> Return a user-readable string to the nearest millisecond in a form like HH:MM:SS.mmm """
-#     pass
-#
-#
-# def values(self):  # real signature unknown; restored from __doc__
-#     """ values() -> Tuple of sec,nsec representation. """
-#     pass
-
-# min(myList, key=lambda x:abs(x-myNumber))
 
 def quantize_numeric_domain(events_chords: Dict[float, List[MidiNote]], beats: List[float]) -> Dict[float, List[MidiNote]]:
 
@@ -143,7 +133,49 @@ for chord in chords:
 # quantized
 chords = quantize_numeric_domain(events_chords, [beat['timestamp'].to_float() for beat in beats])
 
+
+# TODO: add these into Pandas dataframe
+
+# mesh_song = MeshSong(data='')
+
+# data = pd.DataFrame(events_chords.values(), index=events_chords.keys())
+
+# pd.DataFrame(list(events_chords.values()), index=list(events_chords.keys()), columns=['events', 'ms'])
+
+# data.index.name = 'ms'
+
+# pd.DataFrame(events_chords.values(), index=events_chords.keys())
+
 # exit(0)
+
+# NB: throws error
+# pd.DataFrame([['one first note', 'one second note', 'first third note'], ['second first note', 'second second note', 'second third note']], index=[1,2], columns=['asdf', 'jkl'])
+
+
+class Garbage(object):
+    def __init__(self, data):
+        self.data = data
+
+
+first_event = {
+    1: 'A',
+    2: 'C#',
+    3: 'E'
+}
+
+second_event = {
+    1: 'C',
+    2: 'E',
+    3: 'G'
+}
+
+# pd.DataFrame(data=[[Garbage(data=first_event), Garbage(data=second_event)]], index=[1, 2], columns=['events', 'beats'])
+
+# pd.DataFrame({'ms': events_chords.keys(), 'events': events_chords.values()})
+
+# THIS WORKS!!!
+
+pd.DataFrame(data={'events': list(events_chords.values())}, index=list(events_chords.keys()))
 
 track = MidiTrack()
 
