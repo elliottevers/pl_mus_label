@@ -5,55 +5,13 @@ from typing import List, Dict, Any, Optional, Tuple
 import music21
 import numpy as np
 import pandas as pd
+from music import note
 
-from abc import ABC, abstractmethod
+# from abc import ABC, abstractmethod
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
 
 filename_mid_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears_TEST.mid'
-
-
-class Note(ABC):
-
-    def __init__(self, pitch, duration):
-        super().__init__()
-        self.pitch = pitch
-        self.duration = duration
-
-    # @abstractmethod
-    # def do_something(self):
-    #     pass
-
-
-class MidiNote(Note):
-
-    pitch: int
-
-    duration: int
-
-    velocity: int
-
-    def __init__(self, pitch, duration_ticks, velocity):
-        super().__init__(pitch, duration_ticks)
-        self.pitch = pitch
-        self.duration = duration_ticks
-        self.velocity = velocity
-
-
-class MeshSong(object):
-
-    data: pd.DataFrame
-
-    def __init__(self, data):
-        self.data = pd.Series([])
-
-    def add_melody(self, melody: pd.Series, index_type='ms'):
-        self.data = pd.merge(self.data, melody, on=index_type)
-
-    def render(self, type='fixed_tempo') -> MidiFile:
-        return MidiFile()
-
-
 
 data, rate = librosa.load(
     filename_wav
@@ -105,12 +63,12 @@ mid = MidiFile(
     ticks_per_beat=1000
 )
 
-events_chords: Dict[float, List[MidiNote]] = dict()
+events_chords: Dict[float, List[note.MidiNote]] = dict()
 
 
-def quantize_numeric_domain(events_chords: Dict[float, List[MidiNote]], beats: List[float]) -> Dict[float, List[MidiNote]]:
+def quantize_numeric_domain(events_chords: Dict[float, List[note.MidiNote]], beats: List[float]) -> Dict[float, List[note.MidiNote]]:
 
-    events_quantized: Dict[float, List[MidiNote]] = dict()
+    events_quantized: Dict[float, List[note.MidiNote]] = dict()
 
     for s, chord in events_chords.items():
         key_s_quantized = min(list(beats), key=lambda s_beat: abs(s_beat - s))
@@ -127,7 +85,7 @@ for chord in chords:
     velocity = 90
     chord_realized = music21.harmony.ChordSymbol(chord['label'].replace('b', '-'))
     events_chords[chord['timestamp'].to_float()] = [
-        MidiNote(pitch.midi, duration_ticks, velocity) for pitch in chord_realized.pitches
+        note.MidiNote(pitch.midi, duration_ticks, velocity) for pitch in chord_realized.pitches
     ]
 
 # quantized
@@ -175,7 +133,33 @@ second_event = {
 
 # THIS WORKS!!!
 
-pd.DataFrame(data={'events': list(events_chords.values())}, index=list(events_chords.keys()))
+from music import song
+
+# song = song.MeshSong()
+
+# TODO: determine first and last beat in seconds, then debug
+
+s_beat_start = 3.436
+
+s_beat_end = 26.9 + 3 * 60
+
+quantized = song.MeshSong.quantize(
+    song.MeshSong.to_df(events_chords),
+    [beat['timestamp'].to_float() for beat in beats],
+    s_beat_start=s_beat_start,
+    s_beat_end=s_beat_end
+)
+
+
+# song.add_chords(
+#     pd.DataFrame(
+#         data={'events': list(events_chords.values())}, index=list(events_chords.keys())
+#     )
+# )
+
+# quantized.set_index(['ms', 'beat']).sort_index().loc[slice(None), 0]
+
+exit(0)
 
 track = MidiTrack()
 
