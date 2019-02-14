@@ -2,7 +2,7 @@ import pandas as pd
 from mido import MidiFile, MidiTrack, Message, MetaMessage, bpm2tempo
 from typing import List, Dict, Any, Optional, Tuple
 from music import note
-
+from convert import midi
 # class Song, or class Mesh
 
 
@@ -24,7 +24,7 @@ class MeshSong(object):
     @staticmethod
     def to_df(chords: Dict[Any, List[note.MidiNote]], index_type='ms'):
         df_chords = pd.DataFrame(
-            data={'chords': list(chords.values())}, index=list(chords.keys())
+            data={'chord': list(chords.values())}, index=list(chords.keys())
         )
         df_chords.index.name = index_type
         return df_chords
@@ -36,7 +36,6 @@ class MeshSong(object):
             s_beat_start,
             s_beat_end
     ) -> pd.DataFrame:
-        # events_quantized: Dict[float, List[note.MidiNote]] = dict()
 
         # TODO: add column of beats (NaNs before and after start and end), make it another index
         column_ms_quantized = []
@@ -53,11 +52,6 @@ class MeshSong(object):
         index_nearest_s_beat_first_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_first_quantized))
 
         index_nearest_s_beat_last_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_last_quantized))
-
-        # figure out index value closest to s_beat_first_quantized
-        # figure out index value closest to s_beat_last_quantized
-
-        # s_timeseries.loc[list(s_timeseries.index)[0]]
 
         for index, row in s_timeseries.iterrows():
             # print(row['c1'], row['c2'])
@@ -80,23 +74,6 @@ class MeshSong(object):
 
         s_timeseries['beat'] = column_beat
 
-        # s_timeseries.reset_index(drop=True, inplace=True)
-        #
-        # # s_timeseries.drop(['ms'], axis=1, inplace=True)
-        #
-        # s_timeseries.rename(
-        #     {
-        #         'ms_quantized': 'ms'
-        #     },
-        #     inplace=True
-        # )
-        #
-        # # s_timeseries.rename(columns={'ms_quantized': 'ms'}, inplace=True)
-        #
-        # quantized.set_index(['beat', 'ms'])
-
-        # s_timeseries.sort_index(inplace=True)
-
         return s_timeseries.reset_index(
             drop=True
         ).rename(
@@ -105,19 +82,6 @@ class MeshSong(object):
             ['beat', 'ms']
         ).sort_index(
         )
-
-        # s_timeseries.index.name = 'ms'
-
-
-        # for s, beat in enumerate(column_quantized, 1):
-        #     s_timeseries.loc[s] = beat
-
-
-        # for s, chord in events_chords.items():
-        #     key_s_quantized = min(list(beats), key=lambda s_beat: abs(s_beat - s))
-        #     events_quantized[key_s_quantized] = chord
-
-        # return
 
     def add_melody(self, melody: pd.Series, index_type='ms'):
         self.data = pd.merge(self.data, melody, on=index_type)
@@ -129,8 +93,6 @@ class MeshSong(object):
     #         data={'chords': list(chords.values())}, index=list(chords.keys())
     #     )
     #     df_chords.index.name = index_type
-
-
 
     def render(self, part_to_track: Dict, type='fixed_tempo') -> MidiFile:
         # add chords to tracks
@@ -144,20 +106,3 @@ class MeshSong(object):
             raise 'tempo estimate not set'
         return 0
 
-
-
-    # def determine_index(self, ms_list, beat_list, s_beat_start, s_beat_end):
-    #     beat_current
-
-    # Dict[
-    #     float, List[note.MidiNote]
-    # ]:
-
-    def fill_beat_index(beats: List[float], s_beat_start, s_beat_end) -> None:
-        events_quantized: Dict[float, List[note.MidiNote]] = dict()
-
-        for s, chord in events_chords.items():
-            key_s_quantized = min(list(beats), key=lambda s_beat: abs(s_beat - s))
-            events_quantized[key_s_quantized] = chord
-
-        this.data
