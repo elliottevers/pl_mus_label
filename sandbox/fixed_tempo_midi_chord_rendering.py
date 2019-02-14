@@ -8,6 +8,8 @@ import pandas as pd
 from music import note
 from convert import midi as midi_convert, vamp as vamp_convert
 from filter import vamp as vamp_filter
+import dill as pickle
+import jsonpickle
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
 
@@ -16,9 +18,20 @@ filename_mid_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.n
 data, rate = librosa.load(
     filename_wav
 )
+
+
+# TODO: melody extraction
+# melody = vamp.collect(data, rate, "mtg-melodia:melodia")
+
+# with open('test/stubs_pickle/melody_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(melody))
 #
-# # TODO: melody extraction
-melody = vamp.collect(data, rate, "mtg-melodia:melodia")
+#
+# with open('test/stubs_pickle/melody_tswift_teardrops.json', 'r') as file:
+#     thing = jsonpickle.decode(file.read())
+
+
+# exit(0)
 #
 # type(melody['vector'][1])
 #
@@ -28,29 +41,71 @@ melody = vamp.collect(data, rate, "mtg-melodia:melodia")
 # import vamp
 # import librosa
 # segments = vamp.collect(data, rate, 'qm-vamp-plugins:qm-segmenter')
+#
+# with open('test/stubs_pickle/segments_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(segments))
+#
+#
+# with open('test/stubs_pickle/segments_tswift_teardrops.json', 'r') as file:
+#     thing = jsonpickle.decode(file.read())
 
 # test = 1
+
+# exit(0)
 
 # TODO: chords
 # ms_to_label_chord: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
 
-s_to_label_chords: List[Dict[float, Any]] = vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
+# chords = vamp.collect(data, rate, 'nnls-chroma:chordino')
+#
+# with open('test/stubs_pickle/chords_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(chords))
+#
+#
+# with open('test/stubs_pickle/chords_tswift_teardrops.json', 'r') as file:
+#     thing = jsonpickle.decode(file.read())
+#
+# s_to_label_chords: List[Dict[float, Any]] = chords['list']
 
-# testing = 1
-
+# exit(0)
 # TODO: rolling tempo estimate
 
-# tempo: List[Dict[float, Any]] = vamp.collect(data, rate, 'vamp-aubio:aubiotempo', 'tempo')['vector'][1]
+# tempo = vamp.collect(data, rate, 'vamp-aubio:aubiotempo', 'tempo')
+#
+# with open('test/stubs_pickle/tempo_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(tempo))
+#
+#
+# with open('test/stubs_pickle/tempo_tswift_teardrops.json', 'r') as file:
+#     thing = jsonpickle.decode(file.read())
+#
+# tempo: List[Dict[float, Any]] = tempo['vector'][1]
+# exit(0)
 # bpm = np.median(tempo)  # smoothing
 # testing = 1
 
+
 # TODO: measures
 
-beats: List[Dict[float, Any]] = vamp.collect(data, rate, 'qm-vamp-plugins:qm-barbeattracker')['list']
+# beats = vamp.collect(data, rate, 'qm-vamp-plugins:qm-barbeattracker')
+#
+# with open('test/stubs_pickle/beats_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(beats))
+#
+#
+# with open('test/stubs_pickle/beats_tswift_teardrops.json', 'r') as file:
+#     thing = jsonpickle.decode(file.read())
+#
+# beats: List[Dict[float, Any]] = beats['list']
+#
+# exit(0)
 #
 # testing = 1
 
 # TODO: music21 chord parsing
+
+
+
 
 chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '-'))
 # chord.pitches  # ...
