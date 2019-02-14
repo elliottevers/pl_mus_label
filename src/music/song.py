@@ -13,7 +13,7 @@ class MeshSong(object):
     def __init__(self):
         self.data = pd.Series([])
 
-    # def add_chords(self, chords: Dict[Any, List[note.MidiNote]], index_type='ms'):
+    # def add_chords(self, chords: Dict[Any, List[note.MidiNote]], index_type='s'):
     #     # events_chords: Dict[float, List[note.MidiNote]]
     #     # self.data = pd.merge(self.data, chords, on=index_type)
     #     df_chords = pd.DataFrame(
@@ -22,7 +22,7 @@ class MeshSong(object):
     #     df_chords.index.name = index_type
 
     @staticmethod
-    def to_df(chords: Dict[Any, List[note.MidiNote]], index_type='ms'):
+    def to_df(chords: Dict[Any, List[note.MidiNote]], index_type='s'):
         df_chords = pd.DataFrame(
             data={'chord': list(chords.values())}, index=list(chords.keys())
         )
@@ -38,7 +38,7 @@ class MeshSong(object):
     ) -> pd.DataFrame:
 
         # TODO: add column of beats (NaNs before and after start and end), make it another index
-        column_ms_quantized = []
+        column_s_quantized = []
         column_beat = []
 
         s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
@@ -54,7 +54,6 @@ class MeshSong(object):
         index_nearest_s_beat_last_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_last_quantized))
 
         for index, row in s_timeseries.iterrows():
-            # print(row['c1'], row['c2'])
             if index == index_nearest_s_beat_first_quantized:
                 passed_first_beat = True
 
@@ -67,26 +66,35 @@ class MeshSong(object):
 
             key_s_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - index))
 
-            column_ms_quantized.append(key_s_quantized)
+            column_s_quantized.append(key_s_quantized)
             column_beat.append(counter)
 
-        s_timeseries['ms_quantized'] = column_ms_quantized
+        s_timeseries['s_quantized'] = column_s_quantized
 
         s_timeseries['beat'] = column_beat
 
         return s_timeseries.reset_index(
             drop=True
         ).rename(
-            columns={'ms_quantized': 'ms'}
+            columns={'s_quantized': 's'}
         ).set_index(
-            ['beat', 'ms']
+            ['beat', 's']
         ).sort_index(
         )
 
-    def add_melody(self, melody: pd.Series, index_type='ms'):
-        self.data = pd.merge(self.data, melody, on=index_type)
+    def add_melody(self, melody: pd.DataFrame, index_type='s') -> None:
+        self.data = pd.merge(
+            self.data.reset_index(),
+            melody.reset_index(),
+            on=[index_type],
+            how='outer'
+        ).set_index(
+            [index_type, 'beat']
+        ).sort_index(
+            by=index_type
+        )
 
-    # def add_chords(self, chords: Dict[Any, List[note.MidiNote]], index_type='ms'):
+    # def add_chords(self, chords: Dict[Any, List[note.MidiNote]], index_type='s'):
     #     # events_chords: Dict[float, List[note.MidiNote]]
     #     # self.data = pd.merge(self.data, chords, on=index_type)
     #     df_chords = pd.DataFrame(

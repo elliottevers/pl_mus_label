@@ -147,7 +147,7 @@ with open('test/stubs_pickle/python/tempo_tswift_teardrops.json', 'r') as file:
 #
 #
 with open('test/stubs_pickle/python/beats_tswift_teardrops.json', 'r') as file:
-    beats_thawed = jsonpickle.decode(file.read())
+    data_beats = jsonpickle.decode(file.read())
 #
 # beats: List[Dict[float, Any]] = beats['list']
 #
@@ -162,9 +162,11 @@ list_melody = data_melody[1]
 sample_rate = data_melody[0]
 
 df_melody_hz = pd.DataFrame(
-    data=list_melody,
+    data={'melody': list_melody},
     index=[i_sample * sample_rate for i_sample, sample in enumerate(list_melody)]
 )
+
+df_melody_hz.index.name = 's'
 
 chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '-'))
 
@@ -181,7 +183,7 @@ mid = MidiFile(
 
 # TODO: fix
 non_empty_chords = vamp_filter.vamp_filter_non_chords(
-    chords
+    s_to_label_chords
 )
 
 events_chords = vamp_convert.vamp_to_dict(
@@ -248,12 +250,29 @@ s_beat_end = 26.9 + 3 * 60
 
 df_chords_quantized = song.MeshSong.quantize(
     song.MeshSong.to_df(events_chords),
-    [beat['timestamp'].to_float() for beat in beats], # TODO: fix
+    [beat['timestamp'] for beat in data_beats],  # TODO: fix
     s_beat_start=s_beat_start,
     s_beat_end=s_beat_end
 )
 
-track = midi_convert.df_to_mid(df_chords_quantized, label_part='chord')
+# TODO: perfect this merge
+# pd.merge(df_chords_quantized.reset_index(), df_melody_hz.reset_index(), on=['s'], how='outer')
+
+merged = pd.merge(
+    df_chords_quantized.reset_index(),
+    df_melody_hz.reset_index(),
+    on=['s'],
+    how='outer'
+).set_index(
+    ['s', 'beat']
+).sort_index(
+    by='s'
+)
+
+track = midi_convert.df_to_mid(
+    df_chords_quantized,
+    label_part='chord'
+)
 
 # exit(0)
 
