@@ -8,7 +8,6 @@ import pandas as pd
 from music import note
 from convert import midi as midi_convert, vamp as vamp_convert
 from filter import vamp as vamp_filter
-import dill as pickle
 import jsonpickle
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
@@ -19,16 +18,35 @@ data, rate = librosa.load(
     filename_wav
 )
 
+# length_s = librosa.core.get_duration(
+#     filename=filename_wav
+# )
+
+# length_s = 219.86975056689343
 
 # TODO: melody extraction
 # melody = vamp.collect(data, rate, "mtg-melodia:melodia")
+#
+# sample_rate = melody['vector'][0].to_float()
+#
+# melody_extracted = melody['vector'][1]
+#
+# data_melody = (sample_rate, melody_extracted)
 
-# with open('test/stubs_pickle/melody_tswift_teardrops.json', 'w') as file:
+# with open('test/stubs_pickle/python/melody_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(data_melody))
+
+# with open('test/stubs_pickle/python/melody_tswift_teardrops.json', 'w') as file:
 #     file.write(jsonpickle.encode(melody))
-#
-#
-# with open('test/stubs_pickle/melody_tswift_teardrops.json', 'r') as file:
-#     thing = jsonpickle.decode(file.read())
+
+# with open('test/stubs_pickle/python/melody_tswift_teardrops.json', 'r') as file:
+#     melody = jsonpickle.decode(file.read())
+
+with open('test/stubs_pickle/python/melody_tswift_teardrops.json', 'r') as file:
+    data_melody = jsonpickle.decode(file.read())
+
+
+# testing =1
 
 
 # exit(0)
@@ -42,12 +60,23 @@ data, rate = librosa.load(
 # import librosa
 # segments = vamp.collect(data, rate, 'qm-vamp-plugins:qm-segmenter')
 #
-# with open('test/stubs_pickle/segments_tswift_teardrops.json', 'w') as file:
-#     file.write(jsonpickle.encode(segments))
+# data_segments = [
+#     {
+#         'timestamp': segment['timestamp'].to_float(),
+#         'duration': segment['duration'].to_float(),
+#         'label': segment['label'],
+#         'values': segment['values']
+#     }
+#     for segment
+#     in segments['list']
+# ]
 #
-#
-# with open('test/stubs_pickle/segments_tswift_teardrops.json', 'r') as file:
-#     thing = jsonpickle.decode(file.read())
+# with open('test/stubs_pickle/python/segments_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(data_segments))
+
+
+with open('test/stubs_pickle/python/segments_tswift_teardrops.json', 'r') as file:
+    data_segments = jsonpickle.decode(file.read())
 
 # test = 1
 
@@ -58,26 +87,40 @@ data, rate = librosa.load(
 
 # chords = vamp.collect(data, rate, 'nnls-chroma:chordino')
 #
-# with open('test/stubs_pickle/chords_tswift_teardrops.json', 'w') as file:
-#     file.write(jsonpickle.encode(chords))
+# data_chords = [
+#     {
+#         'timestamp': chord['timestamp'].to_float(),
+#         'label': chord['label']
+#     }
+#     for chord
+#     in chords['list']
+# ]
 #
-#
-# with open('test/stubs_pickle/chords_tswift_teardrops.json', 'r') as file:
-#     thing = jsonpickle.decode(file.read())
-#
-# s_to_label_chords: List[Dict[float, Any]] = chords['list']
+# with open('test/stubs_pickle/python/chords_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(data_chords))
+
+
+with open('test/stubs_pickle/python/chords_tswift_teardrops.json', 'r') as file:
+    data_chords = jsonpickle.decode(file.read())
+
+s_to_label_chords: List[Dict[float, Any]] = data_chords  # chords['list']
 
 # exit(0)
 # TODO: rolling tempo estimate
 
 # tempo = vamp.collect(data, rate, 'vamp-aubio:aubiotempo', 'tempo')
 #
-# with open('test/stubs_pickle/tempo_tswift_teardrops.json', 'w') as file:
-#     file.write(jsonpickle.encode(tempo))
+# sample_rate = tempo['vector'][0].to_float()
 #
+# tempo_estimates = tempo['vector'][1]
 #
-# with open('test/stubs_pickle/tempo_tswift_teardrops.json', 'r') as file:
-#     thing = jsonpickle.decode(file.read())
+# data_tempo = (sample_rate, tempo_estimates)
+#
+# with open('test/stubs_pickle/python/tempo_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(data_tempo))
+
+with open('test/stubs_pickle/python/tempo_tswift_teardrops.json', 'r') as file:
+    tempo_thawed = jsonpickle.decode(file.read())
 #
 # tempo: List[Dict[float, Any]] = tempo['vector'][1]
 # exit(0)
@@ -89,12 +132,22 @@ data, rate = librosa.load(
 
 # beats = vamp.collect(data, rate, 'qm-vamp-plugins:qm-barbeattracker')
 #
-# with open('test/stubs_pickle/beats_tswift_teardrops.json', 'w') as file:
-#     file.write(jsonpickle.encode(beats))
+# data_beats = [
+#     {
+#         'timestamp': beat['timestamp'].to_float(),
+#         'label': beat['label']
+#     }
+#     for beat
+#     in beats['list']
+# ]
 #
 #
-# with open('test/stubs_pickle/beats_tswift_teardrops.json', 'r') as file:
-#     thing = jsonpickle.decode(file.read())
+# with open('test/stubs_pickle/python/beats_tswift_teardrops.json', 'w') as file:
+#     file.write(jsonpickle.encode(data_beats))
+#
+#
+with open('test/stubs_pickle/python/beats_tswift_teardrops.json', 'r') as file:
+    beats_thawed = jsonpickle.decode(file.read())
 #
 # beats: List[Dict[float, Any]] = beats['list']
 #
@@ -104,10 +157,17 @@ data, rate = librosa.load(
 
 # TODO: music21 chord parsing
 
+list_melody = data_melody[1]
 
+sample_rate = data_melody[0]
 
+df_melody_hz = pd.DataFrame(
+    data=list_melody,
+    index=[i_sample * sample_rate for i_sample, sample in enumerate(list_melody)]
+)
 
 chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '-'))
+
 # chord.pitches  # ...
 
 # for ms timeseries, treat bar estimates as framework to quantize segments and chords to
@@ -118,8 +178,10 @@ mid = MidiFile(
     ticks_per_beat=1000
 )
 
+
+# TODO: fix
 non_empty_chords = vamp_filter.vamp_filter_non_chords(
-    vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
+    chords
 )
 
 events_chords = vamp_convert.vamp_to_dict(
@@ -127,7 +189,7 @@ events_chords = vamp_convert.vamp_to_dict(
 )
 
 
-exit(0)
+# exit(0)
 
 
 def quantize_numeric_domain(events_chords: Dict[float, List[note.MidiNote]], beats: List[float]) -> Dict[float, List[note.MidiNote]]:
@@ -186,14 +248,14 @@ s_beat_end = 26.9 + 3 * 60
 
 df_chords_quantized = song.MeshSong.quantize(
     song.MeshSong.to_df(events_chords),
-    [beat['timestamp'].to_float() for beat in beats],
+    [beat['timestamp'].to_float() for beat in beats], # TODO: fix
     s_beat_start=s_beat_start,
     s_beat_end=s_beat_end
 )
 
 track = midi_convert.df_to_mid(df_chords_quantized, label_part='chord')
 
-exit(0)
+# exit(0)
 
 
 def extract_bpm(filename: str):
