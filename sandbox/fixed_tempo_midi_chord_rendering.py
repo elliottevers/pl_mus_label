@@ -6,9 +6,8 @@ import music21
 import numpy as np
 import pandas as pd
 from music import note
-from convert import midi as midi_convert
-
-# from abc import ABC, abstractmethod
+from convert import midi as midi_convert, vamp as vamp_convert
+from filter import vamp as vamp_filter
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
 
@@ -19,7 +18,7 @@ data, rate = librosa.load(
 )
 #
 # # TODO: melody extraction
-# melody = vamp.collect(data, rate, "mtg-melodia:melodia")
+melody = vamp.collect(data, rate, "mtg-melodia:melodia")
 #
 # type(melody['vector'][1])
 #
@@ -64,7 +63,16 @@ mid = MidiFile(
     ticks_per_beat=1000
 )
 
-events_chords: Dict[float, List[note.MidiNote]] = dict()
+non_empty_chords = vamp_filter.vamp_filter_non_chords(
+    vamp.collect(data, rate, 'nnls-chroma:chordino')['list']
+)
+
+events_chords = vamp_convert.vamp_to_dict(
+    non_empty_chords
+)
+
+
+exit(0)
 
 
 def quantize_numeric_domain(events_chords: Dict[float, List[note.MidiNote]], beats: List[float]) -> Dict[float, List[note.MidiNote]]:
@@ -79,36 +87,36 @@ def quantize_numeric_domain(events_chords: Dict[float, List[note.MidiNote]], bea
 
 
 # non empty
-chords = list(filter(lambda event_chord: event_chord['label'] != 'N', s_to_label_chords))
-
-for chord in chords:
-    duration_ticks = None  # TODO: calculate here, instead of during midi file creation
-    velocity = 90
-    chord_realized = music21.harmony.ChordSymbol(chord['label'].replace('b', '-'))
-    events_chords[chord['timestamp'].to_float()] = [
-        note.MidiNote(pitch.midi, duration_ticks, velocity) for pitch in chord_realized.pitches
-    ]
+# chords = list(filter(lambda event_chord: event_chord['label'] != 'N', s_to_label_chords))
+#
+# for chord in chords:
+#     duration_ticks = None  # TODO: calculate here, instead of during midi file creation
+#     velocity = 90
+#     chord_realized = music21.harmony.ChordSymbol(chord['label'].replace('b', '-'))
+#     events_chords[chord['timestamp'].to_float()] = [
+#         note.MidiNote(pitch.midi, duration_ticks, velocity) for pitch in chord_realized.pitches
+#     ]
 
 # quantized
-chords = quantize_numeric_domain(events_chords, [beat['timestamp'].to_float() for beat in beats])
+# chords = quantize_numeric_domain(events_chords, [beat['timestamp'].to_float() for beat in beats])
 
 
-class Garbage(object):
-    def __init__(self, data):
-        self.data = data
-
-
-first_event = {
-    1: 'A',
-    2: 'C#',
-    3: 'E'
-}
-
-second_event = {
-    1: 'C',
-    2: 'E',
-    3: 'G'
-}
+# class Garbage(object):
+#     def __init__(self, data):
+#         self.data = data
+#
+#
+# first_event = {
+#     1: 'A',
+#     2: 'C#',
+#     3: 'E'
+# }
+#
+# second_event = {
+#     1: 'C',
+#     2: 'E',
+#     3: 'G'
+# }
 
 
 from music import song
