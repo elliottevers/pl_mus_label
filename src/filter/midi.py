@@ -42,7 +42,6 @@ def pad(
     return track_padded
 
 
-
 def smooth_chords(df: pd.DataFrame) -> pd.DataFrame:
     chords_smoothed = []
     for index, row in df.itertuples(index=True, name='chord'):

@@ -36,9 +36,6 @@ def df_to_score(df: pd.DataFrame, column_index='beat', partmap={'chord': 0}) -> 
 
     score.insert(0, part)
 
-    # for measure in score.measures(1, beat_last):
-    #     testing = 1
-
     return score
 
     # part_chords = music21.stream.Part()

@@ -5,12 +5,15 @@ from subprocess import call as call_shell
 filepath_midi = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid'
 
 
-def get_lowest_note(list_note):
-    return list_note[0]
+def get_lowest_note(chord):
+    return chord.notes[0]
 
 
-def get_highest_notes(list_note):
-    return list_note[1:]
+def get_highest_notes(chord):
+    if not chord:
+        return None
+    else:
+        return chord.notes[1:]
 
 
 def extract_bass(df_chords) -> pd.DataFrame:

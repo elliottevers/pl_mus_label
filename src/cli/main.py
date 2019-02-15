@@ -80,10 +80,10 @@ if branch == 'vamp':
     )
 
     score_quantized = convert_21.df_to_score(
-        df_chords_quantized
+        quantized_and_smoothed
     )
 
-    exit(0)
+    # exit(0)
     # list_melody = data_melody[1]
     #
     # sample_rate = data_melody[0]
@@ -101,6 +101,8 @@ if branch == 'vamp':
 
     mesh_song.add_chords(df_upper_voicings)
 
+    # exit(0)
+
     # mesh_song.add_quantization(beatmap)
 
     # TODO: in actual workflow, shouldn't need to convert, as this will be taken care of in Ableton user assisted processing
@@ -112,6 +114,17 @@ if branch == 'vamp':
             )
         ),
         index_type='s'
+    )
+
+    mesh_song.add_pk()
+
+    mesh_song.set_melody_tree(
+        midi_convert.hz_to_mid(
+            mesh_song.melody_to_df(
+                data_melody,
+                index_type='s'
+            )
+        )
     )
 
     mesh_song.quantize_on_index(

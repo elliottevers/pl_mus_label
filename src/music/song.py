@@ -3,10 +3,20 @@ from mido import MidiFile, MidiTrack, Message, MetaMessage, bpm2tempo
 from typing import List, Dict, Any, Optional, Tuple
 from music import note, chord
 from convert import midi as convert_midi
-# class Song, or class Mesh
+from intervaltree import IntervalTree, Interval
 
 
 class MeshSong(object):
+
+    tree_melody: IntervalTree
+
+    tree_chords: IntervalTree
+
+    tree_key_centers: IntervalTree
+
+    tree_bass: IntervalTree
+
+    tree_segments: IntervalTree
 
     data: pd.DataFrame
 
@@ -85,6 +95,38 @@ class MeshSong(object):
         df_melody_hz.index.name = index_type
 
         return df_melody_hz
+
+    def set_melody_tree(self, melody) -> None:
+        # iterate over s index
+        # look for changes
+        artifact_current = None
+        for i, (index, row) in enumerate(melody.itertuples(index=True, name='melody')):
+            ms = index[0]
+            if row != artifact_current:
+                Interval(index_last_artifact, end, data)
+            artifact_current = row
+            # if index[0] % 4 == 1:
+            #     chords_smoothed.append(df.loc[(index[0] + 1, slice(None)), 'chord'].values[0])
+            # elif index[0] % 4 == 0:
+            #     chords_smoothed.append(df.loc[(index[0] - 1, slice(None)), 'chord'].values[0])
+            # else:
+            #     chords_smoothed.append(df.loc[(index[0], slice(None)), 'chord'].values[0])
+
+        intervals_chords.append(
+            (
+                list_index[-1],
+                list_index[-1] + 100,
+                # TODO: we need to use the length of the song to determine when to cutoff the last chord
+                s_timeseries.loc[list_index[-1]]['chord']
+            )
+        )
+
+        interval_tree_chords = IntervalTree(
+            Interval(begin, end, data)
+            for begin, end, data in intervals_chords
+        )
+
+        return
 
     @staticmethod
     def quantize(
@@ -275,6 +317,18 @@ class MeshSong(object):
         for chord in self.data['chord'].tolist():
             testing = 1
 
+    def add_pk(self):
+        column_pk = [i for i in range(len(self.data))]
+        self.data['pk'] = column_pk
+        self.data.reset_index(
+            inplace=True
+        ).set_index(
+            ['pk', 's', 'beat'],
+            inplace=True
+        ).sort_index(
+            by='s',
+            inplace=True
+        )
 
     # TODO: support index type 's' (melodyne) and 'beat' (trascription after source separation)
     def add_melody(self, melody: pd.DataFrame, index_type='s') -> None:
