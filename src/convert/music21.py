@@ -20,12 +20,6 @@ def df_to_score(df: pd.DataFrame, column_index='beat', partmap={'chord': 0}) -> 
     measure = music21.stream.Measure()
 
     for beat in range(1, beat_last):
-        # measure1chords.append(
-        #     music21.chord.Chord(
-        #         ['E', 'G'],
-        #         duration=music21.duration.Duration(2.0)
-        #     )
-        # )
         if beat % 4 == 1:
             part.append(measure)
             measure = music21.stream.Measure()
@@ -41,6 +35,9 @@ def df_to_score(df: pd.DataFrame, column_index='beat', partmap={'chord': 0}) -> 
     score = music21.stream.Score()
 
     score.insert(0, part)
+
+    # for measure in score.measures(1, beat_last):
+    #     testing = 1
 
     return score
 

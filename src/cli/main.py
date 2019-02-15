@@ -14,6 +14,7 @@ from information_retrieval import extraction as ir
 from postprocess import midi as mid_post
 import music21
 from convert import music21 as convert_21
+from filter import midi as filter_mid
 
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
@@ -72,6 +73,10 @@ if branch == 'vamp':
         [beat['timestamp'] for beat in data_beats],  # TODO: fix
         s_beat_start=s_beat_start,
         s_beat_end=s_beat_end
+    )
+
+    quantized_and_smoothed = filter_mid.smooth_chords(
+        df_chords_quantized
     )
 
     score_quantized = convert_21.df_to_score(
