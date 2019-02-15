@@ -8,12 +8,20 @@ filepath_midi = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosy
 def get_lowest_note(list_note):
     return list_note[0]
 
+
+def get_highest_notes(list_note):
+    return list_note[1:]
+
+
 def extract_bass(df_chords) -> pd.DataFrame:
     # for ind, column in enumerate(df_chords['chord']):
     #     print(ind, column)
     # for chord in df_chords['chord'].tolist():
     return df_chords['chord'].apply(get_lowest_note).to_frame(name='bass')
 
+
+def extract_upper_voices(df_chords) -> pd.DataFrame:
+    return df_chords['chord'].apply(get_highest_notes).to_frame(name='chord')
 
 
 def to_df(filepath_midi, name_column='chords') -> pd.DataFrame:

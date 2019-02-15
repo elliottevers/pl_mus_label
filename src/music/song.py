@@ -1,7 +1,7 @@
 import pandas as pd
 from mido import MidiFile, MidiTrack, Message, MetaMessage, bpm2tempo
 from typing import List, Dict, Any, Optional, Tuple
-from music import note
+from music import note, chord
 from convert import midi as convert_midi
 # class Song, or class Mesh
 
@@ -25,7 +25,8 @@ class MeshSong(object):
         return 0
 
     @staticmethod
-    def chords_to_df(chords: Dict[Any, List[note.MidiNote]], index_type='s'):
+    # def chords_to_df(chords: Dict[Any, List[note.MidiNote]], index_type='s'):
+    def chords_to_df(chords: Dict[Any, chord.ChordMidi], index_type='s'):
         df_chords = pd.DataFrame(
             data={'chord': list(chords.values())}, index=list(chords.keys())
         )
@@ -96,47 +97,177 @@ class MeshSong(object):
         # TODO: add column of beats (NaNs before and after start and end), make it another index
         column_s_quantized = []
         column_beat = []
+        column_chord = []
 
         s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
 
         s_beat_last_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_end))
 
-        counter = 0
-        passed_first_beat = False
-        passed_last_beat = False
+        i_beat_first = beatmap.index(s_beat_first_quantized)
 
-        index_nearest_s_beat_first_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_first_quantized))
+        # def within_inveral(candidate: float, interval: Tuple):
+        #     return interval[0] <= candidate <= interval[1]
 
-        index_nearest_s_beat_last_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_last_quantized))
+        from intervaltree import Interval, IntervalTree
 
-        for index, row in s_timeseries.iterrows():
-            if index == index_nearest_s_beat_first_quantized:
-                passed_first_beat = True
+        intervals_chords = []
 
-            if index == index_nearest_s_beat_last_quantized:
-                passed_last_beat = True
-                counter = 0
+        list_index = s_timeseries.index.tolist()
 
-            if passed_first_beat and not passed_last_beat:
-                counter += 1
+        for i_ms, ms in enumerate(list_index[:-1]):
+            intervals_chords.append(
+                (
+                    ms,
+                    list_index[i_ms + 1],
+                    s_timeseries.loc[list_index[i_ms]]['chord']
+                )
+            )
 
-            key_s_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - index))
+        intervals_chords.append(
+            (
+                list_index[-1],
+                list_index[-1] + 100, # TODO: we need to use the length of the song to determine when to cutoff the last chord
+                s_timeseries.loc[list_index[-1]]['chord']
+            )
+        )
 
-            column_s_quantized.append(key_s_quantized)
-            column_beat.append(counter)
+        interval_tree_chords = IntervalTree(
+            Interval(begin, end, data)
+            for begin, end, data in intervals_chords
+         )
 
-        s_timeseries['s_quantized'] = column_s_quantized
+        def get_overlap(top: Tuple, bottom: Tuple) -> float:
+            if top[0] <= bottom[0] and top[1] >= bottom[0] and bottom[1] >= top[1]:
+                return top[1] - bottom[0]
+            elif bottom[0] <= top[0] and bottom[1] >= top[0] and top[1] >= bottom[1]:
+                return bottom[1] - top[0]
+            elif bottom[0] <= top[0] and bottom[1] >= top[1]:
+                return top[1] - top[0]
+            elif top[0] <= bottom[0] and top[1] >= bottom[1]:
+                return bottom[1] - bottom[0]
+            else:
+                raise 'how did this happen'
 
-        s_timeseries['beat'] = column_beat
+        for i_beat, s_beat in enumerate(beatmap[:-1]):
 
-        return s_timeseries.reset_index(
-            drop=True
-        ).rename(
-            columns={'s_quantized': 's'}
+            beat_interval = (beatmap[i_beat], beatmap[i_beat + 1])
+
+            intervals_chords_overlaps = interval_tree_chords.overlap(
+                beat_interval[0],
+                beat_interval[1]
+            )
+
+            # TODO: get element of intervals_chords with highest score according to get_overlap()
+
+            if len(list(intervals_chords_overlaps)) < 1:
+                column_chord.append(
+                    None
+                )
+                column_beat.append(
+                    i_beat - i_beat_first + 1
+                )
+                column_s_quantized.append(
+                    s_beat
+                )
+            else:
+                interval_winner = max(list(intervals_chords_overlaps), key=lambda chord_interval: get_overlap(beat_interval, chord_interval))
+
+                # beat_to_candidate_key_map[i_beat] = candidate_keys
+                column_chord.append(
+                    interval_winner.data
+                )
+                column_beat.append(
+                    i_beat - i_beat_first + 1
+                )
+                column_s_quantized.append(
+                    s_beat
+                )
+
+        return pd.DataFrame(
+            data={
+                'chord': column_chord,
+                'beat': column_beat,
+                's': column_s_quantized
+            }
         ).set_index(
             ['beat', 's']
         ).sort_index(
         )
+
+    # @staticmethod
+    # def quantize(
+    #         s_timeseries: pd.DataFrame,
+    #         beatmap: List[float],
+    #         s_beat_start,
+    #         s_beat_end
+    # ) -> pd.DataFrame:
+    #
+    #     # TODO: add column of beats (NaNs before and after start and end), make it another index
+    #     column_s_quantized = []
+    #     column_beat = []
+    #
+    #     s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
+    #
+    #     s_beat_last_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_end))
+    #
+    #     counter = 0
+    #     passed_first_beat = False
+    #     passed_last_beat = False
+    #
+    #     index_nearest_s_beat_first_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_first_quantized))
+    #
+    #     index_nearest_s_beat_last_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_last_quantized))
+    #
+    #     for index, row in s_timeseries.iterrows():
+    #         if index == index_nearest_s_beat_first_quantized:
+    #             passed_first_beat = True
+    #
+    #         if index == index_nearest_s_beat_last_quantized:
+    #             passed_last_beat = True
+    #             counter = 0
+    #
+    #         if passed_first_beat and not passed_last_beat:
+    #             counter += 1
+    #
+    #         key_s_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - index))
+    #
+    #         column_s_quantized.append(key_s_quantized)
+    #
+    #         # find position, wrt first beat, of closest
+    #         column_beat.append(
+    #             # counter
+    #             beatmap.index(key_s_quantized) - beatmap.index(s_beat_first_quantized) + 1
+    #         )
+    #
+    #     s_timeseries['s_quantized'] = column_s_quantized
+    #
+    #     s_timeseries['beat'] = column_beat
+    #
+    #     # TODO: indices should *not* be from chord estimate, but from beat map - chord estimate is used to assign chord at user specified granulatiry
+    #     return s_timeseries.reset_index(
+    #         drop=True
+    #     ).rename(
+    #         columns={'s_quantized': 's'}
+    #     ).set_index(
+    #         ['beat', 's']
+    #     ).sort_index(
+    #     )
+
+    def render(self, part_to_track: Dict, type='fixed_tempo') -> MidiFile:
+        # add chords to tracks
+
+        # for column in self.data.columns:
+        #     for i_
+        return MidiFile()
+
+    def create_notes(self, index='melody'):
+
+        raise 'not implemented'
+
+    def quantize_on_index(self, index='beat', granularity='16T'):
+        # assigns to each 'ms' index, a corresponding 'beat' index
+        # quantizes entire df based on index
+        raise 'not implemented'
 
     def fill_legato(self, name_column='chord') -> None:
         col_legato = []
@@ -211,10 +342,6 @@ class MeshSong(object):
         if not self.tempo:
             raise 'tempo estimate not set'
         return 0
-
-    def render(self, part_to_track: Dict, type='fixed_tempo') -> MidiFile:
-        # add chords to tracks
-        return MidiFile()
 
 # import mido
 # from mido import Message, MidiFile, MidiTrack, MetaMessage

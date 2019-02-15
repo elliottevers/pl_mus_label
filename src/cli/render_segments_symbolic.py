@@ -14,7 +14,7 @@ stream = converter.parse(filename_analyze)
 # bach = corpus.parse('bwv66.6')
 # scoreList = search.segment.indexScoreParts(stream.flat)
 
-segments, measureLists = search.segment.translateMonophonicPartToSegments(stream)
+# segments, measureLists = search.segment.translateMonophonicPartToSegments(stream)
 
 for note in stream.flat.notes:
     testing = 1
@@ -124,7 +124,11 @@ score.parts.append(
 score.insert(0, part_chords)
 score.insert(0, part_bass)
 
-score.show()
+# score.show()
+
+segments, measureLists = search.segment.translateMonophonicPartToSegments(score)
+
+
 # note1 = music21.note.Note('C')
 
 

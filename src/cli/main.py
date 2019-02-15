@@ -13,6 +13,7 @@ from analysis_discrete import midi as analysis_midi
 from information_retrieval import extraction as ir
 from postprocess import midi as mid_post
 import music21
+from convert import music21 as convert_21
 
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
@@ -73,6 +74,11 @@ if branch == 'vamp':
         s_beat_end=s_beat_end
     )
 
+    score_quantized = convert_21.df_to_score(
+        df_chords_quantized
+    )
+
+    exit(0)
     # list_melody = data_melody[1]
     #
     # sample_rate = data_melody[0]
@@ -86,7 +92,9 @@ if branch == 'vamp':
     #
     # chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '-'))
 
-    mesh_song.add_chords(df_chords_quantized)
+    df_upper_voicings = mid_post.extract_upper_voices(df_chords_quantized)
+
+    mesh_song.add_chords(df_upper_voicings)
 
     # mesh_song.add_quantization(beatmap)
 
@@ -99,6 +107,10 @@ if branch == 'vamp':
             )
         ),
         index_type='s'
+    )
+
+    mesh_song.quantize_on_index(
+        index='beat'
     )
 
     # TODO: segments, chords, and bass will have to be filled legato
