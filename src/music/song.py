@@ -4,6 +4,8 @@ from typing import List, Dict, Any, Optional, Tuple
 from music import note, chord
 from convert import midi as convert_midi
 from intervaltree import IntervalTree, Interval
+import music21
+import math
 
 
 class MeshSong(object):
@@ -96,37 +98,76 @@ class MeshSong(object):
 
         return df_melody_hz
 
-    def set_melody_tree(self, melody) -> None:
+    # TODO: put somewhere else
+    @staticmethod
+    def get_note(pitch_midi):
+        if not pitch_midi or math.isinf(pitch_midi) or math.isnan(pitch_midi):
+            return None
+        else:
+            return music21.note.Note(pitch=music21.pitch.Pitch(midi=int(pitch_midi)))
+
+    # def set_melody_tree(self) -> None:
+    #     # iterate over s index
+    #     # look for changes
+    #     melody_last = self.data.loc[self.data.index[0], :].values[1]
+    #     index_melody_last = self.data.index[0]
+    #     intervals_melody = []
+    #
+    #     for i, (i_full, row) in enumerate(self.data.iloc[1:, :].iterrows()):
+    #         melody_current = row['melody']
+    #         row_last = self.data.loc[(i_full[0] - 1, slice(None), slice(None))]
+    #         melody_last = row_last.values[0][1]
+    #         if melody_current != melody_last:
+    #             intervals_melody.append(
+    #                 Interval(
+    #                     index_melody_last[1],
+    #                     i_full[1],
+    #                     MeshSong.get_note(melody_last)
+    #                 )
+    #             )
+    #             melody_last = melody_current
+    #             index_melody_last = i_full
+    #
+    #     self.tree_melody = IntervalTree(
+    #         Interval(begin, end, data)
+    #         for begin, end, data in intervals_melody
+    #      )
+
+    def set_melody_tree(self) -> None:
         # iterate over s index
         # look for changes
-        artifact_current = None
-        for i, (index, row) in enumerate(melody.itertuples(index=True, name='melody')):
-            ms = index[0]
-            if row != artifact_current:
-                Interval(index_last_artifact, end, data)
-            artifact_current = row
-            # if index[0] % 4 == 1:
-            #     chords_smoothed.append(df.loc[(index[0] + 1, slice(None)), 'chord'].values[0])
-            # elif index[0] % 4 == 0:
-            #     chords_smoothed.append(df.loc[(index[0] - 1, slice(None)), 'chord'].values[0])
-            # else:
-            #     chords_smoothed.append(df.loc[(index[0], slice(None)), 'chord'].values[0])
+        # melody_last = self.data.loc[self.data.index[0], :].values[1]
+        # index_melody_last = self.data.index[0]
+        # intervals_melody = []
 
-        intervals_chords.append(
-            (
-                list_index[-1],
-                list_index[-1] + 100,
-                # TODO: we need to use the length of the song to determine when to cutoff the last chord
-                s_timeseries.loc[list_index[-1]]['chord']
-            )
-        )
+        index_list = self.data.index.tolist()
 
-        interval_tree_chords = IntervalTree(
+        melody_last = self.data.loc[index_list[0], 'melody']
+        index_melody_last = index_list[0]
+        intervals_melody = []
+
+        for i, index in enumerate(index_list[1:]):
+            # melody_current = row['melody']
+            # melody_current = self.data.loc[index, 'melody'].values[0]
+            melody_current = self.data.loc[index, 'melody']
+            row_last = self.data.loc[(index[0] - 1, slice(None), slice(None))]
+            melody_last = row_last.values[0][1]
+            if melody_current != melody_last:
+                intervals_melody.append(
+                    Interval(
+                        index_melody_last[1],
+                        index[1],
+                        MeshSong.get_note(melody_last)
+                    )
+                )
+                melody_last = melody_current
+                index_melody_last = index
+
+        self.tree_melody = IntervalTree(
             Interval(begin, end, data)
-            for begin, end, data in intervals_chords
-        )
+            for begin, end, data in intervals_melody
+         )
 
-        return
 
     @staticmethod
     def quantize(
@@ -322,10 +363,12 @@ class MeshSong(object):
         self.data['pk'] = column_pk
         self.data.reset_index(
             inplace=True
-        ).set_index(
+        )
+        self.data.set_index(
             ['pk', 's', 'beat'],
             inplace=True
-        ).sort_index(
+        )
+        self.data.sort_index(
             by='s',
             inplace=True
         )

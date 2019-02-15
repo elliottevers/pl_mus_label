@@ -119,13 +119,9 @@ if branch == 'vamp':
     mesh_song.add_pk()
 
     mesh_song.set_melody_tree(
-        midi_convert.hz_to_mid(
-            mesh_song.melody_to_df(
-                data_melody,
-                index_type='s'
-            )
-        )
     )
+
+    exit(0)
 
     mesh_song.quantize_on_index(
         index='beat'
