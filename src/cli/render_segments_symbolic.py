@@ -1,9 +1,10 @@
 from music21 import converter, search, analysis
 from subprocess import call as call_shell
+import music21
 
 filename_analyze = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid'
 
-filename_analyze = '/Users/elliottevers/Downloads/ella_test.musicxml'
+filename_analyze = '/Users/elliottevers/Downloads/ella_chords_test.musicxml'
 
 stream = converter.parse(filename_analyze)
 
@@ -15,6 +16,8 @@ stream = converter.parse(filename_analyze)
 
 segments, measureLists = search.segment.translateMonophonicPartToSegments(stream)
 
+for note in stream.flat.notes:
+    testing = 1
 # analyzer = analysis.discrete.BellmanBudge()
 #
 # wa = analysis.windowed.WindowedAnalysis(stream.flat, analyzer)
@@ -23,6 +26,106 @@ segments, measureLists = search.segment.translateMonophonicPartToSegments(stream
 #     64,  # window_size,  # 64,
 #     'overlap'
 # )
+
+score = music21.stream.Score()
+
+part_chords = music21.stream.Part()
+
+part_bass = music21.stream.Part()
+
+measure1chords = music21.stream.Measure()
+
+measure2chords = music21.stream.Measure()
+
+measure1notes = music21.stream.Measure()
+
+measure2notes = music21.stream.Measure()
+
+measure1notes.append(
+    music21.note.Note(
+        pitch='C',
+        duration=music21.duration.Duration(2.0)
+    )
+)
+
+measure1notes.append(
+    music21.note.Note(
+        pitch='D',
+        duration=music21.duration.Duration(2.0)
+    )
+)
+
+measure2notes.append(
+    music21.note.Note(
+        pitch='C',
+        duration=music21.duration.Duration(2.0)
+    )
+)
+
+measure2notes.append(
+    music21.note.Note(
+        pitch='D',
+        duration=music21.duration.Duration(2.0)
+    )
+)
+
+measure1chords.append(
+    music21.chord.Chord(
+        ['E', 'G'],
+        duration=music21.duration.Duration(2.0)
+    )
+)
+
+measure1chords.append(
+    music21.chord.Chord(
+        ['F', 'A'],
+        duration=music21.duration.Duration(2.0)
+    )
+)
+
+measure2chords.append(
+    music21.chord.Chord(
+        ['E', 'G'],
+        duration=music21.duration.Duration(2.0)
+    )
+)
+
+measure2chords.append(
+    music21.chord.Chord(
+        ['F', 'A'],
+        duration=music21.duration.Duration(2.0)
+    )
+)
+
+part_chords.append(
+    measure1chords
+)
+
+part_chords.append(
+    measure2chords
+)
+
+part_bass.append(
+    measure1notes
+)
+
+part_bass.append(
+    measure2notes
+)
+
+score.parts.append(
+    part_bass
+)
+
+score.parts.append(
+    part_chords
+)
+
+score.insert(0, part_chords)
+score.insert(0, part_bass)
+
+score.show()
+# note1 = music21.note.Note('C')
 
 
 # scoreList[1]['segmentList'][0]

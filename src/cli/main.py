@@ -12,6 +12,7 @@ import jsonpickle
 from analysis_discrete import midi as analysis_midi
 from information_retrieval import extraction as ir
 from postprocess import midi as mid_post
+import music21
 
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
@@ -114,7 +115,10 @@ if branch == 'vamp':
         df_segments
     )
 
-    file_chords_and_bass = ''
+    # file_chords_and_bass = ''
+    stream_chords_and_bass = midi_convert.df_to_stream(
+        columns=['chord', 'bass']
+    )
 
     key_centers = analysis_midi.get_key_center_estimates(file_chords_and_bass)
 
