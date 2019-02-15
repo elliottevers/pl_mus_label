@@ -2,6 +2,7 @@ import pandas as pd
 from typing import List, Dict
 import math
 from mido import MidiTrack, Message, MetaMessage, bpm2tempo
+import librosa
 
 
 def df_to_mid(df, label_part, index='s', bpm=60, ppq=1000, program=22) -> MidiTrack:
@@ -247,7 +248,11 @@ def series_to_mid(df, init_velocity):
     return track
 
 
-
+def hz_to_mid(
+        df_hz: pd.DataFrame
+) -> pd.DataFrame:
+    df_hz['melody'] = df_hz['melody'].apply(librosa.hz_to_midi).round()
+    return df_hz
 
 
 # import numpy as np

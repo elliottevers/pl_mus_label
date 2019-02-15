@@ -5,6 +5,17 @@ from subprocess import call as call_shell
 filepath_midi = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid'
 
 
+def get_lowest_note(list_note):
+    return list_note[0]
+
+def extract_bass(df_chords) -> pd.DataFrame:
+    # for ind, column in enumerate(df_chords['chord']):
+    #     print(ind, column)
+    # for chord in df_chords['chord'].tolist():
+    return df_chords['chord'].apply(get_lowest_note).to_frame(name='bass')
+
+
+
 def to_df(filepath_midi, name_column='chords') -> pd.DataFrame:
     return merged
 

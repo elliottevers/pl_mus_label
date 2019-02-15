@@ -2,7 +2,7 @@ import pandas as pd
 from mido import MidiFile, MidiTrack, Message, MetaMessage, bpm2tempo
 from typing import List, Dict, Any, Optional, Tuple
 from music import note
-from convert import midi
+from convert import midi as convert_midi
 # class Song, or class Mesh
 
 
@@ -11,7 +11,7 @@ class MeshSong(object):
     data: pd.DataFrame
 
     def __init__(self):
-        self.data = pd.Series([])
+        self.data = None
 
     # def add_chords(self, chords: Dict[Any, List[note.MidiNote]], index_type='s'):
     #     # events_chords: Dict[float, List[note.MidiNote]]
@@ -25,12 +25,65 @@ class MeshSong(object):
         return 0
 
     @staticmethod
-    def to_df(chords: Dict[Any, List[note.MidiNote]], index_type='s'):
+    def chords_to_df(chords: Dict[Any, List[note.MidiNote]], index_type='s'):
         df_chords = pd.DataFrame(
             data={'chord': list(chords.values())}, index=list(chords.keys())
         )
+
         df_chords.index.name = index_type
+
         return df_chords
+
+    @staticmethod
+    def segments_to_df(data_segments, index_type='s'):
+
+        segments = [
+            {
+                'timestamp': segment['timestamp'],
+                'duration': segment['duration']
+            }
+
+            for segment
+            in data_segments
+        ]
+
+        df_segments = pd.DataFrame(
+            data={
+                'segment': [
+                    note.MidiNote(
+                        pitch=60,
+                        duration_ticks=convert_midi.s_to_ticks(segment['duration']),  # TODO: make sure defaults (bpm, ppq) don't fuck with this
+                        velocity=90,
+                        channel=10,
+                        program=49
+                    )
+                    for segment
+                    in segments
+                ]
+            },
+            index=[
+                segment['timestamp'] for segment in segments
+            ]
+        )
+
+        df_segments.index.name = index_type
+
+        return df_segments
+
+    @staticmethod
+    def melody_to_df(data_melody, index_type='s'):
+        list_melody = data_melody[1]
+
+        sample_rate = data_melody[0]
+
+        df_melody_hz = pd.DataFrame(
+            data={'melody': list_melody},
+            index=[i_sample * sample_rate for i_sample, sample in enumerate(list_melody)]
+        )
+
+        df_melody_hz.index.name = index_type
+
+        return df_melody_hz
 
     @staticmethod
     def quantize(
@@ -85,6 +138,13 @@ class MeshSong(object):
         ).sort_index(
         )
 
+    def fill_legato(self, name_column='chord') -> None:
+        col_legato = []
+        struct_current = None
+        for chord in self.data['chord'].tolist():
+            testing = 1
+
+
     # TODO: support index type 's' (melodyne) and 'beat' (trascription after source separation)
     def add_melody(self, melody: pd.DataFrame, index_type='s') -> None:
         self.data = pd.merge(
@@ -98,10 +158,25 @@ class MeshSong(object):
             by=index_type
         )
 
-    def add_chords(self, melody: pd.DataFrame, index_type='s') -> None:
+    def add_chords(self, chords: pd.DataFrame, index_type='s') -> None:
+        if not self.data:
+            self.data = chords
+        else:
+            self.data = pd.merge(
+                self.data.reset_index(),
+                chords.reset_index(),
+                on=[index_type],
+                how='outer'
+            ).set_index(
+                [index_type, 'beat']
+            ).sort_index(
+                by=index_type
+            )
+
+    def add_segments(self, segments: pd.DataFrame, index_type='s') -> None:
         self.data = pd.merge(
             self.data.reset_index(),
-            melody.reset_index(),
+            segments.reset_index(),
             on=[index_type],
             how='outer'
         ).set_index(
@@ -110,23 +185,11 @@ class MeshSong(object):
             by=index_type
         )
 
-    def add_segments(self, melody: pd.DataFrame, index_type='s') -> None:
+    def add_bass(self, bass: pd.DataFrame, index_type='s') -> None:
         self.data = pd.merge(
             self.data.reset_index(),
-            melody.reset_index(),
-            on=[index_type],
-            how='outer'
-        ).set_index(
-            [index_type, 'beat']
-        ).sort_index(
-            by=index_type
-        )
-
-    def add_bass(self, melody: pd.DataFrame, index_type='s') -> None:
-        self.data = pd.merge(
-            self.data.reset_index(),
-            melody.reset_index(),
-            on=[index_type],
+            bass.reset_index(),
+            on=[index_type, 'beat'],
             how='outer'
         ).set_index(
             [index_type, 'beat']

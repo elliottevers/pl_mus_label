@@ -11,15 +11,18 @@ from filter import vamp as vamp_filter
 import jsonpickle
 from analysis_discrete import midi as analysis_midi
 from information_retrieval import extraction as ir
+from postprocess import midi as mid_post
 
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
 
 filename_mid_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears_TEST.mid'
 
-# data, rate = librosa.load(
-#     filename_wav
-# )
+branch = 'vamp'
+
+s_beat_start = 3.436
+
+s_beat_end = 26.9 + 3 * 60
 
 data_melody = ir.extract_melody(
     filename_wav,
@@ -54,22 +57,64 @@ mesh_song = song.MeshSong()
 
 if branch == 'vamp':
 
-    mesh_song.add_chords(chords)
-
-    mesh_song.add_quantization(beatmap)
-
-    # TODO: shouldn't need to convert, as this will be taken care of in Ableton user assisted processing
-    mesh_song.add_melody(
-        midi_convert.hz_to_mid( # df
-            melody # df
-        )
+    non_empty_chords = vamp_filter.vamp_filter_non_chords(
+        s_to_label_chords
     )
 
-    mesh_song.add_bass(bass)
+    events_chords = vamp_convert.vamp_to_dict(
+        non_empty_chords
+    )
 
-    mesh_song.add_segments(segments)
+    df_chords_quantized = song.MeshSong.quantize(
+        song.MeshSong.chords_to_df(events_chords),
+        [beat['timestamp'] for beat in data_beats],  # TODO: fix
+        s_beat_start=s_beat_start,
+        s_beat_end=s_beat_end
+    )
 
-    file_chords_and_bass =
+    # list_melody = data_melody[1]
+    #
+    # sample_rate = data_melody[0]
+    #
+    # df_melody_hz = pd.DataFrame(
+    #     data={'melody': list_melody},
+    #     index=[i_sample * sample_rate for i_sample, sample in enumerate(list_melody)]
+    # )
+    #
+    # df_melody_hz.index.name = 's'
+    #
+    # chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '-'))
+
+    mesh_song.add_chords(df_chords_quantized)
+
+    # mesh_song.add_quantization(beatmap)
+
+    # TODO: in actual workflow, shouldn't need to convert, as this will be taken care of in Ableton user assisted processing
+    mesh_song.add_melody(
+        midi_convert.hz_to_mid(
+            mesh_song.melody_to_df(
+                data_melody,
+                index_type='s'
+            )
+        ),
+        index_type='s'
+    )
+
+    # TODO: segments, chords, and bass will have to be filled legato
+    # TODO: ORRRR, this logic could be in "render"
+    # mesh_song.fill_legato(name_column='chord')
+
+    df_bass = mid_post.extract_bass(df_chords_quantized)
+
+    mesh_song.add_bass(df_bass)
+
+    df_segments = song.MeshSong.segments_to_df(data_segments)
+
+    mesh_song.add_segments(
+        df_segments
+    )
+
+    file_chords_and_bass = ''
 
     key_centers = analysis_midi.get_key_center_estimates(file_chords_and_bass)
 
@@ -105,7 +150,7 @@ else:
 
     segments = analysis_midi.extract_segments()
 
-    file_chords_and_bass =
+    file_chords_and_bass = ''
 
     key_centers = analysis_midi.get_key_center_estimates(file_chords_and_bass)
 
