@@ -195,71 +195,65 @@ class MeshSong(object):
 
         return list(filter(lambda beat: s_beat_first_quantized <= beat <= s_beat_last_quantized, beatmap))
 
+    @staticmethod
+    def get_overlap(top: Tuple, bottom: Tuple) -> float:
+        if top[0] <= bottom[0] and top[1] >= bottom[0] and bottom[1] >= top[1]:
+            return top[1] - bottom[0]
+        elif bottom[0] <= top[0] and bottom[1] >= top[0] and top[1] >= bottom[1]:
+            return bottom[1] - top[0]
+        elif bottom[0] <= top[0] and bottom[1] >= top[1]:
+            return top[1] - top[0]
+        elif top[0] <= bottom[0] and top[1] >= bottom[1]:
+            return bottom[1] - bottom[0]
+        else:
+            raise 'how did this happen'
 
-    def _quantize(self, beatmap, s_beat_start, s_beat_end):
-
-        s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
-
-        s_beat_last_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_end))
-
-        i_beat_first = beatmap.index(s_beat_first_quantized)
-
-        i_beat_last = beatmap.index(s_beat_last_quantized)
+    def _get_maximum_overlap(self, gran_map):
 
         column_s_quantized = []
         column_beat = []
         column_melody = []
 
-        def get_overlap(top: Tuple, bottom: Tuple) -> float:
-            if top[0] <= bottom[0] and top[1] >= bottom[0] and bottom[1] >= top[1]:
-                return top[1] - bottom[0]
-            elif bottom[0] <= top[0] and bottom[1] >= top[0] and top[1] >= bottom[1]:
-                return bottom[1] - top[0]
-            elif bottom[0] <= top[0] and bottom[1] >= top[1]:
-                return top[1] - top[0]
-            elif top[0] <= bottom[0] and top[1] >= bottom[1]:
-                return bottom[1] - bottom[0]
-            else:
-                raise 'how did this happen'
+        beats = sorted(list(gran_map.keys()))
+        # endpoint_beat_last = beats[0]
+        endpoint_s_last = sorted(list(gran_map.values()))[0]
 
-        gran_map = MeshSong.get_gran_map(self.trim_beatmap(beatmap, s_beat_start, s_beat_end))
+        for beat in beats[:-1]:
 
-        for i_beat, s_beat in enumerate(beatmap[:-1]):
+            s = gran_map[beat]
 
-            if i_beat > i_beat_last:
-                break
+            s_interval = (endpoint_s_last, s)
 
-            beat_interval = (beatmap[i_beat], beatmap[i_beat + 1])
-
-            intervals_chords_overlaps = self.tree_melody.overlap(
-                beat_interval[0],
-                beat_interval[1]
+            intervals_melody_overlaps = self.tree_melody.overlap(
+                s_interval[0],
+                s_interval[1]
             )
 
-            # TODO: get element of intervals_chords with highest score according to get_overlap()
-
-            if len(list(intervals_chords_overlaps)) < 1:
+            if len(list(intervals_melody_overlaps)) < 1:
                 column_melody.append(
                     None
                 )
                 column_beat.append(
-                    i_beat - i_beat_first + 1
+                    beat
                 )
                 column_s_quantized.append(
-                    s_beat
+                    s
                 )
             else:
-                interval_winner = max(list(intervals_chords_overlaps), key=lambda chord_interval: get_overlap(beat_interval, chord_interval))
+                interval_winner = max(list(intervals_melody_overlaps), key=lambda melody_interval: MeshSong.get_overlap(s_interval, melody_interval))
 
                 column_melody.append(
                     interval_winner.data
                 )
                 column_beat.append(
-                    i_beat - i_beat_first + 1
+                    beat
                 )
                 column_s_quantized.append(
-                    s_beat
+                    s
                 )
+
+            # endpoint_beat_last = beat
+            endpoint_s_last = s
 
         return pd.DataFrame(
             data={
@@ -271,6 +265,12 @@ class MeshSong(object):
             ['beat', 's']
         ).sort_index(
         )
+
+    def _quantize(self, beatmap, s_beat_start, s_beat_end):
+
+        gran_map = MeshSong.get_gran_map(self.trim_beatmap(beatmap, s_beat_start, s_beat_end))
+
+        return self._get_maximum_overlap(gran_map)
 
     def set_melody_tree(self, melody) -> None:
 
