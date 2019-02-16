@@ -107,6 +107,14 @@ class MeshSong(object):
         else:
             return music21.note.Note(pitch=music21.pitch.Pitch(midi=int(pitch_midi)))
 
+    # TODO: remove, this is stupid
+    @staticmethod
+    def get_pitch_midi(pitch_midi):
+        if not pitch_midi or math.isinf(pitch_midi) or math.isnan(pitch_midi) or pitch_midi == 0:
+            return 0
+        else:
+            return pitch_midi
+
     # def set_melody_tree_attempt_1(self) -> None:
     #     # iterate over s index
     #     # look for changes
@@ -288,7 +296,8 @@ class MeshSong(object):
                         Interval(
                             index_midi_last,
                             index_last,
-                            MeshSong.get_note(midi_current)
+                            # MeshSong.get_note(midi_current)
+                            MeshSong.get_pitch_midi(midi_current)
                         )
                     )
                 midi_last = midi_current

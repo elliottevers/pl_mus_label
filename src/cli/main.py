@@ -145,8 +145,6 @@ if branch == 'vamp':
 
     mesh_song.add_chords(df_upper_voicings)
 
-    # exit(0)
-
     # mesh_song.add_quantization(beatmap)
 
     # TODO: in actual workflow, shouldn't need to convert, as this will be taken care of in Ableton user assisted processing
