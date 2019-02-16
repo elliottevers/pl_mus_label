@@ -6,6 +6,7 @@ from convert import midi as convert_midi
 from intervaltree import IntervalTree, Interval
 import music21
 import math
+import numpy as np
 
 
 class MeshSong(object):
@@ -168,6 +169,108 @@ class MeshSong(object):
     #         Interval(begin, end, data)
     #         for begin, end, data in intervals_melody
     #      )
+
+    @staticmethod
+    def get_gran_map(beatmap, quantize='16T'):
+
+        gran_map = dict()
+
+        if quantize == '16T':
+            num_samples = 49
+
+        for beat, s in enumerate(beatmap[:-1], 1):
+            index_beatmap = beat - 1
+            beat_interpolated = np.linspace(beat, beat + 1, num_samples)
+            s_interpolated = np.linspace(beatmap[index_beatmap], beatmap[index_beatmap + 1], num_samples)
+            gran_map.update(dict(zip(beat_interpolated, s_interpolated)))
+
+        return gran_map
+
+    # NB: s_beat_start and s_beat_end are determined by human
+    def trim_beatmap(self, beatmap: List[float], s_beat_start, s_beat_end) -> List[float]:
+
+        s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
+
+        s_beat_last_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_end))
+
+        return list(filter(lambda beat: s_beat_first_quantized <= beat <= s_beat_last_quantized, beatmap))
+
+
+    def _quantize(self, beatmap, s_beat_start, s_beat_end):
+
+        s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
+
+        s_beat_last_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_end))
+
+        i_beat_first = beatmap.index(s_beat_first_quantized)
+
+        i_beat_last = beatmap.index(s_beat_last_quantized)
+
+        column_s_quantized = []
+        column_beat = []
+        column_melody = []
+
+        def get_overlap(top: Tuple, bottom: Tuple) -> float:
+            if top[0] <= bottom[0] and top[1] >= bottom[0] and bottom[1] >= top[1]:
+                return top[1] - bottom[0]
+            elif bottom[0] <= top[0] and bottom[1] >= top[0] and top[1] >= bottom[1]:
+                return bottom[1] - top[0]
+            elif bottom[0] <= top[0] and bottom[1] >= top[1]:
+                return top[1] - top[0]
+            elif top[0] <= bottom[0] and top[1] >= bottom[1]:
+                return bottom[1] - bottom[0]
+            else:
+                raise 'how did this happen'
+
+        gran_map = MeshSong.get_gran_map(self.trim_beatmap(beatmap, s_beat_start, s_beat_end))
+
+        for i_beat, s_beat in enumerate(beatmap[:-1]):
+
+            if i_beat > i_beat_last:
+                break
+
+            beat_interval = (beatmap[i_beat], beatmap[i_beat + 1])
+
+            intervals_chords_overlaps = self.tree_melody.overlap(
+                beat_interval[0],
+                beat_interval[1]
+            )
+
+            # TODO: get element of intervals_chords with highest score according to get_overlap()
+
+            if len(list(intervals_chords_overlaps)) < 1:
+                column_melody.append(
+                    None
+                )
+                column_beat.append(
+                    i_beat - i_beat_first + 1
+                )
+                column_s_quantized.append(
+                    s_beat
+                )
+            else:
+                interval_winner = max(list(intervals_chords_overlaps), key=lambda chord_interval: get_overlap(beat_interval, chord_interval))
+
+                column_melody.append(
+                    interval_winner.data
+                )
+                column_beat.append(
+                    i_beat - i_beat_first + 1
+                )
+                column_s_quantized.append(
+                    s_beat
+                )
+
+        return pd.DataFrame(
+            data={
+                'melody': column_melody,
+                'beat': column_beat,
+                's': column_s_quantized
+            }
+        ).set_index(
+            ['beat', 's']
+        ).sort_index(
+        )
 
     def set_melody_tree(self, melody) -> None:
 

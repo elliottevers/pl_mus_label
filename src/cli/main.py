@@ -87,6 +87,12 @@ if branch == 'vamp':
         df
     )
 
+    mesh_song._quantize(
+        [beat['timestamp'] for beat in data_beats],
+        s_beat_start,
+        s_beat_end
+    )
+
     exit(0)
 
     non_empty_chords = vamp_filter.vamp_filter_non_chords(
