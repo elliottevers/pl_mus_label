@@ -53,6 +53,7 @@ def df_grans_to_score(df_grans: pd.DataFrame, column_index='beat', partmap={'mel
 
     measure = music21.stream.Measure()
 
+    # TODO: HAVE to make more efficient
     for i, note in df_grans.itertuples(index=True, name=True):
         beat = i[0]
         s = i[1]

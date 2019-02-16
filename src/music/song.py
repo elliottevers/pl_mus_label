@@ -277,20 +277,23 @@ class MeshSong(object):
         midi_last = melody.iloc[0].values[0]
         index_midi_last = melody.index[0]
         intervals_melody = []
+        index_last = melody.index[0]
 
         for row in melody.iloc[1:, :].itertuples(index=True, name=True):
             index = row[0]
             midi_current = row[1]
             if midi_current != midi_last:
-                intervals_melody.append(
-                    Interval(
-                        index_midi_last,
-                        index,
-                        MeshSong.get_note(midi_current)
+                if index_last > index_midi_last:
+                    intervals_melody.append(
+                        Interval(
+                            index_midi_last,
+                            index_last,
+                            MeshSong.get_note(midi_current)
+                        )
                     )
-                )
-            midi_last = midi_current
-            index_midi_last = index
+                midi_last = midi_current
+                index_midi_last = index
+            index_last = index
 
         self.tree_melody = IntervalTree(
             Interval(begin, end, data)

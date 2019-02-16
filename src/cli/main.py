@@ -70,7 +70,10 @@ def handle_na(h):
 
 
 if branch == 'vamp':
-
+    # df = pd.DataFrame([3] * 4 + [4] * 4 + [1] * 4, columns=['A'])
+    #
+    # df.reset_index().groupby('A')['index'].apply(np.array)
+    #
     df = mesh_song.melody_to_df(
         data_melody,
         index_type='s'
