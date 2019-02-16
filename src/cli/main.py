@@ -16,6 +16,7 @@ import music21
 from convert import music21 as convert_21
 from filter import midi as filter_mid
 from preprocess import hz as hz_prep
+import math
 
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
@@ -59,9 +60,34 @@ data_beats = ir.extract_beats(
 
 mesh_song = song.MeshSong()
 
+
+def handle_na(h):
+    return 0 if not h or math.isinf(h) or math.isnan(h) or h < 0 else int(h)
+
+
+# def to_midi(hz):
+#     df_hz['melody'].apply(librosa.hz_to_midi).round()
+
+
 if branch == 'vamp':
 
-    diff = hz_prep.remove_redundancies(data_melody[1])
+    df = mesh_song.melody_to_df(
+        data_melody,
+        index_type='s'
+    )
+
+    # TODO: render using diff method
+    df['melody'] = df['melody'].apply(handle_na).diff(1).cumsum().apply(librosa.hz_to_midi).round().apply(handle_na)
+
+    # diff = hz_prep.remove_redundancies(
+    #     data_melody[1]
+    # )
+
+    mesh_song.set_melody_tree(
+        df
+    )
+
+    exit(0)
 
     non_empty_chords = vamp_filter.vamp_filter_non_chords(
         s_to_label_chords

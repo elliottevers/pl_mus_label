@@ -101,12 +101,12 @@ class MeshSong(object):
     # TODO: put somewhere else
     @staticmethod
     def get_note(pitch_midi):
-        if not pitch_midi or math.isinf(pitch_midi) or math.isnan(pitch_midi):
+        if not pitch_midi or math.isinf(pitch_midi) or math.isnan(pitch_midi) or pitch_midi == 0:
             return None
         else:
             return music21.note.Note(pitch=music21.pitch.Pitch(midi=int(pitch_midi)))
 
-    # def set_melody_tree(self) -> None:
+    # def set_melody_tree_attempt_1(self) -> None:
     #     # iterate over s index
     #     # look for changes
     #     melody_last = self.data.loc[self.data.index[0], :].values[1]
@@ -133,42 +133,66 @@ class MeshSong(object):
     #         for begin, end, data in intervals_melody
     #      )
 
-    def set_melody_tree(self) -> None:
-        # iterate over s index
-        # look for changes
-        # melody_last = self.data.loc[self.data.index[0], :].values[1]
-        # index_melody_last = self.data.index[0]
-        # intervals_melody = []
+    # def set_melody_tree_attempt_2(self) -> None:
+    #     # iterate over s index
+    #     # look for changes
+    #     # melody_last = self.data.loc[self.data.index[0], :].values[1]
+    #     # index_melody_last = self.data.index[0]
+    #     # intervals_melody = []
+    #
+    #     # index_list = self.data.index.tolist()
+    #
+    #     melody_last = self.data.loc[(0, slice(None), slice(None)), 'melody']
+    #     index_melody_last = (0, slice(None), slice(None))
+    #     intervals_melody = []
+    #
+    #     for row in self.data.iloc[1:, :].itertuples(index=True, name=True):
+    #         index = row[0]
+    #         melody_current = row[2]
+    #         # TODO: do this without looking up the last row
+    #         # row_last = self.data.loc[(index[0] - 1, slice(None), slice(None))]
+    #         # melody_last = row_last.values[0][1]
+    #         # TODO: put back in
+    #         # if melody_current != melody_last:
+    #         #     intervals_melody.append(
+    #         #         Interval(
+    #         #             index_melody_last[1],
+    #         #             index[1],
+    #         #             MeshSong.get_note(melody_last)
+    #         #         )
+    #         #     )
+    #         #     melody_last = melody_current
+    #         #     index_melody_last = index
+    #
+    #     self.tree_melody = IntervalTree(
+    #         Interval(begin, end, data)
+    #         for begin, end, data in intervals_melody
+    #      )
 
-        # index_list = self.data.index.tolist()
+    def set_melody_tree(self, melody) -> None:
 
-        melody_last = self.data.loc[(0, slice(None), slice(None)), 'melody']
-        index_melody_last = (0, slice(None), slice(None))
+        midi_last = melody.iloc[0].values[0]
+        index_midi_last = melody.index[0]
         intervals_melody = []
 
-        for row in self.data.iloc[1:, :].itertuples(index=True, name=True):
+        for row in melody.iloc[1:, :].itertuples(index=True, name=True):
             index = row[0]
-            melody_current = row[2]
-            # TODO: do this without looking up the last row
-            # row_last = self.data.loc[(index[0] - 1, slice(None), slice(None))]
-            # melody_last = row_last.values[0][1]
-            # TODO: put back in
-            # if melody_current != melody_last:
-            #     intervals_melody.append(
-            #         Interval(
-            #             index_melody_last[1],
-            #             index[1],
-            #             MeshSong.get_note(melody_last)
-            #         )
-            #     )
-            #     melody_last = melody_current
-            #     index_melody_last = index
+            midi_current = row[1]
+            if midi_current != midi_last:
+                intervals_melody.append(
+                    Interval(
+                        index_midi_last,
+                        index,
+                        MeshSong.get_note(midi_current)
+                    )
+                )
+            midi_last = midi_current
+            index_midi_last = index
 
         self.tree_melody = IntervalTree(
             Interval(begin, end, data)
             for begin, end, data in intervals_melody
          )
-
 
     @staticmethod
     def quantize(
