@@ -21,25 +21,13 @@ class MeshSong(object):
 
     tree_segments: IntervalTree
 
-    data: pd.DataFrame
+    data_quantized: pd.DataFrame
 
     def __init__(self):
         self.data = None
 
-    # def add_chords(self, chords: Dict[Any, List[note.MidiNote]], index_type='s'):
-    #     # events_chords: Dict[float, List[note.MidiNote]]
-    #     # self.data = pd.merge(self.data, chords, on=index_type)
-    #     df_chords = pd.DataFrame(
-    #         data={'chords': list(chords.values())}, index=list(chords.keys())
-    #     )
-    #     df_chords.index.name = index_type
-
-    def add_quantization(self):
-        return 0
-
     @staticmethod
-    # def chords_to_df(chords: Dict[Any, List[note.MidiNote]], index_type='s'):
-    def chords_to_df(chords: Dict[Any, chord.ChordMidi], index_type='s'):
+    def chords_to_df(chords: Dict[Any, music21.chord.Chord], index_type='s'):
         df_chords = pd.DataFrame(
             data={'chord': list(chords.values())}, index=list(chords.keys())
         )
@@ -64,13 +52,14 @@ class MeshSong(object):
         df_segments = pd.DataFrame(
             data={
                 'segment': [
-                    note.MidiNote(
-                        pitch=60,
-                        duration_ticks=convert_midi.s_to_ticks(segment['duration']),  # TODO: make sure defaults (bpm, ppq) don't fuck with this
-                        velocity=90,
-                        channel=10,
-                        program=49
-                    )
+                    # note.MidiNote(
+                    #     pitch=60,
+                    #     duration_ticks=convert_midi.s_to_ticks(segment['duration']),  # TODO: make sure defaults (bpm, ppq) don't fuck with this
+                    #     velocity=90,
+                    #     channel=10,
+                    #     program=49
+                    # )
+                    music21.note.Note(pitch=60)
                     for segment
                     in segments
                 ]
@@ -115,69 +104,6 @@ class MeshSong(object):
         else:
             return pitch_midi
 
-    # def set_melody_tree_attempt_1(self) -> None:
-    #     # iterate over s index
-    #     # look for changes
-    #     melody_last = self.data.loc[self.data.index[0], :].values[1]
-    #     index_melody_last = self.data.index[0]
-    #     intervals_melody = []
-    #
-    #     for i, (i_full, row) in enumerate(self.data.iloc[1:, :].iterrows()):
-    #         melody_current = row['melody']
-    #         row_last = self.data.loc[(i_full[0] - 1, slice(None), slice(None))]
-    #         melody_last = row_last.values[0][1]
-    #         if melody_current != melody_last:
-    #             intervals_melody.append(
-    #                 Interval(
-    #                     index_melody_last[1],
-    #                     i_full[1],
-    #                     MeshSong.get_note(melody_last)
-    #                 )
-    #             )
-    #             melody_last = melody_current
-    #             index_melody_last = i_full
-    #
-    #     self.tree_melody = IntervalTree(
-    #         Interval(begin, end, data)
-    #         for begin, end, data in intervals_melody
-    #      )
-
-    # def set_melody_tree_attempt_2(self) -> None:
-    #     # iterate over s index
-    #     # look for changes
-    #     # melody_last = self.data.loc[self.data.index[0], :].values[1]
-    #     # index_melody_last = self.data.index[0]
-    #     # intervals_melody = []
-    #
-    #     # index_list = self.data.index.tolist()
-    #
-    #     melody_last = self.data.loc[(0, slice(None), slice(None)), 'melody']
-    #     index_melody_last = (0, slice(None), slice(None))
-    #     intervals_melody = []
-    #
-    #     for row in self.data.iloc[1:, :].itertuples(index=True, name=True):
-    #         index = row[0]
-    #         melody_current = row[2]
-    #         # TODO: do this without looking up the last row
-    #         # row_last = self.data.loc[(index[0] - 1, slice(None), slice(None))]
-    #         # melody_last = row_last.values[0][1]
-    #         # TODO: put back in
-    #         # if melody_current != melody_last:
-    #         #     intervals_melody.append(
-    #         #         Interval(
-    #         #             index_melody_last[1],
-    #         #             index[1],
-    #         #             MeshSong.get_note(melody_last)
-    #         #         )
-    #         #     )
-    #         #     melody_last = melody_current
-    #         #     index_melody_last = index
-    #
-    #     self.tree_melody = IntervalTree(
-    #         Interval(begin, end, data)
-    #         for begin, end, data in intervals_melody
-    #      )
-
     @staticmethod
     def get_gran_map(beatmap, quantize='16T'):
 
@@ -216,11 +142,11 @@ class MeshSong(object):
         else:
             raise 'how did this happen'
 
-    def _get_maximum_overlap(self, gran_map):
+    def _get_maximum_overlap(self, gran_map, columns):
 
         column_s_quantized = []
         column_beat = []
-        column_melody = []
+        # column_melody = []
 
         beats = sorted(list(gran_map.keys()))
         # endpoint_beat_last = beats[0]
@@ -274,13 +200,69 @@ class MeshSong(object):
         ).sort_index(
         )
 
-    def _quantize(self, beatmap, s_beat_start, s_beat_end):
+    def quantize(self, beatmap, s_beat_start, s_beat_end, columns=['melody', 'bass', 'chords', 'segments']) -> None:
 
         gran_map = MeshSong.get_gran_map(self.trim_beatmap(beatmap, s_beat_start, s_beat_end))
 
-        return self._get_maximum_overlap(gran_map)
+        self.data_quantized = self._get_maximum_overlap(gran_map, columns)
 
-    def set_melody_tree(self, melody) -> None:
+    def set_segment_tree(self, df_segments: pd.DataFrame) -> None:
+
+        midi_last = melody.iloc[0].values[0]
+        index_midi_last = melody.index[0]
+        intervals_melody = []
+        index_last = melody.index[0]
+
+        for row in melody.iloc[1:, :].itertuples(index=True, name=True):
+            index = row[0]
+            midi_current = row[1]
+            if midi_current != midi_last:
+                if index_last > index_midi_last:
+                    intervals_melody.append(
+                        Interval(
+                            index_midi_last,
+                            index_last,
+                            # MeshSong.get_note(midi_current)
+                            MeshSong.get_pitch_midi(midi_current)
+                        )
+                    )
+                midi_last = midi_current
+                index_midi_last = index
+            index_last = index
+
+        self.tree_melody = IntervalTree(
+            Interval(begin, end, data)
+            for begin, end, data in intervals_melody
+
+    def set_bass_tree(self, df_bass: pd.DataFrame) -> None:
+
+        midi_last = melody.iloc[0].values[0]
+        index_midi_last = melody.index[0]
+        intervals_melody = []
+        index_last = melody.index[0]
+
+        for row in melody.iloc[1:, :].itertuples(index=True, name=True):
+            index = row[0]
+            midi_current = row[1]
+            if midi_current != midi_last:
+                if index_last > index_midi_last:
+                    intervals_melody.append(
+                        Interval(
+                            index_midi_last,
+                            index_last,
+                            # MeshSong.get_note(midi_current)
+                            MeshSong.get_pitch_midi(midi_current)
+                        )
+                    )
+                midi_last = midi_current
+                index_midi_last = index
+            index_last = index
+
+        self.tree_melody = IntervalTree(
+            Interval(begin, end, data)
+            for begin, end, data in intervals_melody
+
+    def set_chord_tree(self, df_chord: pd.DataFrame) -> None:
 
         midi_last = melody.iloc[0].values[0]
         index_midi_last = melody.index[0]
@@ -309,172 +291,34 @@ class MeshSong(object):
             for begin, end, data in intervals_melody
          )
 
-    @staticmethod
-    def quantize(
-            s_timeseries: pd.DataFrame,
-            beatmap: List[float],
-            s_beat_start,
-            s_beat_end
-    ) -> pd.DataFrame:
+    def set_melody_tree(self, melody: pd.DataFrame) -> None:
 
-        # TODO: add column of beats (NaNs before and after start and end), make it another index
-        column_s_quantized = []
-        column_beat = []
-        column_chord = []
+        midi_last = melody.iloc[0].values[0]
+        index_midi_last = melody.index[0]
+        intervals_melody = []
+        index_last = melody.index[0]
 
-        s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
+        for row in melody.iloc[1:, :].itertuples(index=True, name=True):
+            index = row[0]
+            midi_current = row[1]
+            if midi_current != midi_last:
+                if index_last > index_midi_last:
+                    intervals_melody.append(
+                        Interval(
+                            index_midi_last,
+                            index_last,
+                            # MeshSong.get_note(midi_current)
+                            MeshSong.get_pitch_midi(midi_current)
+                        )
+                    )
+                midi_last = midi_current
+                index_midi_last = index
+            index_last = index
 
-        s_beat_last_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_end))
-
-        i_beat_first = beatmap.index(s_beat_first_quantized)
-
-        # def within_inveral(candidate: float, interval: Tuple):
-        #     return interval[0] <= candidate <= interval[1]
-
-        from intervaltree import Interval, IntervalTree
-
-        intervals_chords = []
-
-        list_index = s_timeseries.index.tolist()
-
-        for i_ms, ms in enumerate(list_index[:-1]):
-            intervals_chords.append(
-                (
-                    ms,
-                    list_index[i_ms + 1],
-                    s_timeseries.loc[list_index[i_ms]]['chord']
-                )
-            )
-
-        intervals_chords.append(
-            (
-                list_index[-1],
-                list_index[-1] + 100, # TODO: we need to use the length of the song to determine when to cutoff the last chord
-                s_timeseries.loc[list_index[-1]]['chord']
-            )
-        )
-
-        interval_tree_chords = IntervalTree(
+        self.tree_melody = IntervalTree(
             Interval(begin, end, data)
-            for begin, end, data in intervals_chords
+            for begin, end, data in intervals_melody
          )
-
-        def get_overlap(top: Tuple, bottom: Tuple) -> float:
-            if top[0] <= bottom[0] and top[1] >= bottom[0] and bottom[1] >= top[1]:
-                return top[1] - bottom[0]
-            elif bottom[0] <= top[0] and bottom[1] >= top[0] and top[1] >= bottom[1]:
-                return bottom[1] - top[0]
-            elif bottom[0] <= top[0] and bottom[1] >= top[1]:
-                return top[1] - top[0]
-            elif top[0] <= bottom[0] and top[1] >= bottom[1]:
-                return bottom[1] - bottom[0]
-            else:
-                raise 'how did this happen'
-
-        for i_beat, s_beat in enumerate(beatmap[:-1]):
-
-            beat_interval = (beatmap[i_beat], beatmap[i_beat + 1])
-
-            intervals_chords_overlaps = interval_tree_chords.overlap(
-                beat_interval[0],
-                beat_interval[1]
-            )
-
-            # TODO: get element of intervals_chords with highest score according to get_overlap()
-
-            if len(list(intervals_chords_overlaps)) < 1:
-                column_chord.append(
-                    None
-                )
-                column_beat.append(
-                    i_beat - i_beat_first + 1
-                )
-                column_s_quantized.append(
-                    s_beat
-                )
-            else:
-                interval_winner = max(list(intervals_chords_overlaps), key=lambda chord_interval: get_overlap(beat_interval, chord_interval))
-
-                # beat_to_candidate_key_map[i_beat] = candidate_keys
-                column_chord.append(
-                    interval_winner.data
-                )
-                column_beat.append(
-                    i_beat - i_beat_first + 1
-                )
-                column_s_quantized.append(
-                    s_beat
-                )
-
-        return pd.DataFrame(
-            data={
-                'chord': column_chord,
-                'beat': column_beat,
-                's': column_s_quantized
-            }
-        ).set_index(
-            ['beat', 's']
-        ).sort_index(
-        )
-
-    # @staticmethod
-    # def quantize(
-    #         s_timeseries: pd.DataFrame,
-    #         beatmap: List[float],
-    #         s_beat_start,
-    #         s_beat_end
-    # ) -> pd.DataFrame:
-    #
-    #     # TODO: add column of beats (NaNs before and after start and end), make it another index
-    #     column_s_quantized = []
-    #     column_beat = []
-    #
-    #     s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
-    #
-    #     s_beat_last_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_end))
-    #
-    #     counter = 0
-    #     passed_first_beat = False
-    #     passed_last_beat = False
-    #
-    #     index_nearest_s_beat_first_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_first_quantized))
-    #
-    #     index_nearest_s_beat_last_quantized = min(list(s_timeseries.index), key=lambda s_beat: abs(s_beat - s_beat_last_quantized))
-    #
-    #     for index, row in s_timeseries.iterrows():
-    #         if index == index_nearest_s_beat_first_quantized:
-    #             passed_first_beat = True
-    #
-    #         if index == index_nearest_s_beat_last_quantized:
-    #             passed_last_beat = True
-    #             counter = 0
-    #
-    #         if passed_first_beat and not passed_last_beat:
-    #             counter += 1
-    #
-    #         key_s_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - index))
-    #
-    #         column_s_quantized.append(key_s_quantized)
-    #
-    #         # find position, wrt first beat, of closest
-    #         column_beat.append(
-    #             # counter
-    #             beatmap.index(key_s_quantized) - beatmap.index(s_beat_first_quantized) + 1
-    #         )
-    #
-    #     s_timeseries['s_quantized'] = column_s_quantized
-    #
-    #     s_timeseries['beat'] = column_beat
-    #
-    #     # TODO: indices should *not* be from chord estimate, but from beat map - chord estimate is used to assign chord at user specified granulatiry
-    #     return s_timeseries.reset_index(
-    #         drop=True
-    #     ).rename(
-    #         columns={'s_quantized': 's'}
-    #     ).set_index(
-    #         ['beat', 's']
-    #     ).sort_index(
-    #     )
 
     def render(self, part_to_track: Dict, type='fixed_tempo') -> MidiFile:
         # add chords to tracks
@@ -483,102 +327,87 @@ class MeshSong(object):
         #     for i_
         return MidiFile()
 
-    def create_notes(self, index='melody'):
-
-        raise 'not implemented'
-
-    def quantize_on_index(self, index='beat', granularity='16T'):
-        # assigns to each 'ms' index, a corresponding 'beat' index
-        # quantizes entire df based on index
-        raise 'not implemented'
-
-    def fill_legato(self, name_column='chord') -> None:
-        col_legato = []
-        struct_current = None
-        for chord in self.data['chord'].tolist():
-            testing = 1
-
-    def add_pk(self):
-        column_pk = [i for i in range(len(self.data))]
-        self.data['pk'] = column_pk
-        self.data.reset_index(
-            inplace=True
-        )
-        self.data.set_index(
-            ['pk', 's', 'beat'],
-            inplace=True
-        )
-        self.data.sort_index(
-            by='s',
-            inplace=True
-        )
-
-    # TODO: support index type 's' (melodyne) and 'beat' (trascription after source separation)
-    def add_melody(self, melody: pd.DataFrame, index_type='s') -> None:
-        self.data = pd.merge(
-            self.data.reset_index(),
-            melody.reset_index(),
-            on=[index_type],
-            how='outer'
-        ).set_index(
-            [index_type, 'beat']
-        ).sort_index(
-            by=index_type
-        )
-
-    def add_chords(self, chords: pd.DataFrame, index_type='s') -> None:
-        if not self.data:
-            self.data = chords
-        else:
-            self.data = pd.merge(
-                self.data.reset_index(),
-                chords.reset_index(),
-                on=[index_type],
-                how='outer'
-            ).set_index(
-                [index_type, 'beat']
-            ).sort_index(
-                by=index_type
-            )
-
-    def add_segments(self, segments: pd.DataFrame, index_type='s') -> None:
-        self.data = pd.merge(
-            self.data.reset_index(),
-            segments.reset_index(),
-            on=[index_type],
-            how='outer'
-        ).set_index(
-            [index_type, 'beat']
-        ).sort_index(
-            by=index_type
-        )
-
-    def add_bass(self, bass: pd.DataFrame, index_type='s') -> None:
-        self.data = pd.merge(
-            self.data.reset_index(),
-            bass.reset_index(),
-            on=[index_type, 'beat'],
-            how='outer'
-        ).set_index(
-            [index_type, 'beat']
-        ).sort_index(
-            by=index_type
-        )
-    # def add_chords(self, chords: Dict[Any, List[note.MidiNote]], index_type='s'):
-    #     # events_chords: Dict[float, List[note.MidiNote]]
-    #     # self.data = pd.merge(self.data, chords, on=index_type)
-    #     df_chords = pd.DataFrame(
-    #         data={'chords': list(chords.values())}, index=list(chords.keys())
+    # def create_notes(self, index='melody'):
+    #
+    #     raise 'not implemented'
+    #
+    # def quantize_on_index(self, index='beat', granularity='16T'):
+    #     # assigns to each 'ms' index, a corresponding 'beat' index
+    #     # quantizes entire df based on index
+    #     raise 'not implemented'
+    #
+    # def fill_legato(self, name_column='chord') -> None:
+    #     col_legato = []
+    #     struct_current = None
+    #     for chord in self.data['chord'].tolist():
+    #         testing = 1
+    #
+    # def add_pk(self):
+    #     column_pk = [i for i in range(len(self.data))]
+    #     self.data['pk'] = column_pk
+    #     self.data.reset_index(
+    #         inplace=True
     #     )
-    #     df_chords.index.name = index_type
+    #     self.data.set_index(
+    #         ['pk', 's', 'beat'],
+    #         inplace=True
+    #     )
+    #     self.data.sort_index(
+    #         by='s',
+    #         inplace=True
+    #     )
 
-    def get_time_aligned(self) -> pd.DataFrame:
-        return 0
+    def add_key_centers(self, key_centers: pd.DataFrame) -> None:
+        self.data_quantized = pd.merge(
+            self.data.reset_index(),
+            key_centers.reset_index(),
+            on='beat',
+            how='outer' # TODO: we could probably make this 'inner'
+        ).set_index(
+            'beat'
+        ).sort_index(
+            by='beat'
+        )
 
-    def get_fixed_tempo(self) -> pd.DataFrame:
-        if not self.tempo:
-            raise 'tempo estimate not set'
-        return 0
+    # def add_chords(self, chords: pd.DataFrame, index_type='s') -> None:
+    #     if not self.data:
+    #         self.data = chords
+    #     else:
+    #         self.data = pd.merge(
+    #             self.data.reset_index(),
+    #             chords.reset_index(),
+    #             on=[index_type],
+    #             how='outer'
+    #         ).set_index(
+    #             [index_type, 'beat']
+    #         ).sort_index(
+    #             by=index_type
+    #         )
+    #
+    # def add_segments(self, segments: pd.DataFrame, index_type='s') -> None:
+    #     self.data = pd.merge(
+    #         self.data.reset_index(),
+    #         segments.reset_index(),
+    #         on=[index_type],
+    #         how='outer'
+    #     ).set_index(
+    #         [index_type, 'beat']
+    #     ).sort_index(
+    #         by=index_type
+    #     )
+    #
+    # def add_bass(self, bass: pd.DataFrame, index_type='s') -> None:
+    #     self.data = pd.merge(
+    #         self.data.reset_index(),
+    #         bass.reset_index(),
+    #         on=[index_type, 'beat'],
+    #         how='outer'
+    #     ).set_index(
+    #         [index_type, 'beat']
+    #     ).sort_index(
+    #         by=index_type
+    #     )
+
 
 # import mido
 # from mido import Message, MidiFile, MidiTrack, MetaMessage

@@ -10,11 +10,11 @@ from convert import midi as midi_convert, vamp as vamp_convert
 from filter import vamp as vamp_filter
 import jsonpickle
 from analysis_discrete import midi as analysis_midi
-from information_retrieval import extraction as ir
-from postprocess import midi as mid_post
+from information_retrieval import extraction as mir
+from postprocess import midi as postp_mid
 import music21
-from convert import musicxml as mxl
-from filter import midi as filter_mid
+from convert import musicxml as mxl_conv
+from filter import midi as filter_mid, seconds as s_filt
 from preprocess import hz as hz_prep
 import math
 
@@ -70,129 +70,122 @@ def handle_na(h):
 
 
 if branch == 'vamp':
-    # df = pd.DataFrame([3] * 4 + [4] * 4 + [1] * 4, columns=['A'])
-    #
-    # df.reset_index().groupby('A')['index'].apply(np.array)
-    #
-    df = mesh_song.melody_to_df(
+
+    # MELODY
+
+    df_melody = prep_vamp.melody_to_df(
         data_melody,
         index_type='s'
     )
 
-    # TODO: render using diff method
-    df['melody'] = df['melody'].apply(handle_na).diff(1).cumsum().apply(librosa.hz_to_midi).round().apply(handle_na)
-
-    # diff = hz_prep.remove_redundancies(
-    #     data_melody[1]
-    # )
+    # map hertz to midi
+    # TODO: put in preprocessing module
+    df_melody['melody'] = df_melody['melody'].apply(handle_na).diff(1).cumsum().apply(librosa.hz_to_midi).round().apply(handle_na)
 
     mesh_song.set_melody_tree(
-        df
+        df_melody
     )
 
-    df_quantized = mesh_song._quantize(
-        [beat['timestamp'] for beat in data_beats],
-        s_beat_start,
-        s_beat_end
-    )
+    # CHORDS
 
-    score = mxl.df_grans_to_score(
-        df_quantized
-    )
-
-    score.show()
-
-    exit(0)
-
+    # TODO: put in preprocessing module
     non_empty_chords = vamp_filter.vamp_filter_non_chords(
         s_to_label_chords
     )
 
-    events_chords = vamp_convert.vamp_to_dict(
+    # TODO: put in preprocessing module
+    events_chords: Dict[float, music21.chord.Chord] = vamp_convert.vamp_chord_to_dict(
         non_empty_chords
     )
 
-    df_chords_quantized = song.MeshSong.quantize(
-        song.MeshSong.chords_to_df(events_chords),
-        [beat['timestamp'] for beat in data_beats],  # TODO: fix
-        s_beat_start=s_beat_start,
-        s_beat_end=s_beat_end
+    df_chords = prep_vamp.chords_to_df(
+        events_chords
     )
 
-    quantized_and_smoothed = filter_mid.smooth_chords(
-        df_chords_quantized
+    df_upper_voicings = postp_mid.extract_upper_voices(
+        df_chords
     )
 
-    score_quantized = mxl.df_beats_to_score(
-        quantized_and_smoothed
+    mesh_song.set_chord_tree(
+        df_upper_voicings
     )
 
-    # exit(0)
-    # list_melody = data_melody[1]
-    #
-    # sample_rate = data_melody[0]
-    #
-    # df_melody_hz = pd.DataFrame(
-    #     data={'melody': list_melody},
-    #     index=[i_sample * sample_rate for i_sample, sample in enumerate(list_melody)]
-    # )
-    #
-    # df_melody_hz.index.name = 's'
-    #
-    # chord = music21.harmony.ChordSymbol(s_to_label_chords[1]['label'].replace('b', '-'))
+    # BASS
 
-    df_upper_voicings = mid_post.extract_upper_voices(df_chords_quantized)
-
-    mesh_song.add_chords(df_upper_voicings)
-
-    # mesh_song.add_quantization(beatmap)
-
-    # TODO: in actual workflow, shouldn't need to convert, as this will be taken care of in Ableton user assisted processing
-    mesh_song.add_melody(
-        midi_convert.hz_to_mid(
-            mesh_song.melody_to_df(
-                data_melody,
-                index_type='s'
-            )
-        ),
-        index_type='s'
+    df_bass = postp_mid.extract_bass(
+        df_chords
     )
 
-    mesh_song.add_pk()
-
-    mesh_song.set_melody_tree(
+    mesh_song.set_bass_tree(
+        df_bass
     )
 
-    exit(0)
+    # SEGMENTS
 
-    mesh_song.quantize_on_index(
-        index='beat'
+    df_segments = prep_vamp.segments_to_df(
+        data_segments
     )
 
-    # TODO: segments, chords, and bass will have to be filled legato
-    # TODO: ORRRR, this logic could be in "render"
-    # mesh_song.fill_legato(name_column='chord')
-
-    df_bass = mid_post.extract_bass(df_chords_quantized)
-
-    mesh_song.add_bass(df_bass)
-
-    df_segments = song.MeshSong.segments_to_df(data_segments)
-
-    mesh_song.add_segments(
+    mesh_song.set_segment_tree(
         df_segments
     )
 
-    # file_chords_and_bass = ''
-    stream_chords_and_bass = midi_convert.df_to_stream(
-        columns=['chord', 'bass']
+    # QUANTIZATION
+
+    # TODO: using the interval trees, this adds the actual data
+    # there should not be a multiindex df underneath the hood
+    mesh_song.quantize(
+        [beat['timestamp'] for beat in data_beats],
+        s_beat_start,
+        s_beat_end,
+        columns=['melody', 'bass', 'chords', 'segments']
     )
 
-    key_centers = analysis_midi.get_key_center_estimates(file_chords_and_bass)
+    # TODO: say something about using the "center of mass" of these structures to fix uncertainty at boundaries
+    mesh_song.data_quantized['chord'] = filter_mid.smooth_chords(
+        mesh_song.data_quantized['chord']
+    )
 
-    mesh_song.add_key_centers(key_centers)
+    mesh_song.data_quantized['bass'] = filter_mid.smooth_bass(
+        mesh_song.data_quantized['bass']
+    )
 
-    fixed_tempo_estimate = mir.get_fixed_tempo_estimate(tempomap)
+    mesh_song.data_quantized['segments'] = filter_mid.smooth_segments(
+        mesh_song.data_quantized['segments']
+    )
+
+    score_sans_key_centers = mxl.df_grans_to_score(
+        mesh_song.data_quantized
+    )
+
+    # TODO: filter segments in the same way as chords, except using every *4* measures
+
+    # KEY CENTERS
+
+    stream_chords_and_bass = postp_mxl.extract_parts(
+        score_sans_key_centers,
+        parts=['chord', 'bass']
+    )
+
+    # TODO: give this dataframe an index of beats
+    df_key_centers: pd.DataFrame = analysis_mxl.get_key_center_estimates(
+        stream_chords_and_bass
+    )
+
+    mesh_song.add_key_centers(
+        df_key_centers
+    )
+
+    # FIXED TEMPO ESTIMATE, FOR FINAL RENDERING
+
+    tempomap = s_prep.tempo_to_df(
+        data_tempo
+    )
+
+    # TODO: implement that median filter
+    fixed_tempo_estimate = s_filt.get_fixed_tempo_estimate(
+        tempomap
+    )
 
 else:
 

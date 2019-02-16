@@ -1,25 +1,23 @@
 from typing import List, Dict, Any, Optional, Tuple
-from music import note as lib_note, chord as lib_chord
-from music21 import harmony
+# from music import note as lib_note, chord as lib_chord
+# from music21 import harmony, chord
+import music21
 
 
-def vamp_to_dict(s_to_label_chords: List[Dict[float, Any]], type_index='s') -> Dict[float, lib_chord.ChordMidi]:
+def vamp_chord_to_dict(s_to_label_chords: List[Dict[float, Any]]) -> Dict[float, music21.chord.Chord]:
 
     events_chords = dict()
 
-    for chord in s_to_label_chords:
-        duration_ticks = None  # TODO: calculate here, instead of during midi file creation
-        velocity = 90
-        chord_realized = harmony.ChordSymbol(chord['label'].replace('b', '-'))
-        # TODO: keeping to_float() is a necessity for vamp conversion
-        # events_chords[chord['timestamp'].to_float()] = [
-        #     note.MidiNote(pitch.midi, duration_ticks, velocity) for pitch in chord_realized.pitches
-        # ]
-        chord_midi = lib_chord.ChordMidi(
+    for event in s_to_label_chords:
+
+        chord_realized = music21.harmony.ChordSymbol(event['label'].replace('b', '-'))
+
+        chord_midi = music21.chord.Chord(
             notes=[
-                lib_note.MidiNote(pitch.midi, duration_ticks, velocity) for pitch in chord_realized.pitches
+                pitch.name for pitch in chord_realized.pitches
             ]
         )
-        events_chords[chord['timestamp']] = chord_midi
+
+        events_chords[event['timestamp']] = chord_midi
 
     return events_chords

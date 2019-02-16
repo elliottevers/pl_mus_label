@@ -4,13 +4,6 @@ import pandas as pd
 import itertools
 
 
-# def filter_length(
-#         divisor_quarter_note,
-#         track_to_filter,
-#         ppq,
-#         bpm
-# ):
-
 def pad(
     track,
     bpm,
@@ -44,6 +37,8 @@ def pad(
 
 def smooth_chords(df: pd.DataFrame) -> pd.DataFrame:
     chords_smoothed = []
+
+    # NB: we assume here that the first level of index is "beat"
     for index, row in df.itertuples(index=True, name='chord'):
         if index[0] % 4 == 1:
             chords_smoothed.append(df.loc[(index[0] + 1, slice(None)), 'chord'].values[0])

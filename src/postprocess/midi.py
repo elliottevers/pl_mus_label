@@ -16,13 +16,12 @@ def get_highest_notes(chord):
         return chord.notes[1:]
 
 
+# TODO: create music21 Note from lowest pitch of music21 chord
 def extract_bass(df_chords) -> pd.DataFrame:
-    # for ind, column in enumerate(df_chords['chord']):
-    #     print(ind, column)
-    # for chord in df_chords['chord'].tolist():
     return df_chords['chord'].apply(get_lowest_note).to_frame(name='bass')
 
 
+# TODO: create music21 Chord from highest pitches of music21 chord
 def extract_upper_voices(df_chords) -> pd.DataFrame:
     return df_chords['chord'].apply(get_highest_notes).to_frame(name='chord')
 

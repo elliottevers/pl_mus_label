@@ -39,6 +39,7 @@ def df_beats_to_score(df: pd.DataFrame, column_index='beat', partmap={'chord': 0
     return score
 
 
+# TODO: abstract to any part
 def df_grans_to_score(df_grans: pd.DataFrame, column_index='beat', partmap={'melody': 0}) -> music21.stream.Score:
     parts = []
 
