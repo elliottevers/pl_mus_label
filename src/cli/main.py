@@ -13,7 +13,7 @@ from analysis_discrete import midi as analysis_midi
 from information_retrieval import extraction as ir
 from postprocess import midi as mid_post
 import music21
-from convert import music21 as convert_21
+from convert import musicxml as mxl
 from filter import midi as filter_mid
 from preprocess import hz as hz_prep
 import math
@@ -93,6 +93,12 @@ if branch == 'vamp':
         s_beat_end
     )
 
+    score = mxl.df_grans_to_score(
+        df_quantized
+    )
+
+    score.show()
+
     exit(0)
 
     non_empty_chords = vamp_filter.vamp_filter_non_chords(
@@ -114,7 +120,7 @@ if branch == 'vamp':
         df_chords_quantized
     )
 
-    score_quantized = convert_21.df_to_score(
+    score_quantized = mxl.df_beats_to_score(
         quantized_and_smoothed
     )
 
