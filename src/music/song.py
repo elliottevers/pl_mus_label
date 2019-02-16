@@ -320,7 +320,8 @@ class MeshSong(object):
             for begin, end, data in intervals_melody
          )
 
-    def render(self, part_to_track: Dict, type='fixed_tempo') -> MidiFile:
+    @staticmethod
+    def render(score: music21.stream.Score) -> MidiFile:
         # add chords to tracks
 
         # for column in self.data.columns:

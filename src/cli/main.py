@@ -18,6 +18,7 @@ from filter import midi as filter_mid, seconds as s_filt
 from preprocess import hz as hz_prep
 import math
 
+# TODO: endow all structures with music21 instrument
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
 
@@ -80,7 +81,12 @@ if branch == 'vamp':
 
     # map hertz to midi
     # TODO: put in preprocessing module
-    df_melody['melody'] = df_melody['melody'].apply(handle_na).diff(1).cumsum().apply(librosa.hz_to_midi).round().apply(handle_na)
+    # TODO: put through series of transformations that will be performed manually in reality
+    # df_melody['melody'] = df_melody['melody'].apply(handle_na).diff(1).cumsum().apply(librosa.hz_to_midi).round().apply(handle_na)
+
+    df_melody['melody'] = hz_prep.preprocess_melody(
+        df_melody['melody']
+    )
 
     mesh_song.set_melody_tree(
         df_melody
@@ -187,47 +193,68 @@ if branch == 'vamp':
         tempomap
     )
 
+    stream_score = mesh_song.to_score(
+
+    )
+
+    stream_score = postp_mxl.set_tempo(
+        stream_score,
+        fixed_tempo_estimate
+    )
+
 else:
 
     # web-based deep learning branch of pipeline
 
-    # NB: already quantized
-    chords = postprocess.load_df(
-        filename=''  # chordify download location
+    # TODO: extract relevant information to merge with other midi file
+    stream_chords: music21.stream.Stream, bpm_chords = prep_mid.load_stream(
+        filename=''
     )
 
-    # NB: no conversion from hertz to midi necessary
-    melody = postprocess.load_df(
-        filename=''  # Ableton transcription download location
+    # TODO: put through series of transformations that will be performed manually in reality
+    stream_melody: music21.stream.Stream, bpm_melody = prep_mid.load_stream(
+        filename=''
     )
 
-    bass = postprocess.extract_bass(chords)
+    # SEGMENTS
 
-    upper_voicings = postprocess.extract_upper_voicings(chords)
-
-    mesh_song.add_chords(upper_voicings)
-
-    mesh_song.add_bass(bass)
-
-    mesh_song.add_melody(
-        melody=melody
+    # TODO: this might work better using chords
+    stream_segments: music21.stream.Stream = analysis_mxl.get_segments(
+        stream_melody
     )
 
-    segments = analysis_midi.extract_segments()
+    # KEY CENTERS
 
-    file_chords_and_bass = ''
+    stream_chords_and_bass: music21.stream.Stream = postp_mxl.extract_parts(
+        stream_chords,
+        parts=['chord', 'bass']
+    )
 
-    key_centers = analysis_midi.get_key_center_estimates(file_chords_and_bass)
+    # TODO: give this dataframe an index of beats
+    stream_key_centers: music21.stream.Stream = analysis_mxl.get_key_center_estimates(
+        stream_chords_and_bass
+    )
 
-    mesh_song.add_key_centers(key_centers)
+    stream_score = postp_mxl.combine_streams(
+        stream_melody,
+        stream_chords_and_bass,
+        stream_segments,
+        stream_key_centers
+    )
 
-    fixed_tempo_estimate = postprocessing.extract_bpm(filename_mid='')
+    stream_score = postp_mxl.set_tempo(
+        stream_score,
+        bpm_chords
+    )
 
 
-mesh_song.render(
-    part_to_track=part_track_map,
-    type='fixed_tempo',
-    tempo=fixed_tempo_estimate
+song.MeshSong.render(
+    stream_score
 )
+
+# TODO: notify Ableton Live that midi file is rendered
+
+# TODO: use parser and encoder to bring parts to and from Ableton Live tracks
+
 
 
