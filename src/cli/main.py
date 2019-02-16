@@ -15,6 +15,7 @@ from postprocess import midi as mid_post
 import music21
 from convert import music21 as convert_21
 from filter import midi as filter_mid
+from preprocess import hz as hz_prep
 
 
 filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav"
@@ -59,6 +60,8 @@ data_beats = ir.extract_beats(
 mesh_song = song.MeshSong()
 
 if branch == 'vamp':
+
+    diff = hz_prep.remove_redundancies(data_melody[1])
 
     non_empty_chords = vamp_filter.vamp_filter_non_chords(
         s_to_label_chords

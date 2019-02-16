@@ -140,28 +140,29 @@ class MeshSong(object):
         # index_melody_last = self.data.index[0]
         # intervals_melody = []
 
-        index_list = self.data.index.tolist()
+        # index_list = self.data.index.tolist()
 
-        melody_last = self.data.loc[index_list[0], 'melody']
-        index_melody_last = index_list[0]
+        melody_last = self.data.loc[(0, slice(None), slice(None)), 'melody']
+        index_melody_last = (0, slice(None), slice(None))
         intervals_melody = []
 
-        for i, index in enumerate(index_list[1:]):
-            # melody_current = row['melody']
-            # melody_current = self.data.loc[index, 'melody'].values[0]
-            melody_current = self.data.loc[index, 'melody']
-            row_last = self.data.loc[(index[0] - 1, slice(None), slice(None))]
-            melody_last = row_last.values[0][1]
-            if melody_current != melody_last:
-                intervals_melody.append(
-                    Interval(
-                        index_melody_last[1],
-                        index[1],
-                        MeshSong.get_note(melody_last)
-                    )
-                )
-                melody_last = melody_current
-                index_melody_last = index
+        for row in self.data.iloc[1:, :].itertuples(index=True, name=True):
+            index = row[0]
+            melody_current = row[2]
+            # TODO: do this without looking up the last row
+            # row_last = self.data.loc[(index[0] - 1, slice(None), slice(None))]
+            # melody_last = row_last.values[0][1]
+            # TODO: put back in
+            # if melody_current != melody_last:
+            #     intervals_melody.append(
+            #         Interval(
+            #             index_melody_last[1],
+            #             index[1],
+            #             MeshSong.get_note(melody_last)
+            #         )
+            #     )
+            #     melody_last = melody_current
+            #     index_melody_last = index
 
         self.tree_melody = IntervalTree(
             Interval(begin, end, data)
