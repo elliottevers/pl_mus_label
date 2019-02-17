@@ -1,7 +1,6 @@
 import pandas as pd
 import music21
 import numpy as np
-from music21 import chord
 
 
 def get_lowest_note(chord):
@@ -32,6 +31,11 @@ def extract_parts(score: music21.stream.Score, parts=['chord', 'bass']) -> music
         score_diminished.insert(i_part, score.getElementById(name_part))
 
     return score_diminished
+
+
+def add_part(part: music21.stream.Part, score: music21.stream.Score):
+    raise 'not implemented'
+
 
 def get_struct_score(object, name_part):
     if name_part == 'melody':
