@@ -13,7 +13,7 @@ from analysis_discrete import music_xml as analysis_mxl
 from information_retrieval import extraction as ir
 from postprocess import midi as postp_mid, music_xml as postp_mxl, hz as hz_postp
 import music21
-from convert import musicxml as mxl_conv
+from convert import music_xml as mxl_conv
 from filter import midi as filter_mid, seconds as s_filt
 from preprocess import hz as hz_prep, vamp as prep_vamp, seconds as s_prep
 import math
@@ -29,6 +29,8 @@ branch = 'vamp'
 s_beat_start = 3.436
 
 s_beat_end = 26.9 + 3 * 60
+
+# cadence_beats = 4
 
 data_melody = ir.extract_melody(
     filename_wav,
@@ -79,8 +81,8 @@ if branch == 'vamp':
         index_type='s'
     )
 
-    # hertz pre-filtering -> discretization -> midi post-filtering -> postprocessing diff series (midi)
-    df_melody['melody'] = hz_postp.get_diff(
+    # hertz pre-filtering -> discretization -> midi post-filtering -> postprocessing diff series (midi) (but doesn't this happen "automatically" when rendering to score?)
+    df_melody['melody'] = hz_postp.midify(
         df_melody['melody']
     )
 
@@ -163,22 +165,24 @@ if branch == 'vamp':
         columns=['melody', 'bass', 'chord', 'segment']
     )
 
-    exit(0)
+    # SMOOTHING
+    # TODO: use quantization at a much higher resolution here
+    # mesh_song.data_quantized['chord'] = filter_mid.smooth_chords(
+    #     mesh_song.data_quantized['chord'],
+    #     cadence_beats=4
+    # )
+    #
+    # mesh_song.data_quantized['bass'] = filter_mid.smooth_bass(
+    #     mesh_song.data_quantized['bass'],
+    #     cadence_beats=1
+    # )
+    #
+    # mesh_song.data_quantized['segment'] = filter_mid.smooth_segment(
+    #     mesh_song.data_quantized['segment'],
+    #     cadence_beats=16
+    # )
 
-    # TODO: say something about using the "center of mass" of these structures to fix uncertainty at boundaries
-    mesh_song.data_quantized['chord'] = filter_mid.smooth_chords(
-        mesh_song.data_quantized['chord']
-    )
-
-    mesh_song.data_quantized['bass'] = filter_mid.smooth_bass(
-        mesh_song.data_quantized['bass']
-    )
-
-    mesh_song.data_quantized['segments'] = filter_mid.smooth_segments(
-        mesh_song.data_quantized['segments']
-    )
-
-    score_sans_key_centers = analysis_mxl.df_grans_to_score(
+    score_sans_key_centers = postp_mxl.df_grans_to_score(
         mesh_song.data_quantized
     )
 
@@ -187,8 +191,7 @@ if branch == 'vamp':
     # KEY CENTERS
 
     stream_chords_and_bass = postp_mxl.extract_parts(
-        score_sans_key_centers,
-        parts=['chord', 'bass']
+        score_sans_key_centers
     )
 
     # TODO: give this dataframe an index of beats

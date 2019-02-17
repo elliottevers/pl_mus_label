@@ -32,7 +32,8 @@ def segments_to_df(data_segments, index_type='s'):
     segments = [
         {
             'timestamp': segment['timestamp'],
-            'duration': segment['duration']
+            'duration': segment['duration'],
+            'label': segment['label']
         }
         for segment
         in data_segments
@@ -41,7 +42,7 @@ def segments_to_df(data_segments, index_type='s'):
     df_segments = pd.DataFrame(
         data={
             'segment': [
-                music21.pitch.Pitch(midi=60)
+                segment['label']
                 for segment
                 in segments
             ]

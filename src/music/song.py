@@ -144,7 +144,7 @@ class MeshSong(object):
 
     def _get_maximum_overlap(self, gran_map, columns):
 
-        columns_quantized: Dict[str, pd.DataFrame] = dict()
+        dfs_quantized: Dict[str, pd.DataFrame] = dict()
 
         col_to_tree_map = {
             'melody': self.tree_melody,
@@ -204,7 +204,7 @@ class MeshSong(object):
 
                 endpoint_s_last = s
 
-            columns_quantized[name_column] = pd.DataFrame(
+            dfs_quantized[name_column] = pd.DataFrame(
                 data={
                     name_column: column,
                     'beat': column_beat,
@@ -212,81 +212,27 @@ class MeshSong(object):
                 }
             ).set_index(
                 ['beat', 's']
-            ).sort_index(
             )
 
-        return pd.DataFrame()
 
-        # return pd.DataFrame(
-        #     data={
-        #         # 'melody': column_melody,
-        #         'beat': column_beat,
-        #         's': column_s_quantized
-        #     }.update(
-        #         dict_columns_quantized
-        #     )
-        # ).set_index(
-        #     ['beat', 's']
-        # ).sort_index(
-        # )
-
-    # def _get_maximum_overlap(self, gran_map, columns):
-    #
-    #     column_s_quantized = []
-    #     column_beat = []
-    #     # column_melody = []
-    #
-    #     beats = sorted(list(gran_map.keys()))
-    #     # endpoint_beat_last = beats[0]
-    #     endpoint_s_last = sorted(list(gran_map.values()))[0]
-    #
-    #     for beat in beats[:-1]:
-    #
-    #         s = gran_map[beat]
-    #
-    #         s_interval = (endpoint_s_last, s)
-    #
-    #         intervals_melody_overlaps = self.tree_melody.overlap(
-    #             s_interval[0],
-    #             s_interval[1]
-    #         )
-    #
-    #         if len(list(intervals_melody_overlaps)) < 1:
-    #             column_melody.append(
-    #                 None
-    #             )
-    #             column_beat.append(
-    #                 beat
-    #             )
-    #             column_s_quantized.append(
-    #                 s
-    #             )
-    #         else:
-    #             interval_winner = max(list(intervals_melody_overlaps), key=lambda melody_interval: MeshSong.get_overlap(s_interval, melody_interval))
-    #
-    #             column_melody.append(
-    #                 interval_winner.data
-    #             )
-    #             column_beat.append(
-    #                 beat
-    #             )
-    #             column_s_quantized.append(
-    #                 s
-    #             )
-    #
-    #         # endpoint_beat_last = beat
-    #         endpoint_s_last = s
-    #
-    #     return pd.DataFrame(
-    #         data={
-    #             'melody': column_melody,
-    #             'beat': column_beat,
-    #             's': column_s_quantized
-    #         }
-    #     ).set_index(
-    #         ['beat', 's']
-    #     ).sort_index(
-    #     )
+        # TODO: segments, after they are fixed
+        return pd.merge(
+            pd.merge(
+                pd.merge(
+                    dfs_quantized['melody'],
+                    dfs_quantized['bass'],
+                    left_index=True,
+                    right_index=True
+                ),
+                dfs_quantized['chord'],
+                left_index=True,
+                right_index=True
+            ),
+            dfs_quantized['segment'],
+            left_index=True,
+            right_index=True
+        ).sort_index(
+        )
 
     def quantize(
             self,
@@ -370,6 +316,13 @@ class MeshSong(object):
         setattr(self, 'tree_' + type, interval_tree)
 
     @staticmethod
+    def get_struct(obj):
+        if type(obj).__name__ == 'Chord':
+            return tuple(obj.intervalVector)
+        else:
+            return obj
+
+    @staticmethod
     def get_interval_tree(df: pd.DataFrame) -> IntervalTree:
 
         struct_last = df.iloc[0].values[0]
@@ -384,7 +337,7 @@ class MeshSong(object):
                     Interval(
                         index_struct_last,
                         index,
-                        struct_current
+                        MeshSong.get_struct(struct_current)  # struct_current
                     )
                 )
                 struct_last = struct_current

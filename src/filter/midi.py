@@ -35,7 +35,9 @@ def pad(
     return track_padded
 
 
-def smooth_chords(df: pd.DataFrame) -> pd.DataFrame:
+# TODO: let's implement so kind of filtering based on quantization
+
+def smooth_chords(df: pd.DataFrame, cadence_beats=4) -> pd.DataFrame:
     chords_smoothed = []
 
     # NB: we assume here that the first level of index is "beat"
@@ -50,3 +52,36 @@ def smooth_chords(df: pd.DataFrame) -> pd.DataFrame:
     df_smoothed = df
     df_smoothed['chord'] = chords_smoothed
     return df_smoothed
+
+
+def smooth_bass(df: pd.DataFrame, cadence_beats=1) -> pd.DataFrame:
+    bass_smoothed = []
+
+    for index, row in df.itertuples(index=True, name='bass'):
+        if index[0] % 4 == 1:
+            bass_smoothed.append(df.loc[(index[0] + 1, slice(None)), 'bass'].values[0])
+        elif index[0] % 4 == 0:
+            bass_smoothed.append(df.loc[(index[0] - 1, slice(None)), 'bass'].values[0])
+        else:
+            bass_smoothed.append(df.loc[(index[0], slice(None)), 'bass'].values[0])
+
+    df_smoothed = df
+    df_smoothed['bass'] = bass_smoothed
+    return df_smoothed
+
+
+def smooth_segment(df: pd.DataFrame, cadence_beats=16) -> pd.DataFrame:
+    segment_smoothed = []
+
+    for index, row in df.itertuples(index=True, name='segment'):
+        if index[0] % 4 == 1:
+            segment_smoothed.append(df.loc[(index[0] + 1, slice(None)), 'segment'].values[0])
+        elif index[0] % 4 == 0:
+            segment_smoothed.append(df.loc[(index[0] - 1, slice(None)), 'segment'].values[0])
+        else:
+            segment_smoothed.append(df.loc[(index[0], slice(None)), 'segment'].values[0])
+
+    df_smoothed = df
+    df_smoothed['segment'] = segment_smoothed
+    return df_smoothed
+
