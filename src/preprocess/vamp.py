@@ -55,3 +55,7 @@ def segments_to_df(data_segments, index_type='s'):
     df_segments.index.name = index_type
 
     return df_segments
+
+
+def extract_tempomap(data_tempo):
+    return data_tempo[1]

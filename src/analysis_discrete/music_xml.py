@@ -32,7 +32,7 @@ def get_key_center_estimates(
         'overlap'
     )
 
-    num_measures = (len(solutions.measures) + measures_window_size - 1) / 2
+    num_measures = (len(solutions) + measures_window_size - 1) / 2
 
     part_key_centers = music21.stream.Part()
 

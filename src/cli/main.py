@@ -63,15 +63,6 @@ data_beats = ir.extract_beats(
 
 mesh_song = song.MeshSong()
 
-
-# def handle_na(h):
-#     return 0 if not h or math.isinf(h) or math.isnan(h) or h < 0 else int(h)
-
-
-# def to_midi(hz):
-#     df_hz['melody'].apply(librosa.hz_to_midi).round()
-
-
 if branch == 'vamp':
 
     # MELODY
@@ -194,11 +185,11 @@ if branch == 'vamp':
         score_sans_key_centers
     )
 
-    # TODO: this is slow to debug
     part_key_centers: music21.stream.Part = analysis_mxl.get_key_center_estimates(
         stream_chords_and_bass
     )
 
+    # TODO: since the above is slow to debug, use this as a sort of test stub
     # part_dummy = postp_mxl.extract_parts(
     #     score_sans_key_centers,
     #     parts=['bass']
@@ -211,7 +202,7 @@ if branch == 'vamp':
 
     # FIXED TEMPO ESTIMATE, FOR FINAL RENDERING
 
-    tempomap = s_prep.tempo_to_df(
+    tempomap = prep_vamp.extract_tempomap(
         data_tempo
     )
 
@@ -220,14 +211,14 @@ if branch == 'vamp':
         tempomap
     )
 
-    stream_score = mesh_song.to_score(
-
-    )
-
-    stream_score = postp_mxl.set_tempo(
-        stream_score,
-        fixed_tempo_estimate
-    )
+    # stream_score = mesh_song.to_score(
+    #
+    # )
+    #
+    # stream_score = postp_mxl.set_tempo(
+    #     stream_score,
+    #     fixed_tempo_estimate
+    # )
 
 else:
 
