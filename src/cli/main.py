@@ -194,19 +194,15 @@ if branch == 'vamp':
         score_sans_key_centers
     )
 
-    # # TODO: give this dataframe an index of beats
-    # df_key_centers: pd.DataFrame = analysis_mxl.get_key_center_estimates(
-    #     stream_chords_and_bass
-    # )
-    #
-    # mesh_song.add_key_centers(
-    #     df_key_centers
-    # )
-
-    # TODO: give this dataframe an index of beats
+    # TODO: this is slow to debug
     part_key_centers: music21.stream.Part = analysis_mxl.get_key_center_estimates(
         stream_chords_and_bass
     )
+
+    # part_dummy = postp_mxl.extract_parts(
+    #     score_sans_key_centers,
+    #     parts=['bass']
+    # )
 
     score_with_key_centers = postp_mxl.add_part(
         part_key_centers,

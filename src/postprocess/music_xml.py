@@ -33,8 +33,13 @@ def extract_parts(score: music21.stream.Score, parts=['chord', 'bass']) -> music
     return score_diminished
 
 
-def add_part(part: music21.stream.Part, score: music21.stream.Score):
-    raise 'not implemented'
+def add_part(part: music21.stream.Part, score: music21.stream.Score, id='key_center') -> music21.stream.Score:
+    part.id = id
+    score.insert(
+        len(score.elements),
+        part
+    )
+    return score
 
 
 def get_struct_score(object, name_part):
