@@ -13,80 +13,80 @@ class MeshSong(object):
 
     tree_melody: IntervalTree
 
-    tree_chords: IntervalTree
+    tree_chord: IntervalTree
 
-    tree_key_centers: IntervalTree
+    tree_key_center: IntervalTree
 
     tree_bass: IntervalTree
 
-    tree_segments: IntervalTree
+    tree_segment: IntervalTree
 
     data_quantized: pd.DataFrame
 
     def __init__(self):
         self.data = None
 
-    @staticmethod
-    def chords_to_df(chords: Dict[Any, music21.chord.Chord], index_type='s'):
-        df_chords = pd.DataFrame(
-            data={'chord': list(chords.values())}, index=list(chords.keys())
-        )
+    # @staticmethod
+    # def chords_to_df(chords: Dict[Any, music21.chord.Chord], index_type='s'):
+    #     df_chords = pd.DataFrame(
+    #         data={'chord': list(chords.values())}, index=list(chords.keys())
+    #     )
+    #
+    #     df_chords.index.name = index_type
+    #
+    #     return df_chords
 
-        df_chords.index.name = index_type
+    # @staticmethod
+    # def segments_to_df(data_segments, index_type='s'):
+    #
+    #     segments = [
+    #         {
+    #             'timestamp': segment['timestamp'],
+    #             'duration': segment['duration']
+    #         }
+    #
+    #         for segment
+    #         in data_segments
+    #     ]
+    #
+    #     df_segments = pd.DataFrame(
+    #         data={
+    #             'segment': [
+    #                 # note.MidiNote(
+    #                 #     pitch=60,
+    #                 #     duration_ticks=convert_midi.s_to_ticks(segment['duration']),  # TODO: make sure defaults (bpm, ppq) don't fuck with this
+    #                 #     velocity=90,
+    #                 #     channel=10,
+    #                 #     program=49
+    #                 # )
+    #                 music21.note.Note(pitch=60)
+    #                 for segment
+    #                 in segments
+    #             ]
+    #         },
+    #         index=[
+    #             segment['timestamp'] for segment in segments
+    #         ]
+    #     )
+    #
+    #     df_segments.index.name = index_type
+    #
+    #     return df_segments
 
-        return df_chords
-
-    @staticmethod
-    def segments_to_df(data_segments, index_type='s'):
-
-        segments = [
-            {
-                'timestamp': segment['timestamp'],
-                'duration': segment['duration']
-            }
-
-            for segment
-            in data_segments
-        ]
-
-        df_segments = pd.DataFrame(
-            data={
-                'segment': [
-                    # note.MidiNote(
-                    #     pitch=60,
-                    #     duration_ticks=convert_midi.s_to_ticks(segment['duration']),  # TODO: make sure defaults (bpm, ppq) don't fuck with this
-                    #     velocity=90,
-                    #     channel=10,
-                    #     program=49
-                    # )
-                    music21.note.Note(pitch=60)
-                    for segment
-                    in segments
-                ]
-            },
-            index=[
-                segment['timestamp'] for segment in segments
-            ]
-        )
-
-        df_segments.index.name = index_type
-
-        return df_segments
-
-    @staticmethod
-    def melody_to_df(data_melody, index_type='s'):
-        list_melody = data_melody[1]
-
-        sample_rate = data_melody[0]
-
-        df_melody_hz = pd.DataFrame(
-            data={'melody': list_melody},
-            index=[i_sample * sample_rate for i_sample, sample in enumerate(list_melody)]
-        )
-
-        df_melody_hz.index.name = index_type
-
-        return df_melody_hz
+    # @staticmethod
+    # def melody_to_df(data_melody, index_type='s'):
+    #     list_melody = data_melody[1]
+    #
+    #     sample_rate = data_melody[0]
+    #
+    #     df_melody_hz = pd.DataFrame(
+    #         data={'melody': list_melody},
+    #         index=[i_sample * sample_rate for i_sample, sample in enumerate(list_melody)]
+    #     )
+    #
+    #     df_melody_hz.index.name = index_type
+    #
+    #     return df_melody_hz
 
     # TODO: put somewhere else
     @staticmethod
@@ -144,181 +144,285 @@ class MeshSong(object):
 
     def _get_maximum_overlap(self, gran_map, columns):
 
-        column_s_quantized = []
-        column_beat = []
-        # column_melody = []
+        columns_quantized: Dict[str, pd.DataFrame] = dict()
 
-        beats = sorted(list(gran_map.keys()))
-        # endpoint_beat_last = beats[0]
-        endpoint_s_last = sorted(list(gran_map.values()))[0]
+        col_to_tree_map = {
+            'melody': self.tree_melody,
+            'bass': self.tree_bass,
+            'chord': self.tree_chord,
+            'segment': self.tree_segment
+            # 'key_center': self.tree_key_center
+        }
 
-        for beat in beats[:-1]:
+        for name_column in columns:
 
-            s = gran_map[beat]
+            column_s_quantized = []
+            column_beat = []
+            column = []
 
-            s_interval = (endpoint_s_last, s)
+            beats = sorted(list(gran_map.keys()))
+            endpoint_s_last = sorted(list(gran_map.values()))[0]
 
-            intervals_melody_overlaps = self.tree_melody.overlap(
-                s_interval[0],
-                s_interval[1]
+            for beat in beats[:-1]:
+
+                s = gran_map[beat]
+
+                s_interval = (endpoint_s_last, s)
+
+                tree = col_to_tree_map[name_column]
+
+                overlapping_intervals = tree.overlap(
+                    s_interval[0],
+                    s_interval[1]
+                )
+
+                if len(list(overlapping_intervals)) < 1:
+                    column.append(
+                        None
+                    )
+                    column_beat.append(
+                        beat
+                    )
+                    column_s_quantized.append(
+                        s
+                    )
+                else:
+                    interval_winner = max(
+                        list(overlapping_intervals),
+                        key=lambda interval: MeshSong.get_overlap(s_interval, interval)
+                    )
+
+                    column.append(
+                        interval_winner.data
+                    )
+                    column_beat.append(
+                        beat
+                    )
+                    column_s_quantized.append(
+                        s
+                    )
+
+                endpoint_s_last = s
+
+            columns_quantized[name_column] = pd.DataFrame(
+                data={
+                    name_column: column,
+                    'beat': column_beat,
+                    's': column_s_quantized
+                }
+            ).set_index(
+                ['beat', 's']
+            ).sort_index(
             )
 
-            if len(list(intervals_melody_overlaps)) < 1:
-                column_melody.append(
-                    None
-                )
-                column_beat.append(
-                    beat
-                )
-                column_s_quantized.append(
-                    s
-                )
-            else:
-                interval_winner = max(list(intervals_melody_overlaps), key=lambda melody_interval: MeshSong.get_overlap(s_interval, melody_interval))
+        return pd.DataFrame()
 
-                column_melody.append(
-                    interval_winner.data
-                )
-                column_beat.append(
-                    beat
-                )
-                column_s_quantized.append(
-                    s
-                )
+        # return pd.DataFrame(
+        #     data={
+        #         # 'melody': column_melody,
+        #         'beat': column_beat,
+        #         's': column_s_quantized
+        #     }.update(
+        #         dict_columns_quantized
+        #     )
+        # ).set_index(
+        #     ['beat', 's']
+        # ).sort_index(
+        # )
 
-            # endpoint_beat_last = beat
-            endpoint_s_last = s
+    # def _get_maximum_overlap(self, gran_map, columns):
+    #
+    #     column_s_quantized = []
+    #     column_beat = []
+    #     # column_melody = []
+    #
+    #     beats = sorted(list(gran_map.keys()))
+    #     # endpoint_beat_last = beats[0]
+    #     endpoint_s_last = sorted(list(gran_map.values()))[0]
+    #
+    #     for beat in beats[:-1]:
+    #
+    #         s = gran_map[beat]
+    #
+    #         s_interval = (endpoint_s_last, s)
+    #
+    #         intervals_melody_overlaps = self.tree_melody.overlap(
+    #             s_interval[0],
+    #             s_interval[1]
+    #         )
+    #
+    #         if len(list(intervals_melody_overlaps)) < 1:
+    #             column_melody.append(
+    #                 None
+    #             )
+    #             column_beat.append(
+    #                 beat
+    #             )
+    #             column_s_quantized.append(
+    #                 s
+    #             )
+    #         else:
+    #             interval_winner = max(list(intervals_melody_overlaps), key=lambda melody_interval: MeshSong.get_overlap(s_interval, melody_interval))
+    #
+    #             column_melody.append(
+    #                 interval_winner.data
+    #             )
+    #             column_beat.append(
+    #                 beat
+    #             )
+    #             column_s_quantized.append(
+    #                 s
+    #             )
+    #
+    #         # endpoint_beat_last = beat
+    #         endpoint_s_last = s
+    #
+    #     return pd.DataFrame(
+    #         data={
+    #             'melody': column_melody,
+    #             'beat': column_beat,
+    #             's': column_s_quantized
+    #         }
+    #     ).set_index(
+    #         ['beat', 's']
+    #     ).sort_index(
+    #     )
 
-        return pd.DataFrame(
-            data={
-                'melody': column_melody,
-                'beat': column_beat,
-                's': column_s_quantized
-            }
-        ).set_index(
-            ['beat', 's']
-        ).sort_index(
-        )
-
-    def quantize(self, beatmap, s_beat_start, s_beat_end, columns=['melody', 'bass', 'chords', 'segments']) -> None:
+    def quantize(
+            self,
+            beatmap,
+            s_beat_start,
+            s_beat_end,
+            columns=[
+                'melody',
+                'bass',
+                'chords',
+                'segments'
+            ]
+    ) -> None:
 
         gran_map = MeshSong.get_gran_map(self.trim_beatmap(beatmap, s_beat_start, s_beat_end))
 
         self.data_quantized = self._get_maximum_overlap(gran_map, columns)
 
-    def set_segment_tree(self, df_segments: pd.DataFrame) -> None:
+    # def set_segment_tree(self, df_segments: pd.DataFrame) -> None:
+    #
+    #     midi_last = melody.iloc[0].values[0]
+    #     index_midi_last = melody.index[0]
+    #     intervals_melody = []
+    #     index_last = melody.index[0]
+    #
+    #     for row in melody.iloc[1:, :].itertuples(index=True, name=True):
+    #         index = row[0]
+    #         midi_current = row[1]
+    #         if midi_current != midi_last:
+    #             if index_last > index_midi_last:
+    #                 intervals_melody.append(
+    #                     Interval(
+    #                         index_midi_last,
+    #                         index_last,
+    #                         # MeshSong.get_note(midi_current)
+    #                         MeshSong.get_pitch_midi(midi_current)
+    #                     )
+    #                 )
+    #             midi_last = midi_current
+    #             index_midi_last = index
+    #         index_last = index
+    #
+    #     self.tree_melody = IntervalTree(
+    #         Interval(begin, end, data)
+    #         for begin, end, data in intervals_melody
+    #     )
+    #
+    # def set_bass_tree(self, df_bass: pd.DataFrame) -> None:
+    #
+    #     midi_last = melody.iloc[0].values[0]
+    #     index_midi_last = melody.index[0]
+    #     intervals_melody = []
+    #     index_last = melody.index[0]
+    #
+    #     for row in melody.iloc[1:, :].itertuples(index=True, name=True):
+    #         index = row[0]
+    #         midi_current = row[1]
+    #         if midi_current != midi_last:
+    #             if index_last > index_midi_last:
+    #                 intervals_melody.append(
+    #                     Interval(
+    #                         index_midi_last,
+    #                         index_last,
+    #                         # MeshSong.get_note(midi_current)
+    #                         MeshSong.get_pitch_midi(midi_current)
+    #                     )
+    #                 )
+    #             midi_last = midi_current
+    #             index_midi_last = index
+    #         index_last = index
+    #
+    #     self.tree_melody = IntervalTree(
+    #         Interval(begin, end, data)
+    #         for begin, end, data in intervals_melody
+    #     )
 
-        midi_last = melody.iloc[0].values[0]
-        index_midi_last = melody.index[0]
-        intervals_melody = []
-        index_last = melody.index[0]
+    def set_tree(self, interval_tree: IntervalTree, type: str) -> None:
+        if type not in ['melody', 'chord', 'bass', 'segment', 'key_center']:
+            raise('interval tree of type ' + type + ' not supported')
+        # TODO: this is a bit scary now isn't it?
+        setattr(self, 'tree_' + type, interval_tree)
 
-        for row in melody.iloc[1:, :].itertuples(index=True, name=True):
+    @staticmethod
+    def get_interval_tree(df: pd.DataFrame) -> IntervalTree:
+
+        struct_last = df.iloc[0].values[0]
+        index_struct_last = df.index[0]
+        intervals_structs = []
+
+        for row in df.iloc[1:, :].itertuples(index=True, name=True):
             index = row[0]
-            midi_current = row[1]
-            if midi_current != midi_last:
-                if index_last > index_midi_last:
-                    intervals_melody.append(
-                        Interval(
-                            index_midi_last,
-                            index_last,
-                            # MeshSong.get_note(midi_current)
-                            MeshSong.get_pitch_midi(midi_current)
-                        )
+            struct_current = row[1]
+            if struct_current != struct_last:
+                intervals_structs.append(
+                    Interval(
+                        index_struct_last,
+                        index,
+                        struct_current
                     )
-                midi_last = midi_current
-                index_midi_last = index
-            index_last = index
+                )
+                struct_last = struct_current
+                index_struct_last = index
 
-        self.tree_melody = IntervalTree(
+        return IntervalTree(
             Interval(begin, end, data)
-            for begin, end, data in intervals_melody
-
-    def set_bass_tree(self, df_bass: pd.DataFrame) -> None:
-
-        midi_last = melody.iloc[0].values[0]
-        index_midi_last = melody.index[0]
-        intervals_melody = []
-        index_last = melody.index[0]
-
-        for row in melody.iloc[1:, :].itertuples(index=True, name=True):
-            index = row[0]
-            midi_current = row[1]
-            if midi_current != midi_last:
-                if index_last > index_midi_last:
-                    intervals_melody.append(
-                        Interval(
-                            index_midi_last,
-                            index_last,
-                            # MeshSong.get_note(midi_current)
-                            MeshSong.get_pitch_midi(midi_current)
-                        )
-                    )
-                midi_last = midi_current
-                index_midi_last = index
-            index_last = index
-
-        self.tree_melody = IntervalTree(
-            Interval(begin, end, data)
-            for begin, end, data in intervals_melody
-
-    def set_chord_tree(self, df_chord: pd.DataFrame) -> None:
-
-        midi_last = melody.iloc[0].values[0]
-        index_midi_last = melody.index[0]
-        intervals_melody = []
-        index_last = melody.index[0]
-
-        for row in melody.iloc[1:, :].itertuples(index=True, name=True):
-            index = row[0]
-            midi_current = row[1]
-            if midi_current != midi_last:
-                if index_last > index_midi_last:
-                    intervals_melody.append(
-                        Interval(
-                            index_midi_last,
-                            index_last,
-                            # MeshSong.get_note(midi_current)
-                            MeshSong.get_pitch_midi(midi_current)
-                        )
-                    )
-                midi_last = midi_current
-                index_midi_last = index
-            index_last = index
-
-        self.tree_melody = IntervalTree(
-            Interval(begin, end, data)
-            for begin, end, data in intervals_melody
+            for begin, end, data in intervals_structs
          )
 
-    def set_melody_tree(self, melody: pd.DataFrame) -> None:
-
-        midi_last = melody.iloc[0].values[0]
-        index_midi_last = melody.index[0]
-        intervals_melody = []
-        index_last = melody.index[0]
-
-        for row in melody.iloc[1:, :].itertuples(index=True, name=True):
-            index = row[0]
-            midi_current = row[1]
-            if midi_current != midi_last:
-                if index_last > index_midi_last:
-                    intervals_melody.append(
-                        Interval(
-                            index_midi_last,
-                            index_last,
-                            # MeshSong.get_note(midi_current)
-                            MeshSong.get_pitch_midi(midi_current)
-                        )
-                    )
-                midi_last = midi_current
-                index_midi_last = index
-            index_last = index
-
-        self.tree_melody = IntervalTree(
-            Interval(begin, end, data)
-            for begin, end, data in intervals_melody
-         )
+    # def set_melody_tree(self, melody: pd.DataFrame) -> None:
+    #
+    #     midi_last = melody.iloc[0].values[0]
+    #     index_midi_last = melody.index[0]
+    #     intervals_melody = []
+    #     index_last = melody.index[0]
+    #
+    #     for row in melody.iloc[1:, :].itertuples(index=True, name=True):
+    #         index = row[0]
+    #         midi_current = row[1]
+    #         if midi_current != midi_last:
+    #             if index_last > index_midi_last:
+    #                 intervals_melody.append(
+    #                     Interval(
+    #                         index_midi_last,
+    #                         index_last,
+    #                         # MeshSong.get_note(midi_current)
+    #                         MeshSong.get_pitch_midi(midi_current)
+    #                     )
+    #                 )
+    #             midi_last = midi_current
+    #             index_midi_last = index
+    #         index_last = index
+    #
+    #     self.tree_melody = IntervalTree(
+    #         Interval(begin, end, data)
+    #         for begin, end, data in intervals_melody
+    #      )
 
     @staticmethod
     def render(score: music21.stream.Score) -> MidiFile:

@@ -5,25 +5,25 @@ from subprocess import call as call_shell
 filepath_midi = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid'
 
 
-def get_lowest_note(chord):
-    return chord.notes[0]
-
-
-def get_highest_notes(chord):
-    if not chord:
-        return None
-    else:
-        return chord.notes[1:]
-
-
-# TODO: create music21 Note from lowest pitch of music21 chord
-def extract_bass(df_chords) -> pd.DataFrame:
-    return df_chords['chord'].apply(get_lowest_note).to_frame(name='bass')
-
-
-# TODO: create music21 Chord from highest pitches of music21 chord
-def extract_upper_voices(df_chords) -> pd.DataFrame:
-    return df_chords['chord'].apply(get_highest_notes).to_frame(name='chord')
+# def get_lowest_note(chord):
+#     return chord.notes[0]
+#
+#
+# def get_highest_notes(chord):
+#     if not chord:
+#         return None
+#     else:
+#         return chord.notes[1:]
+#
+#
+# # TODO: create music21 Note from lowest pitch of music21 chord
+# def extract_bass(df_chords) -> pd.DataFrame:
+#     return df_chords['chord'].apply(get_lowest_note).to_frame(name='bass')
+#
+#
+# # TODO: create music21 Chord from highest pitches of music21 chord
+# def extract_upper_voices(df_chords) -> pd.DataFrame:
+#     return df_chords['chord'].apply(get_highest_notes).to_frame(name='chord')
 
 
 def to_df(filepath_midi, name_column='chords') -> pd.DataFrame:

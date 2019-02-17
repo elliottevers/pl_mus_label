@@ -9,13 +9,13 @@ from music import note, song
 from convert import midi as midi_convert, vamp as vamp_convert
 from filter import vamp as vamp_filter
 import jsonpickle
-from analysis_discrete import midi as analysis_midi
-from information_retrieval import extraction as mir
-from postprocess import midi as postp_mid
+from analysis_discrete import music_xml as analysis_mxl
+from information_retrieval import extraction as ir
+from postprocess import midi as postp_mid, music_xml as postp_mxl, hz as hz_postp
 import music21
 from convert import musicxml as mxl_conv
 from filter import midi as filter_mid, seconds as s_filt
-from preprocess import hz as hz_prep
+from preprocess import hz as hz_prep, vamp as prep_vamp, seconds as s_prep
 import math
 
 # TODO: endow all structures with music21 instrument
@@ -62,8 +62,8 @@ data_beats = ir.extract_beats(
 mesh_song = song.MeshSong()
 
 
-def handle_na(h):
-    return 0 if not h or math.isinf(h) or math.isnan(h) or h < 0 else int(h)
+# def handle_na(h):
+#     return 0 if not h or math.isinf(h) or math.isnan(h) or h < 0 else int(h)
 
 
 # def to_midi(hz):
@@ -79,17 +79,18 @@ if branch == 'vamp':
         index_type='s'
     )
 
-    # map hertz to midi
-    # TODO: put in preprocessing module
-    # TODO: put through series of transformations that will be performed manually in reality
-    # df_melody['melody'] = df_melody['melody'].apply(handle_na).diff(1).cumsum().apply(librosa.hz_to_midi).round().apply(handle_na)
-
-    df_melody['melody'] = hz_prep.preprocess_melody(
+    # hertz pre-filtering -> discretization -> midi post-filtering -> postprocessing diff series (midi)
+    df_melody['melody'] = hz_postp.get_diff(
         df_melody['melody']
     )
 
-    mesh_song.set_melody_tree(
+    tree_melody = song.MeshSong.get_interval_tree(
         df_melody
+    )
+
+    mesh_song.set_tree(
+        tree_melody,
+        type='melody'
     )
 
     # CHORDS
@@ -108,22 +109,32 @@ if branch == 'vamp':
         events_chords
     )
 
-    df_upper_voicings = postp_mid.extract_upper_voices(
+    df_upper_voicings = postp_mxl.extract_upper_voices(
         df_chords
     )
 
-    mesh_song.set_chord_tree(
+    chord_tree = song.MeshSong.get_interval_tree(
         df_upper_voicings
+    )
+
+    mesh_song.set_tree(
+        chord_tree,
+        type='chord'
     )
 
     # BASS
 
-    df_bass = postp_mid.extract_bass(
+    df_bass = postp_mxl.extract_bass(
         df_chords
     )
 
-    mesh_song.set_bass_tree(
+    tree_bass = song.MeshSong.get_interval_tree(
         df_bass
+    )
+
+    mesh_song.set_tree(
+        tree_bass,
+        type='bass'
     )
 
     # SEGMENTS
@@ -132,8 +143,13 @@ if branch == 'vamp':
         data_segments
     )
 
-    mesh_song.set_segment_tree(
+    tree_segments = song.MeshSong.get_interval_tree(
         df_segments
+    )
+
+    mesh_song.set_tree(
+        tree_segments,
+        type='segment'
     )
 
     # QUANTIZATION
@@ -144,8 +160,10 @@ if branch == 'vamp':
         [beat['timestamp'] for beat in data_beats],
         s_beat_start,
         s_beat_end,
-        columns=['melody', 'bass', 'chords', 'segments']
+        columns=['melody', 'bass', 'chord', 'segment']
     )
+
+    exit(0)
 
     # TODO: say something about using the "center of mass" of these structures to fix uncertainty at boundaries
     mesh_song.data_quantized['chord'] = filter_mid.smooth_chords(
@@ -160,7 +178,7 @@ if branch == 'vamp':
         mesh_song.data_quantized['segments']
     )
 
-    score_sans_key_centers = mxl.df_grans_to_score(
+    score_sans_key_centers = analysis_mxl.df_grans_to_score(
         mesh_song.data_quantized
     )
 
@@ -206,15 +224,15 @@ else:
 
     # web-based deep learning branch of pipeline
 
-    # TODO: extract relevant information to merge with other midi file
-    stream_chords: music21.stream.Stream, bpm_chords = prep_mid.load_stream(
-        filename=''
-    )
-
-    # TODO: put through series of transformations that will be performed manually in reality
-    stream_melody: music21.stream.Stream, bpm_melody = prep_mid.load_stream(
-        filename=''
-    )
+    # # TODO: extract relevant information to merge with other midi file
+    # stream_chords: music21.stream.Stream, bpm_chords = prep_mid.load_stream(
+    #     filename=''
+    # )
+    #
+    # # TODO: put through series of transformations that will be performed manually in reality
+    # stream_melody: music21.stream.Stream, bpm_melody = prep_mid.load_stream(
+    #     filename=''
+    # )
 
     # SEGMENTS
 
@@ -224,7 +242,6 @@ else:
     )
 
     # KEY CENTERS
-
     stream_chords_and_bass: music21.stream.Stream = postp_mxl.extract_parts(
         stream_chords,
         parts=['chord', 'bass']
