@@ -215,10 +215,11 @@ if branch == 'vamp':
     #
     # )
     #
-    # stream_score = postp_mxl.set_tempo(
-    #     stream_score,
-    #     fixed_tempo_estimate
-    # )
+
+    stream_score = postp_mxl.set_tempo(
+        score_with_key_centers,
+        bpm=fixed_tempo_estimate
+    )
 
 else:
 

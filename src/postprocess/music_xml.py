@@ -42,6 +42,26 @@ def add_part(part: music21.stream.Part, score: music21.stream.Score, id='key_cen
     return score
 
 
+def set_tempo(score: music21.stream.Score, bpm: int = 60) -> music21.stream.Score:
+
+    marks_to_remove = []
+
+    # remove current
+    for mark in score.flat.getElementsByClass(music21.tempo.MetronomeMark):
+        marks_to_remove.append(mark)
+
+    for mark in marks_to_remove:
+        score.remove(mark, recurse=True)
+
+    # add new
+    for measure in score.parts[0].getElementsByClass(music21.stream.Measure):
+        if measure.offset == 0.0:
+            tempo = music21.tempo.MetronomeMark(number=bpm)
+            tempo.offset = 0.0
+            measure.append(tempo)
+
+    return score
+
 def get_struct_score(object, name_part):
     if name_part == 'melody':
         if not object > 0:
