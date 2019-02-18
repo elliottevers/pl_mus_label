@@ -7,7 +7,7 @@ class Messenger:
 
     _key_route: str
 
-    def __init__(self, key_route: str):
+    def __init__(self, key_route: str = 'messenger'):
         self._key_route = key_route
 
     def message(self, message: List[str]):
