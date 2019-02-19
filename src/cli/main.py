@@ -24,7 +24,7 @@ filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosyn
 
 filename_mid_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears_TEST.mid'
 
-branch = 'deep learning'
+branch = 'vamp'
 
 s_beat_start = 3.436
 
