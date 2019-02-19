@@ -8,6 +8,7 @@ import numpy as np
 import argparse
 from postprocess import music_xml as postp_mxl
 from music import song
+from utils import utils
 
 
 def main(args):
@@ -32,9 +33,6 @@ def main(args):
     dict_write = dict(
 
     )
-
-    def intersection(former: List[str], latter: List[str]) -> List[str]:
-        return [value for value in former if value in latter]
 
     parts = ['melody', 'chord', 'bass', 'segment', 'key_center']
 
@@ -104,7 +102,7 @@ def main(args):
 
     df_gran_master.index.name = 'beat'
 
-    for part in intersection(parts, list(json_read.keys())):
+    for part in utils.intersection(parts, list(json_read.keys())):
 
         dict_write[part] = {
 
@@ -205,7 +203,7 @@ def main(args):
 
     thawer.open(fp=filepath_frozen)
 
-    thawer.stream.show('midi')
+    # thawer.stream.show('midi')
 
     exit(0)
 

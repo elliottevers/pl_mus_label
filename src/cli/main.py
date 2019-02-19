@@ -24,7 +24,9 @@ filename_wav = "/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosyn
 
 filename_mid_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears_TEST.mid'
 
-branch = 'vamp'
+filepath_frozen = '/Users/elliottevers/Downloads/score_frozen.json'
+
+branch = 'deep learning'
 
 s_beat_start = 3.436
 
@@ -221,6 +223,8 @@ if branch == 'vamp':
         bpm=fixed_tempo_estimate
     )
 
+    stream_score.show()
+
 else:
 
     # web-based deep learning branch of pipeline
@@ -236,7 +240,7 @@ else:
     # )
 
     stream_chords_bass_melody = postp_mxl.thaw_stream(
-        filepath='path_to_chords_bass_melody'
+        filepath=filepath_frozen
     )
 
     stream_melody = postp_mxl.extract_parts(
@@ -247,8 +251,11 @@ else:
     # SEGMENTS
     # TODO: this might work better using chords
     stream_segments: music21.stream.Stream = analysis_mxl.get_segments(
-        stream_melody
+        stream_melody,
+        name_part='segments'
     )
+
+    exit(0)
 
     # KEY CENTERS
     stream_chords_and_bass: music21.stream.Stream = postp_mxl.extract_parts(

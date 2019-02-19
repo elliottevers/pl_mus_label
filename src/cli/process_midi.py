@@ -2,6 +2,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from live import note as note_live
 import json
 from message import messenger as lib_mes
+from utils import utils
 
 import argparse
 
@@ -23,12 +24,9 @@ def main(args):
 
     )
 
-    def intersection(former: List[str], latter: List[str]) -> List[str]:
-        return [value for value in former if value in latter]
-
     parts = ['melody', 'chord', 'bass', 'segment', 'key_center']
 
-    for part in intersection(parts, list(json_read.keys())):
+    for part in utils.intersection(parts, list(json_read.keys())):
 
         dict_write[part] = {
 

@@ -45,6 +45,12 @@ def add_part(part: music21.stream.Part, score: music21.stream.Score, id='key_cen
     return score
 
 
+def thaw_stream(filepath) -> music21.stream.Stream:
+    thawer = music21.freezeThaw.StreamThawer()
+    thawer.open(fp=filepath)
+    return thawer.stream
+
+
 def set_tempo(score: music21.stream.Score, bpm: int = 60) -> music21.stream.Score:
 
     marks_to_remove = []
@@ -137,12 +143,19 @@ def df_grans_to_score(
 
             beat_to_struct_score[beat_start] = struct_score
 
-        measure = music21.stream.Measure()
+        counter_measure = 1
+
+        measure = music21.stream.Measure(
+            number=counter_measure
+        )
 
         for beat in df_grans.index.get_level_values(0).tolist():
             if int(beat) == beat and int(beat) % 4 == 0:
                 part.append(measure)
-                measure = music21.stream.Measure()
+                counter_measure = counter_measure + 1
+                measure = music21.stream.Measure(
+                    number=counter_measure
+                )
 
             if beat in beat_to_struct_score:
                 struct_score = beat_to_struct_score[beat]
