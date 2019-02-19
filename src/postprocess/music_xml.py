@@ -156,19 +156,26 @@ def df_grans_to_score(
 
 
 def live_to_xml(
-        notes: List[nl.NoteLive],
+        notes_live: List[nl.NoteLive],
         mode: str = 'monophonic'
 ) -> List:
     if mode == 'monophonic':
-        return [
-            music21.note.Note(
-                pitch=note.pitch,
-                offset=note.beat_start,
-                duration=music21.duration.Duration(note.beats_duration)
+        notes = []
+
+        for note_live in notes_live:
+            note = music21.note.Note(
+                pitch=note_live.pitch
             )
-            for note
-            in notes
-        ]
+            note.duration = music21.duration.Duration(
+                note_live.beats_duration
+            )
+
+            note.offset = note_live.beat_start
+
+            notes.append(note)
+
+        return notes
+
     elif mode == 'polyphonic':
         # TODO: this hard a hard requirement that they're sorted by beat beforehand
         groups_notes = []
@@ -177,21 +184,32 @@ def live_to_xml(
         def get_beat_start(note):
             return note.beat_start
 
-        for beat_start, group_note in groupby(notes, get_beat_start):
+        for beat_start, group_note in groupby(notes_live, get_beat_start):
             groups_notes.append(list(group_note))
             unique_onsets_beats.append(beat_start)
 
-        return [
-            music21.chord.Chord([
-                music21.pitch.Pitch(
-                    midi=note_live.pitch
+        chords = []
+
+        for group in groups_notes:
+
+            chord = music21.chord.Chord([
+                music21.note.Note(
+                    pitch=music21.pitch.Pitch(
+                        midi=note_live.pitch
+                    )
                 ).name for
                 note_live
                 in group
             ])
-            for group
-            in groups_notes
-        ]
+
+            # TODO: this makes the assumption that all notes in the group have the same offsets and duration
+
+            chord.offset = group[-1].beat_start
+            chord.duration = music21.duration.Duration(group[-1].beats_duration)
+            chords.append(chord)
+
+        return chords
+
     else:
         raise 'mode ' + mode + 'not supported'
 
