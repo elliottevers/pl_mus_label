@@ -53,11 +53,26 @@ def main(args):
     #
     #     return df
 
-    def struct_to_df(struct, part):
-        index = get_index_gran(
-            struct.offset,
-            struct.offset + struct.duration.quarterLength
-        )
+    def struct_to_df(struct, part, df_gran_master):
+
+        granularity = 1/48
+
+        epsilon = granularity/4  # for good measure
+
+        # TODO: rounding error on dataframe index was causing joins to go awry
+
+        # index = get_index_gran(
+        #     struct.offset,
+        #     struct.offset + struct.duration.quarterLength
+        # )
+
+        index_sliced_right_bound = df_gran_master.index[
+            df_gran_master.index <= struct.offset + struct.duration.quarterLength + epsilon
+        ]
+
+        index = index_sliced_right_bound[
+            index_sliced_right_bound >= struct.offset - epsilon
+        ]
 
         if part == 'chord':
             data = []
@@ -67,8 +82,7 @@ def main(args):
                 )
             df = pd.DataFrame(
                 data={part: data},
-                index=index,
-                # columns=[part]
+                index=index
             )
         else:
             df = pd.DataFrame(
@@ -180,9 +194,26 @@ def main(args):
             df_gran.update(
                 struct_to_df(
                     struct_score,
-                    part=part
+                    part=part,
+                    df_gran_master=df_gran_master
                 )
             )
+
+            testing = 1
+
+            # df_gran.concat(
+            #     struct_to_df(
+            #         struct_score,
+            #         part=part
+            #     )
+            # )
+
+            # df_gran_master = pd.concat(
+            #     [
+            #         df_gran_master[~df_gran_master.index.isin(df_gran.index)],
+            #         df_gran
+            #     ]
+            # )
 
         # dict_write[part]['notes'].append(
         #     ' '.join(['notes', 'done'])
@@ -195,6 +226,8 @@ def main(args):
             right_index=True
         )
 
+        # df_gran_master[part] = df_gran[part]
+        #
         # df_gran_master.merge(
         #     df_gran,
         #     left_index=True,
