@@ -9,18 +9,14 @@ class Note(ABC):
         self.pitch = pitch
         self.duration = duration
 
-    # @abstractmethod
-    # def do_something(self):
-    #     pass
-
 
 class MidiNote(Note):
 
-    pitch: int
-
-    duration: int
-
-    velocity: int
+    # pitch: int
+    #
+    # duration: int
+    #
+    # velocity: int
 
     def __init__(self, pitch, duration_ticks, velocity, channel=1, program=0):
         super().__init__(pitch, duration_ticks)

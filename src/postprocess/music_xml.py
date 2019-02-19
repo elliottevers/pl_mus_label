@@ -1,6 +1,9 @@
 import pandas as pd
 import music21
 import numpy as np
+from live import note as nl
+from typing import List, Dict, Any, Optional, Tuple
+from itertools import groupby
 
 
 def get_lowest_note(chord):
@@ -61,6 +64,7 @@ def set_tempo(score: music21.stream.Score, bpm: int = 60) -> music21.stream.Scor
             measure.append(tempo)
 
     return score
+
 
 def get_struct_score(object, name_part):
     if name_part == 'melody':
@@ -149,4 +153,45 @@ def df_grans_to_score(
         score.insert(i_part, part)
 
     return score
+
+
+def live_to_xml(
+        notes: List[nl.NoteLive],
+        mode: str = 'monophonic'
+) -> List:
+    if mode == 'monophonic':
+        return [
+            music21.note.Note(
+                pitch=note.pitch,
+                offset=note.beat_start,
+                duration=music21.duration.Duration(note.beats_duration)
+            )
+            for note
+            in notes
+        ]
+    elif mode == 'polyphonic':
+        # TODO: this hard a hard requirement that they're sorted by beat beforehand
+        groups_notes = []
+        unique_onsets_beats = []
+
+        def get_beat_start(note):
+            return note.beat_start
+
+        for beat_start, group_note in groupby(notes, get_beat_start):
+            groups_notes.append(list(group_note))
+            unique_onsets_beats.append(beat_start)
+
+        return [
+            music21.chord.Chord([
+                music21.pitch.Pitch(
+                    midi=note_live.pitch
+                ).name for
+                note_live
+                in group
+            ])
+            for group
+            in groups_notes
+        ]
+    else:
+        raise 'mode ' + mode + 'not supported'
 

@@ -6,6 +6,8 @@ import music21
 import pandas as pd
 import numpy as np
 import argparse
+from postprocess import music_xml as postp_mxl
+from music import song
 
 
 def main(args):
@@ -38,20 +40,42 @@ def main(args):
     def beat_to_gran(beat):
         return (beat * 48) / 4  # assuming 16T quantization
 
-    def note_to_df(note, part):
-        # index = np.linspace(
-        #     start=beat_to_gran(note.beat_start),
-        #     stop=beat_to_gran(note.get_beat_end()),
-        #     num=beat_to_gran(note.beats_duration) + 1
-        # )
+    # def note_to_df(note, part):
+    #     index = get_index_gran(note.beat_start, note.get_beat_end())
+    #
+    #     df = pd.DataFrame(
+    #         data=np.full((len(index), 1), note.pitch),
+    #         index=index,
+    #         columns=[part]
+    #     )
+    #
+    #     df.index.name = 'beat'
+    #
+    #     return df
 
-        index = get_index_gran(note.beat_start, note.get_beat_end())
-
-        df = pd.DataFrame(
-            data=np.full((len(index), 1), note.pitch),
-            index=index,
-            columns=[part]
+    def struct_to_df(struct, part):
+        index = get_index_gran(
+            struct.offset,
+            struct.offset + struct.duration.quarterLength
         )
+
+        if part == 'chord':
+            data = []
+            for _ in np.nditer(index):
+                data.append(
+                    list(song.MeshSong.get_struct(struct))
+                )
+            df = pd.DataFrame(
+                data={part: data},
+                index=index,
+                # columns=[part]
+            )
+        else:
+            df = pd.DataFrame(
+                data=np.full((len(index), 1), song.MeshSong.get_struct(struct)),
+                index=index,
+                columns=[part]
+            )
 
         df.index.name = 'beat'
 
@@ -59,12 +83,12 @@ def main(args):
 
     def get_index_gran(start, end):
         return np.linspace(
-            # start=beat_to_gran(start),
-            # stop=beat_to_gran(end),
             start=start,
             stop=end,
             num=beat_to_gran(end - start) + 1
         )
+
+    # def parse_note_stream()
 
     index = get_index_gran(song_start_beats, song_end_beats)
 
@@ -73,8 +97,11 @@ def main(args):
             (len(index), 1),
             0  # TODO: does this make sense for all data
         ),
-        index=index
+        index=index,
+        columns=['placeholder']
     )
+
+    df_gran_master.index.name = 'beat'
 
     for part in intersection(parts, list(json_read.keys())):
         # linearly spaced numpy array length of tracks in beats
@@ -134,16 +161,25 @@ def main(args):
 
         df_gran.index.name = 'beat'
 
+        mode = 'polyphonic' if part == 'chord' else 'monophonic'
+
         # TODO: make a column named by the part
-        for note in note_live.NoteLive.parse_list(json_read[part]['notes']):
+        # for note in note_live.NoteLive.parse_list(json_read[part]['notes']):
+        list_structs = postp_mxl.live_to_xml(
+            note_live.NoteLive.parse_list(
+                json_read[part]['notes']
+            ),
+            mode=mode
+        )
+        for struct_score in list_structs:
 
             # dict_write[part]['notes'].append(
             #     note.encode()
             # )
 
             df_gran.update(
-                note_to_df(
-                    note,
+                struct_to_df(
+                    struct_score,
                     part=part
                 )
             )
@@ -165,6 +201,11 @@ def main(args):
         #     right_index=True
         # )
 
+    df_gran_master.drop(
+        ['placeholder'],
+        axis=1,
+        inplace=True
+    )
 
     exit(0)
 

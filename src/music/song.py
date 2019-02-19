@@ -26,68 +26,6 @@ class MeshSong(object):
     def __init__(self):
         self.data = None
 
-    # @staticmethod
-    # def chords_to_df(chords: Dict[Any, music21.chord.Chord], index_type='s'):
-    #     df_chords = pd.DataFrame(
-    #         data={'chord': list(chords.values())}, index=list(chords.keys())
-    #     )
-    #
-    #     df_chords.index.name = index_type
-    #
-    #     return df_chords
-
-    # @staticmethod
-    # def segments_to_df(data_segments, index_type='s'):
-    #
-    #     segments = [
-    #         {
-    #             'timestamp': segment['timestamp'],
-    #             'duration': segment['duration']
-    #         }
-    #
-    #         for segment
-    #         in data_segments
-    #     ]
-    #
-    #     df_segments = pd.DataFrame(
-    #         data={
-    #             'segment': [
-    #                 # note.MidiNote(
-    #                 #     pitch=60,
-    #                 #     duration_ticks=convert_midi.s_to_ticks(segment['duration']),  # TODO: make sure defaults (bpm, ppq) don't fuck with this
-    #                 #     velocity=90,
-    #                 #     channel=10,
-    #                 #     program=49
-    #                 # )
-    #                 music21.note.Note(pitch=60)
-    #                 for segment
-    #                 in segments
-    #             ]
-    #         },
-    #         index=[
-    #             segment['timestamp'] for segment in segments
-    #         ]
-    #     )
-    #
-    #     df_segments.index.name = index_type
-    #
-    #     return df_segments
-
-    # @staticmethod
-    # def melody_to_df(data_melody, index_type='s'):
-    #     list_melody = data_melody[1]
-    #
-    #     sample_rate = data_melody[0]
-    #
-    #     df_melody_hz = pd.DataFrame(
-    #         data={'melody': list_melody},
-    #         index=[i_sample * sample_rate for i_sample, sample in enumerate(list_melody)]
-    #     )
-    #
-    #     df_melody_hz.index.name = index_type
-    #
-    #     return df_melody_hz
-
     # TODO: put somewhere else
     @staticmethod
     def get_note(pitch_midi):
@@ -318,6 +256,8 @@ class MeshSong(object):
     def get_struct(obj):
         if type(obj).__name__ == 'Chord':
             return tuple(obj.intervalVector)
+        elif type(obj).__name__ == 'Note':
+            return obj.pitch.midi
         else:
             return obj
 
