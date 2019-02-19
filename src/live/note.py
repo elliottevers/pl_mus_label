@@ -23,8 +23,8 @@ class NoteLive(object):
     ):
         return NoteLive(
             pitch=int(list_note[0]),
-            beat_start=int(list_note[1]),
-            beats_duration=int(list_note[2]),
+            beat_start=float(list_note[1]),
+            beats_duration=float(list_note[2]),
             velocity=int(list_note[3]),
             muted=int(list_note[4])
         )
@@ -43,6 +43,9 @@ class NoteLive(object):
         self.velocity = velocity
         self.muted = muted
 
+    def get_beat_end(self):
+        return self.beat_start + self.beats_duration
+
     def encode(self):
         return ' '.join([
             str(self.pitch),
@@ -51,23 +54,3 @@ class NoteLive(object):
             str(self.velocity),
             str(self.muted)
         ])
-
-        # constructor(
-        #     pitch: number,
-        #     beat_start: number,
-        #     beats_duration: number,
-        #     velocity: number,
-        #     muted: number
-        # ) {
-        #     this.pitch = Number(pitch);
-        #     this.beat_start = Number(beat_start);
-        #     this.beats_duration = Number(beats_duration);
-        #     this.velocity = Number(velocity);
-        #     this.muted = Number(muted);
-        #     this._b_has_chosen = false;
-        # }
-
-
-# def parse(list: List[int]):
-
-# [ 72, 0, 1, 80, 0 ]

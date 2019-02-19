@@ -235,8 +235,16 @@ else:
     #     filename=''
     # )
 
-    # SEGMENTS
+    stream_chords_bass_melody = postp_mxl.thaw_stream(
+        filepath='path_to_chords_bass_melody'
+    )
 
+    stream_melody = postp_mxl.extract_parts(
+        stream_chords_bass_melody,
+        parts=['melody']
+    )
+
+    # SEGMENTS
     # TODO: this might work better using chords
     stream_segments: music21.stream.Stream = analysis_mxl.get_segments(
         stream_melody
@@ -244,7 +252,7 @@ else:
 
     # KEY CENTERS
     stream_chords_and_bass: music21.stream.Stream = postp_mxl.extract_parts(
-        stream_chords,
+        stream_chords_bass_melody,
         parts=['chord', 'bass']
     )
 
@@ -262,7 +270,9 @@ else:
 
     stream_score = postp_mxl.set_tempo(
         stream_score,
-        bpm_chords
+        bpm=postp_mxl.extract_bpm(
+            stream_chords_bass_melody
+        )
     )
 
 

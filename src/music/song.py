@@ -214,7 +214,6 @@ class MeshSong(object):
                 ['beat', 's']
             )
 
-
         # TODO: segments, after they are fixed
         return pd.merge(
             pd.merge(
