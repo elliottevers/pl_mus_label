@@ -34,6 +34,53 @@ s_beat_end = 26.9 + 3 * 60
 
 # cadence_beats = 4
 
+
+
+# TODO: score quantization testing
+
+# durations = [.27, .54, .01, .6, .9, .01, .07]
+#
+# pitches = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#']
+#
+#
+# measure = music21.stream.Measure()
+#
+# for i, duration in enumerate(durations):
+#     note = music21.note.Note(pitches[i])
+#     note.duration = music21.duration.Duration(duration)
+#     measure.append(note)
+
+# note1 = music21.note.Note('C')
+#
+# note1.duration = music21.duration.Duration(4/3)
+#
+# note2 = music21.note.Note('C')
+#
+# note2.duration = music21.duration.Duration(4/3)
+#
+# note3 = music21.note.Note('C')
+#
+# note3.duration = music21.duration.Duration(4/3)
+#
+# measure.append(
+#     note1
+# )
+#
+# measure.append(
+#     note2
+# )
+#
+# measure.append(
+#     note3
+# )
+
+# measure.quantize((4,6), inPlace=True)
+#
+#
+# measure.show()
+#
+# exit(0)
+
 data_melody = ir.extract_melody(
     filename_wav,
     stub=True
@@ -63,9 +110,7 @@ data_beats = ir.extract_beats(
 
 beatmap = [beat['timestamp'] for beat in data_beats]
 
-
-
-
+##### post information extraction #####
 
 df_melody = prep_vamp.melody_to_df(
     data_melody,
@@ -81,6 +126,20 @@ def get_name_column_duration(name_column):
 
 def get_name_column_offset(name_column):
     return name_column + '_offset'
+
+
+def hz_to_mid(hz):
+    if hz == 0:
+        return 0
+    else:
+        return librosa.hz_to_midi(hz)
+
+# TODO: convert to midi before diffing, create rests where pitch is 0
+
+
+def to_mid(df_hz: pd.DataFrame, name_part):
+    df_hz[name_part] = df_hz[name_part].apply(hz_postp._handle_na).apply(hz_to_mid).apply(round)
+    return df_hz
 
 
 def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.DataFrame:
@@ -117,9 +176,7 @@ def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.Dat
 
 
 # df of music21 object that know they're duration, and the index knows it's offset
-def to_struct(df_diff, name_column, beatmap, beat_first, beat_last):
-    name_col_duration = get_name_column_duration(name_column)
-
+def to_df_beat(df_diff, name_column, beatmap, beat_first, beat_last):
     # TODO: partmap
 
     beatmap_trimmed = song.MeshSong.trim_beatmap(beatmap, beat_first, beat_last)
@@ -136,20 +193,30 @@ def to_struct(df_diff, name_column, beatmap, beat_first, beat_last):
 
     index_beat_offset = []
     data_beat_duration = []
+    data_struct = []
 
-    for ms_offset, ms_duration in df_diff[name_col_duration].iteritems():
-        if ms_offset < beatmap_trimmed[0] or ms_offset > beatmap_trimmed[-1]:
+    for row in df_diff.itertuples(index=True, name=True):
+        index_s_offset = row[0]
+        struct = row[1]
+        s_duration = row[2]
+
+        if index_s_offset < beatmap_trimmed[0] or index_s_offset > beatmap_trimmed[-1]:
             continue
-        index_nearest_below = find_index_of_nearest_below(beatmap_trimmed, ms_offset)
+
+        index_nearest_below = find_index_of_nearest_below(beatmap_trimmed, index_s_offset)
         length_of_containing_segment = beatmap_trimmed[index_nearest_below + 1] - beatmap_trimmed[index_nearest_below]
-        beat_onset = to_beat_onset(ms_offset, beatmap_trimmed, index_nearest_below, length_of_containing_segment)
-        beat_duration = ms_duration/length_of_containing_segment
+        beat_onset = to_beat_onset(index_s_offset, beatmap_trimmed, index_nearest_below, length_of_containing_segment)
+        beat_duration = s_duration/length_of_containing_segment
 
         index_beat_offset.append(beat_onset)
         data_beat_duration.append(beat_duration)
+        data_struct.append(struct)
 
     df_struct = pd.DataFrame(
-        data=data_beat_duration,
+        data={
+            name_column: data_struct,
+            get_name_column_duration(name_column): data_beat_duration
+        },
         index=index_beat_offset
     )
 
@@ -158,9 +225,12 @@ def to_struct(df_diff, name_column, beatmap, beat_first, beat_last):
     return df_struct
 
 
-testing = to_struct(
+testing = to_df_beat(
     to_diff(
-        df_melody,
+        to_mid(
+            df_melody,
+            'melody'
+        ),
         'melody',
         data_melody[0]
     ),
@@ -169,19 +239,7 @@ testing = to_struct(
     s_beat_start,
     s_beat_end
 )
-# for row in df.iloc[1:, :].itertuples(index=True, name=True):
-#     index = row[0]
-#     struct_current = row[1]
-#     if struct_current != struct_last:
-#         intervals_structs.append(
-#             Interval(
-#                 index_struct_last,
-#                 index,
-#                 MeshSong.get_struct(struct_current)  # struct_current
-#             )
-#         )
-#         struct_last = struct_current
-#         index_struct_last = index
+
 
 # df diff -> df struct
 
@@ -189,6 +247,67 @@ testing = to_struct(
 
 # score.show('midi')
 
+location_pickle = '/Users/elliottevers/Downloads/testing.pickle'
+
+# testing.to_pickle(location_pickle)
+
+# exit(0)
+
+# testing = pd.read_pickle(location_pickle)
+
+# testing['melody'] = hz_postp.midify(
+#     testing['melody']
+# )
+
+part = music21.stream.Part()
+
+first = testing.iloc[0]
+
+beat_offset_first = first.name
+
+note_first = music21.note.Note(
+    pitch=music21.pitch.Pitch(
+        midi=first['melody']
+    )
+)
+
+note_first.duration = music21.duration.Duration(
+    first['melody_duration']
+)
+
+note_first.offset = music21.duration.Duration(
+    beat_offset_first
+)
+
+part.append(note_first)
+
+for row in testing.iloc[1:, :].itertuples(index=True, name=True):
+    index_beat_offset = row[0]
+    struct = row[1]
+    beat_duration = row[2]
+
+    if struct == 0:
+        note = music21.note.Rest(
+
+        )
+    else:
+        note = music21.note.Note(
+            pitch=music21.pitch.Pitch(
+                midi=struct
+            )
+        )
+
+    note.duration = music21.duration.Duration(beat_duration)
+
+    part.append(note)
+
+
+# for thing in part:
+#     debugging = 1
+
+part.quantize((4, 6), inPlace=True)
+
+part.show()
 
 exit(0)
 
