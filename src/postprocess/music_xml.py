@@ -127,21 +127,8 @@ def df_grans_to_score(
 
         beat_to_struct_score = dict()
 
-        for i, span in df_events.iteritems():
 
-            struct = i[0]
 
-            beat_start = span[0]
-
-            beat_end = span[-1]
-
-            struct_score = get_struct_score(struct, name_part=name_part)
-
-            struct_score.duration = music21.duration.Duration(
-                beat_end - beat_start + 1 / 48
-            )
-
-            beat_to_struct_score[beat_start] = struct_score
 
         counter_measure = 1
 

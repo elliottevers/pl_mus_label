@@ -61,6 +61,75 @@ data_beats = ir.extract_beats(
     stub=True
 )
 
+
+
+
+
+df_melody = prep_vamp.melody_to_df(
+    data_melody,
+    index_type='s'
+)
+
+# df unq -> df diff
+
+
+def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.DataFrame:
+    offset_diff = []
+    data_diff = []
+    duration_diff = []
+
+    current_val = None
+
+    acc_duration = 0
+
+    for i, val in df[name_column].iteritems():
+        acc_duration = acc_duration + sample_rate
+        if val == current_val:
+            pass
+        else:
+            offset_diff.append(i)
+            data_diff.append(val)
+            duration_diff.append(acc_duration)
+            acc_duration = 0
+            current_val = val
+
+    df_diff = pd.DataFrame(
+        data={
+            name_column: data_diff,
+            name_column + '_duration': duration_diff
+        },
+        index=offset_diff
+    )
+
+    df_diff.index.name = name_column + '_offset'
+
+    return df_diff
+
+
+# for row in df.iloc[1:, :].itertuples(index=True, name=True):
+#     index = row[0]
+#     struct_current = row[1]
+#     if struct_current != struct_last:
+#         intervals_structs.append(
+#             Interval(
+#                 index_struct_last,
+#                 index,
+#                 MeshSong.get_struct(struct_current)  # struct_current
+#             )
+#         )
+#         struct_last = struct_current
+#         index_struct_last = index
+testing = 1
+
+# df diff -> df struct
+
+# df struct -> score
+
+# score.show('midi')
+
+
+exit(0)
+
 # vamp branch of pipeline
 
 mesh_song = song.MeshSong()
