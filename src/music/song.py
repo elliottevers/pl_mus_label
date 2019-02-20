@@ -59,7 +59,8 @@ class MeshSong(object):
         return gran_map
 
     # NB: s_beat_start and s_beat_end are determined by human
-    def trim_beatmap(self, beatmap: List[float], s_beat_start, s_beat_end) -> List[float]:
+    @staticmethod
+    def trim_beatmap(beatmap: List[float], s_beat_start, s_beat_end) -> List[float]:
 
         s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
 
