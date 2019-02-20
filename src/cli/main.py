@@ -26,7 +26,7 @@ filename_mid_out = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.n
 
 filepath_frozen = '/Users/elliottevers/Downloads/score_frozen.json'
 
-branch = 'deep learning'
+branch = 'vamp'
 
 s_beat_start = 3.436
 
@@ -34,52 +34,6 @@ s_beat_end = 26.9 + 3 * 60
 
 # cadence_beats = 4
 
-
-
-# TODO: score quantization testing
-
-# durations = [.27, .54, .01, .6, .9, .01, .07]
-#
-# pitches = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#']
-#
-#
-# measure = music21.stream.Measure()
-#
-# for i, duration in enumerate(durations):
-#     note = music21.note.Note(pitches[i])
-#     note.duration = music21.duration.Duration(duration)
-#     measure.append(note)
-
-# note1 = music21.note.Note('C')
-#
-# note1.duration = music21.duration.Duration(4/3)
-#
-# note2 = music21.note.Note('C')
-#
-# note2.duration = music21.duration.Duration(4/3)
-#
-# note3 = music21.note.Note('C')
-#
-# note3.duration = music21.duration.Duration(4/3)
-#
-# measure.append(
-#     note1
-# )
-#
-# measure.append(
-#     note2
-# )
-#
-# measure.append(
-#     note3
-# )
-
-# measure.quantize((4,6), inPlace=True)
-#
-#
-# measure.show()
-#
-# exit(0)
 
 data_melody = ir.extract_melody(
     filename_wav,
@@ -116,8 +70,6 @@ df_melody = prep_vamp.melody_to_df(
     data_melody,
     index_type='s'
 )
-
-# df unq -> df diff
 
 
 def get_name_column_duration(name_column):
@@ -176,7 +128,7 @@ def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.Dat
 
 
 # df of music21 object that know they're duration, and the index knows it's offset
-def to_df_beat(df_diff, name_column, beatmap, beat_first, beat_last):
+def to_df_beat_unquantized(df_diff, name_column, beatmap, beat_first, beat_last):
     # TODO: partmap
 
     beatmap_trimmed = song.MeshSong.trim_beatmap(beatmap, beat_first, beat_last)
@@ -225,92 +177,6 @@ def to_df_beat(df_diff, name_column, beatmap, beat_first, beat_last):
     return df_struct
 
 
-testing = to_df_beat(
-    to_diff(
-        to_mid(
-            df_melody,
-            'melody'
-        ),
-        'melody',
-        data_melody[0]
-    ),
-    'melody',
-    beatmap,
-    s_beat_start,
-    s_beat_end
-)
-
-
-# df diff -> df struct
-
-# df struct -> score
-
-# score.show('midi')
-
-location_pickle = '/Users/elliottevers/Downloads/testing.pickle'
-
-# testing.to_pickle(location_pickle)
-
-# exit(0)
-
-# testing = pd.read_pickle(location_pickle)
-
-# testing['melody'] = hz_postp.midify(
-#     testing['melody']
-# )
-
-part = music21.stream.Part()
-
-first = testing.iloc[0]
-
-beat_offset_first = first.name
-
-note_first = music21.note.Note(
-    pitch=music21.pitch.Pitch(
-        midi=first['melody']
-    )
-)
-
-note_first.duration = music21.duration.Duration(
-    first['melody_duration']
-)
-
-note_first.offset = music21.duration.Duration(
-    beat_offset_first
-)
-
-part.append(note_first)
-
-for row in testing.iloc[1:, :].itertuples(index=True, name=True):
-    index_beat_offset = row[0]
-    struct = row[1]
-    beat_duration = row[2]
-
-    if struct == 0:
-        note = music21.note.Rest(
-
-        )
-    else:
-        note = music21.note.Note(
-            pitch=music21.pitch.Pitch(
-                midi=struct
-            )
-        )
-
-    note.duration = music21.duration.Duration(beat_duration)
-
-    part.append(note)
-
-
-# for thing in part:
-#     debugging = 1
-
-part.quantize((4, 6), inPlace=True)
-
-part.show()
-
-exit(0)
-
 # vamp branch of pipeline
 
 mesh_song = song.MeshSong()
@@ -324,19 +190,50 @@ if branch == 'vamp':
         index_type='s'
     )
 
-    # hertz pre-filtering -> discretization -> midi post-filtering -> postprocessing diff series (midi) (but doesn't this happen "automatically" when rendering to score?)
-    df_melody['melody'] = hz_postp.midify(
-        df_melody['melody']
+    df_melody_diff = to_diff(
+        to_mid(
+            df_melody,
+            'melody'
+        ),
+        'melody',
+        data_melody[0]
     )
 
+    # hertz pre-filtering -> discretization -> midi post-filtering -> postprocessing diff series (midi) (but doesn't this happen "automatically" when rendering to score?)
+    # df_melody['melody'] = hz_postp.midify(
+    #     df_melody['melody']
+    # )
+
     tree_melody = song.MeshSong.get_interval_tree(
-        df_melody
+        df_melody_diff
     )
 
     mesh_song.set_tree(
         tree_melody,
         type='melody'
     )
+
+    mesh_song.quantize(
+        beatmap,
+        s_beat_start,
+        s_beat_end,
+        columns=['melody']
+    )
+
+    df_data_quantized_diff = to_diff(
+        mesh_song.data_quantized,
+        name_column='melody',
+        sample_rate=1/48
+    )
+
+    score_melody = postp_mxl.df_grans_quantized_to_score(
+        df_data_quantized_diff,
+        parts=['melody']
+    )
+
+    score_melody.show('midi')
+
+    exit(0)
 
     # CHORDS
 
@@ -543,3 +440,210 @@ song.MeshSong.render(
 
 
 
+
+# beat_unquantized = to_df_beat_unquantized(
+#     to_diff(
+#         to_mid(
+#             df_melody,
+#             'melody'
+#         ),
+#         'melody',
+#         data_melody[0]
+#     ),
+#     'melody',
+#     beatmap,
+#     s_beat_start,
+#     s_beat_end
+# )
+
+
+location_pickle_beat_unquantized = '/Users/elliottevers/Downloads/beat_unquantized.pickle'
+
+location_pickle_quantized = '/Users/elliottevers/Downloads/quantized.pickle'
+
+# beat_unquantized.to_pickle(location_pickle_beat_unquantized)
+
+# exit(0)
+
+beat_unquantized = pd.read_pickle(location_pickle_beat_unquantized)
+quantized = pd.read_pickle(location_pickle_quantized)
+
+
+# exit(0)
+
+gran_map = song.MeshSong.get_gran_map(
+    beatmap=song.MeshSong.trim_beatmap(beatmap, s_beat_start, s_beat_end)
+)
+
+grans = list(gran_map.keys())
+
+new = dict()
+
+res = float(1/48)
+
+eps = float(res)/4
+
+then = pd.Timestamp.now()
+
+index_new = []
+
+data_new = []
+
+
+
+# for key in grans:
+#     less_than = beat_unquantized[beat_unquantized.index <= key + res + eps]
+#     sweet_spot = less_than[less_than >= key]
+#     index_new.append(key)
+#     candidates = sweet_spot.groupby('melody')['melody_duration'].aggregate(np.sum)
+#     if len(candidates) == 0:
+#         datum = 0
+#         data_new.append(datum)
+#     else:
+#         datum = candidates.idxmax()
+#         data_new.append(datum)
+#     print(key)
+#     print(datum)
+#     # data_new.append(thing)
+
+# key = 60.0 + 1/48
+
+# for key in grans:
+# less_than = testing[testing.index <= res + eps]
+# sweet_spot = less_than[less_than >= key]
+# index_new.append(key)
+# thing = sweet_spot.groupby('melody')['melody_duration'].aggregate(np.sum).idxmax()
+# print(key)
+# print(thing)
+# data_new.append(thing)
+
+df_quantized = pd.DataFrame(
+    data=data_new,
+    index=index_new
+)
+
+df_quantized.index.name = 'beat_quantized'
+
+df_quantized.to_pickle(location_pickle_quantized)
+
+print(pd.Timestamp.now() - then)
+
+# testing.to_pickle(location_pickle_quantized)
+
+exit(0)
+
+part = music21.stream.Part()
+
+first = testing.iloc[0]
+
+beat_offset_first = first.name
+
+note_first = music21.note.Note(
+    pitch=music21.pitch.Pitch(
+        midi=first['melody']
+    )
+)
+
+note_first.duration = music21.duration.Duration(
+    first['melody_duration']
+)
+
+note_first.offset = music21.duration.Duration(
+    beat_offset_first
+)
+
+part.append(note_first)
+
+for row in testing.iloc[1:, :].itertuples(index=True, name=True):
+    index_beat_offset = row[0]
+    struct = row[1]
+    beat_duration = row[2]
+
+    if struct == 0:
+        note = music21.note.Rest(
+
+        )
+    else:
+        note = music21.note.Note(
+            pitch=music21.pitch.Pitch(
+                midi=struct
+            )
+        )
+
+    note.duration = music21.duration.Duration(beat_duration)
+
+    part.append(note)
+
+part.quantize((8, 12), inPlace=True)
+
+measured = part.makeMeasures()
+
+
+# gran_map = song.MeshSong.get_gran_map(
+#     beatmap=song.MeshSong.trim_beatmap(beatmap, s_beat_start, s_beat_end)
+# )
+#
+# grans = list(gran_map.keys())
+#
+# new = dict()
+#
+# for i, key in enumerate(grans):
+#     testing[testing.index <= grans[i + 1]][testing.index >= key].groupby('melody')['melody_duration'].aggregate(np.sum)
+#     # print(thing[thing.idxmax()])
+#     new[key] = testing.idxmax()
+
+exit(0)
+
+# for thing in part:
+debugging = 1
+
+# part.show()
+
+exit(0)
+
+
+
+# TODO: score quantization testing
+
+# durations = [.27, .54, .01, .6, .9, .01, .07]
+#
+# pitches = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#']
+#
+#
+# measure = music21.stream.Measure()
+#
+# for i, duration in enumerate(durations):
+#     note = music21.note.Note(pitches[i])
+#     note.duration = music21.duration.Duration(duration)
+#     measure.append(note)
+
+# note1 = music21.note.Note('C')
+#
+# note1.duration = music21.duration.Duration(4/3)
+#
+# note2 = music21.note.Note('C')
+#
+# note2.duration = music21.duration.Duration(4/3)
+#
+# note3 = music21.note.Note('C')
+#
+# note3.duration = music21.duration.Duration(4/3)
+#
+# measure.append(
+#     note1
+# )
+#
+# measure.append(
+#     note2
+# )
+#
+# measure.append(
+#     note3
+# )
+
+# measure.quantize((4,6), inPlace=True)
+#
+#
+# measure.show()
+#
+# exit(0)

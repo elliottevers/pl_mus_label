@@ -85,11 +85,12 @@ class MeshSong(object):
 
         dfs_quantized: Dict[str, pd.DataFrame] = dict()
 
+        # TODO: GENERALIZE
         col_to_tree_map = {
             'melody': self.tree_melody,
-            'bass': self.tree_bass,
-            'chord': self.tree_chord,
-            'segment': self.tree_segment
+            # 'bass': self.tree_bass,
+            # 'chord': self.tree_chord,
+            # 'segment': self.tree_segment
             # 'key_center': self.tree_key_center
         }
 
@@ -101,6 +102,8 @@ class MeshSong(object):
 
             beats = sorted(list(gran_map.keys()))
             endpoint_s_last = sorted(list(gran_map.values()))[0]
+
+            # TODO: create an accumulator for automatic "diff"-ing
 
             for beat in beats[:-1]:
 
@@ -153,24 +156,27 @@ class MeshSong(object):
                 ['beat', 's']
             )
 
+        # TODO: GENERALIZE
         # TODO: segments, after they are fixed
-        return pd.merge(
-            pd.merge(
-                pd.merge(
-                    dfs_quantized['melody'],
-                    dfs_quantized['bass'],
-                    left_index=True,
-                    right_index=True
-                ),
-                dfs_quantized['chord'],
-                left_index=True,
-                right_index=True
-            ),
-            dfs_quantized['segment'],
-            left_index=True,
-            right_index=True
-        ).sort_index(
-        )
+        # return pd.merge(
+        #     pd.merge(
+        #         pd.merge(
+        #             dfs_quantized['melody'],
+        #             dfs_quantized['bass'],
+        #             left_index=True,
+        #             right_index=True
+        #         ),
+        #         dfs_quantized['chord'],
+        #         left_index=True,
+        #         right_index=True
+        #     ),
+        #     dfs_quantized['segment'],
+        #     left_index=True,
+        #     right_index=True
+        # ).sort_index(
+        # )
+
+        return dfs_quantized['melody']
 
     def quantize(
             self,
