@@ -6,13 +6,13 @@ import os
 from utils import utils
 
 
-files_stub = {
-    'melody': 'test/stubs_pickle/python/melody_tswift_teardrops.json',
-    'segments': 'test/stubs_pickle/python/segments_tswift_teardrops.json',
-    'chords': 'test/stubs_pickle/python/chords_tswift_teardrops.json',
-    'tempo': 'test/stubs_pickle/python/tempo_tswift_teardrops.json',
-    'beats': 'test/stubs_pickle/python/beats_tswift_teardrops.json'
-}
+# files_stub = {
+#     'melody': 'test/stubs_pickle/python/melody_tswift_teardrops.json',
+#     'segments': 'test/stubs_pickle/python/segments_tswift_teardrops.json',
+#     'chords': 'test/stubs_pickle/python/chords_tswift_teardrops.json',
+#     'tempo': 'test/stubs_pickle/python/tempo_tswift_teardrops.json',
+#     'beats': 'test/stubs_pickle/python/beats_tswift_teardrops.json'
+# }
 
 
 def extract_melody(

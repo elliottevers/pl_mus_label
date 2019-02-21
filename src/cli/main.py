@@ -116,109 +116,109 @@ beatmap = [beat['timestamp'] for beat in data_beats]
 # )
 
 
-def get_name_column_duration(name_column):
-    return name_column + '_duration'
-
-
-def get_name_column_offset(name_column):
-    return name_column + '_offset'
-
-
-def hz_to_mid(hz):
-    if hz == 0:
-        return 0
-    else:
-        return librosa.hz_to_midi(hz)
-
-# TODO: convert to midi before diffing, create rests where pitch is 0
-
-
-def to_mid(df_hz: pd.DataFrame, name_part):
-    df_hz[name_part] = df_hz[name_part].apply(hz_postp._handle_na).apply(hz_to_mid).apply(round)
-    return df_hz
-
-
-def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.DataFrame:
-    offset_diff = []
-    data_diff = []
-    duration_diff = []
-
-    current_val = None
-
-    acc_duration = 0
-
-    for i, val in df[name_column].iteritems():
-        acc_duration = acc_duration + sample_rate
-        if val == current_val:
-            pass
-        else:
-            offset_diff.append(i)
-            data_diff.append(val)
-            duration_diff.append(acc_duration)
-            acc_duration = 0
-            current_val = val
-
-    df_diff = pd.DataFrame(
-        data={
-            name_column: data_diff,
-            get_name_column_duration(name_column): duration_diff
-        },
-        index=offset_diff
-    )
-
-    df_diff.index.name = get_name_column_offset(name_column)
-
-    return df_diff
-
-
-# df of music21 object that know they're duration, and the index knows it's offset
-def to_df_beat_unquantized(df_diff, name_column, beatmap, beat_first, beat_last):
-    # TODO: partmap
-
-    beatmap_trimmed = song.MeshSong.trim_beatmap(beatmap, beat_first, beat_last)
-
-    def find_index_of_nearest_below(array, value):
-        return array.index(max(list(filter(lambda y: y <= 0, [x - value for x in array]))) + value)
-
-    def to_beat_onset(ms, beatmap, index_nearest_below, length_containing_segment):
-        nearest_below = beatmap[index_nearest_below]
-
-        return beatmap.index(nearest_below) + (
-            (ms - beatmap[index_nearest_below])/length_containing_segment
-        )
-
-    index_beat_offset = []
-    data_beat_duration = []
-    data_struct = []
-
-    for row in df_diff.itertuples(index=True, name=True):
-        index_s_offset = row[0]
-        struct = row[1]
-        s_duration = row[2]
-
-        if index_s_offset < beatmap_trimmed[0] or index_s_offset > beatmap_trimmed[-1]:
-            continue
-
-        index_nearest_below = find_index_of_nearest_below(beatmap_trimmed, index_s_offset)
-        length_of_containing_segment = beatmap_trimmed[index_nearest_below + 1] - beatmap_trimmed[index_nearest_below]
-        beat_onset = to_beat_onset(index_s_offset, beatmap_trimmed, index_nearest_below, length_of_containing_segment)
-        beat_duration = s_duration/length_of_containing_segment
-
-        index_beat_offset.append(beat_onset)
-        data_beat_duration.append(beat_duration)
-        data_struct.append(struct)
-
-    df_struct = pd.DataFrame(
-        data={
-            name_column: data_struct,
-            get_name_column_duration(name_column): data_beat_duration
-        },
-        index=index_beat_offset
-    )
-
-    df_struct.index.name = 'beat'
-
-    return df_struct
+# def get_name_column_duration(name_column):
+#     return name_column + '_duration'
+#
+#
+# def get_name_column_offset(name_column):
+#     return name_column + '_offset'
+#
+#
+# def hz_to_mid(hz):
+#     if hz == 0:
+#         return 0
+#     else:
+#         return librosa.hz_to_midi(hz)
+#
+# # TODO: convert to midi before diffing, create rests where pitch is 0
+#
+#
+# def to_mid(df_hz: pd.DataFrame, name_part):
+#     df_hz[name_part] = df_hz[name_part].apply(hz_postp._handle_na).apply(hz_to_mid).apply(round)
+#     return df_hz
+#
+#
+# def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.DataFrame:
+#     offset_diff = []
+#     data_diff = []
+#     duration_diff = []
+#
+#     current_val = None
+#
+#     acc_duration = 0
+#
+#     for i, val in df[name_column].iteritems():
+#         acc_duration = acc_duration + sample_rate
+#         if val == current_val:
+#             pass
+#         else:
+#             offset_diff.append(i)
+#             data_diff.append(val)
+#             duration_diff.append(acc_duration)
+#             acc_duration = 0
+#             current_val = val
+#
+#     df_diff = pd.DataFrame(
+#         data={
+#             name_column: data_diff,
+#             get_name_column_duration(name_column): duration_diff
+#         },
+#         index=offset_diff
+#     )
+#
+#     df_diff.index.name = get_name_column_offset(name_column)
+#
+#     return df_diff
+#
+#
+# # df of music21 object that know they're duration, and the index knows it's offset
+# def to_df_beat_unquantized(df_diff, name_column, beatmap, beat_first, beat_last):
+#     # TODO: partmap
+#
+#     beatmap_trimmed = song.MeshSong.trim_beatmap(beatmap, beat_first, beat_last)
+#
+#     def find_index_of_nearest_below(array, value):
+#         return array.index(max(list(filter(lambda y: y <= 0, [x - value for x in array]))) + value)
+#
+#     def to_beat_onset(ms, beatmap, index_nearest_below, length_containing_segment):
+#         nearest_below = beatmap[index_nearest_below]
+#
+#         return beatmap.index(nearest_below) + (
+#             (ms - beatmap[index_nearest_below])/length_containing_segment
+#         )
+#
+#     index_beat_offset = []
+#     data_beat_duration = []
+#     data_struct = []
+#
+#     for row in df_diff.itertuples(index=True, name=True):
+#         index_s_offset = row[0]
+#         struct = row[1]
+#         s_duration = row[2]
+#
+#         if index_s_offset < beatmap_trimmed[0] or index_s_offset > beatmap_trimmed[-1]:
+#             continue
+#
+#         index_nearest_below = find_index_of_nearest_below(beatmap_trimmed, index_s_offset)
+#         length_of_containing_segment = beatmap_trimmed[index_nearest_below + 1] - beatmap_trimmed[index_nearest_below]
+#         beat_onset = to_beat_onset(index_s_offset, beatmap_trimmed, index_nearest_below, length_of_containing_segment)
+#         beat_duration = s_duration/length_of_containing_segment
+#
+#         index_beat_offset.append(beat_onset)
+#         data_beat_duration.append(beat_duration)
+#         data_struct.append(struct)
+#
+#     df_struct = pd.DataFrame(
+#         data={
+#             name_column: data_struct,
+#             get_name_column_duration(name_column): data_beat_duration
+#         },
+#         index=index_beat_offset
+#     )
+#
+#     df_struct.index.name = 'beat'
+#
+#     return df_struct
 
 
 # vamp branch of pipeline
@@ -229,48 +229,48 @@ if branch == 'vamp':
 
     # MELODY
 
-    df_melody = prep_vamp.melody_to_df(
-        data_melody,
-        index_type='s'
-    )
-
-    df_melody_diff = to_diff(
-        to_mid(
-            df_melody,
-            'melody'
-        ),
-        'melody',
-        data_melody[0]
-    )
-
-    # hertz pre-filtering -> discretization -> midi post-filtering -> postprocessing diff series (midi) (but doesn't this happen "automatically" when rendering to score?)
-
-    tree_melody = song.MeshSong.get_interval_tree(
-        df_melody_diff
-    )
-
-    mesh_song.set_tree(
-        tree_melody,
-        type='melody'
-    )
-
-    mesh_song.quantize(
-        beatmap,
-        s_beat_start,
-        s_beat_end,
-        columns=['melody']
-    )
-
-    df_data_quantized_diff = to_diff(
-        mesh_song.data_quantized,
-        name_column='melody',
-        sample_rate=1/48
-    )
-
-    score_melody = postp_mxl.df_grans_quantized_to_score(
-        df_data_quantized_diff,
-        parts=['melody']
-    )
+    # df_melody = prep_vamp.melody_to_df(
+    #     data_melody,
+    #     index_type='s'
+    # )
+    #
+    # df_melody_diff = to_diff(
+    #     to_mid(
+    #         df_melody,
+    #         'melody'
+    #     ),
+    #     'melody',
+    #     data_melody[0]
+    # )
+    #
+    # # hertz pre-filtering -> discretization -> midi post-filtering -> postprocessing diff series (midi) (but doesn't this happen "automatically" when rendering to score?)
+    #
+    # tree_melody = song.MeshSong.get_interval_tree(
+    #     df_melody_diff
+    # )
+    #
+    # mesh_song.set_tree(
+    #     tree_melody,
+    #     type='melody'
+    # )
+    #
+    # mesh_song.quantize(
+    #     beatmap,
+    #     s_beat_start,
+    #     s_beat_end,
+    #     columns=['melody']
+    # )
+    #
+    # df_data_quantized_diff = to_diff(
+    #     mesh_song.data_quantized,
+    #     name_column='melody',
+    #     sample_rate=1/48
+    # )
+    #
+    # score_melody = postp_mxl.df_grans_quantized_to_score(
+    #     df_data_quantized_diff,
+    #     parts=['melody']
+    # )
 
     score_melody.show()
 

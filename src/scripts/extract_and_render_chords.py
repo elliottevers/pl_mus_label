@@ -22,7 +22,7 @@ def main(args):
 
     messenger.message(['running'])
 
-    filename_wav = args.filename
+    filename_wav = utils.FILE_WAV  # args.filename
 
     # length of Ableton live track in beats
 
