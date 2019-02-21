@@ -59,3 +59,7 @@ def segments_to_df(data_segments, index_type='s'):
 
 def extract_tempomap(data_tempo):
     return data_tempo[1]
+
+
+def extract_beatmap(data_beats):
+    return [beat['timestamp'] for beat in data_beats]

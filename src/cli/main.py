@@ -52,10 +52,10 @@ data_chords = ir.extract_chords(
 
 s_to_label_chords: List[Dict[float, Any]] = data_chords
 
-data_tempo = ir.extract_tempo(
-    filename_wav,
-    stub=True
-)
+# data_tempo = ir.extract_tempo(
+#     filename_wav,
+#     stub=True
+# )
 
 data_beats = ir.extract_beats(
     filename_wav,
@@ -200,9 +200,6 @@ if branch == 'vamp':
     )
 
     # hertz pre-filtering -> discretization -> midi post-filtering -> postprocessing diff series (midi) (but doesn't this happen "automatically" when rendering to score?)
-    # df_melody['melody'] = hz_postp.midify(
-    #     df_melody['melody']
-    # )
 
     tree_melody = song.MeshSong.get_interval_tree(
         df_melody_diff
@@ -231,38 +228,38 @@ if branch == 'vamp':
         parts=['melody']
     )
 
-    score_melody.show('midi')
+    score_melody.show()
 
     exit(0)
 
     # CHORDS
 
-    # TODO: put in preprocessing module
-    non_empty_chords = vamp_filter.vamp_filter_non_chords(
-        s_to_label_chords
-    )
-
-    # TODO: put in preprocessing module
-    events_chords: Dict[float, music21.chord.Chord] = vamp_convert.vamp_chord_to_dict(
-        non_empty_chords
-    )
-
-    df_chords = prep_vamp.chords_to_df(
-        events_chords
-    )
-
-    df_upper_voicings = postp_mxl.extract_upper_voices(
-        df_chords
-    )
-
-    chord_tree = song.MeshSong.get_interval_tree(
-        df_upper_voicings
-    )
-
-    mesh_song.set_tree(
-        chord_tree,
-        type='chord'
-    )
+    # # TODO: put in preprocessing module
+    # non_empty_chords = vamp_filter.vamp_filter_non_chords(
+    #     s_to_label_chords
+    # )
+    #
+    # # TODO: put in preprocessing module
+    # events_chords: Dict[float, music21.chord.Chord] = vamp_convert.vamp_chord_to_dict(
+    #     non_empty_chords
+    # )
+    #
+    # df_chords = prep_vamp.chords_to_df(
+    #     events_chords
+    # )
+    #
+    # df_upper_voicings = postp_mxl.extract_upper_voices(
+    #     df_chords
+    # )
+    #
+    # chord_tree = song.MeshSong.get_interval_tree(
+    #     df_upper_voicings
+    # )
+    #
+    # mesh_song.set_tree(
+    #     chord_tree,
+    #     type='chord'
+    # )
 
     # BASS
 
@@ -351,14 +348,14 @@ if branch == 'vamp':
 
     # FIXED TEMPO ESTIMATE, FOR FINAL RENDERING
 
-    tempomap = prep_vamp.extract_tempomap(
-        data_tempo
-    )
-
-    # TODO: implement that median filter
-    fixed_tempo_estimate = s_filt.get_fixed_tempo_estimate(
-        tempomap
-    )
+    # tempomap = prep_vamp.extract_tempomap(
+    #     data_tempo
+    # )
+    #
+    # # TODO: implement that median filter
+    # fixed_tempo_estimate = s_filt.get_fixed_tempo_estimate(
+    #     tempomap
+    # )
 
     # stream_score = mesh_song.to_score(
     #
@@ -402,7 +399,7 @@ else:
         name_part='segments'
     )
 
-    exit(0)
+    # exit(0)
 
     # KEY CENTERS
     stream_chords_and_bass: music21.stream.Stream = postp_mxl.extract_parts(
@@ -415,6 +412,7 @@ else:
         stream_chords_and_bass
     )
 
+    # TODO: pretty easy, just append to 'parts'
     stream_score = postp_mxl.combine_streams(
         stream_melody,
         stream_chords_and_bass,
@@ -422,6 +420,7 @@ else:
         stream_key_centers
     )
 
+    # TODO: just search, using the XML element thing, for MetronomeMarker in the first measure
     stream_score = postp_mxl.set_tempo(
         stream_score,
         bpm=postp_mxl.extract_bpm(

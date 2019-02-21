@@ -1,4 +1,10 @@
-import jsonpickle
+# import jsonpickle
+import librosa
+import vamp
+import pickle
+import os
+from utils import utils
+
 
 files_stub = {
     'melody': 'test/stubs_pickle/python/melody_tswift_teardrops.json',
@@ -37,38 +43,87 @@ def extract_segments(
 
 def extract_chords(
     filename_wav,
-    stub=False
+    from_cache=False
 ):
-    if stub:
-        with open(files_stub['chords'], 'r') as file:
-            data_chords = jsonpickle.decode(file.read())
+    if from_cache and _is_cached(filename_wav):
+        with open(_get_cached_wav(filename_wav), 'r') as file:
+            data_chords = pickle.decode(file.read())
 
         return data_chords
     else:
-        raise 'did you actually think this was real?'
+        data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
+
+        data_chords = vamp.collect(data, rate, "nnls-chroma:chordino")
+
+        utils.to_pickle(
+            data_chords,
+            _get_cached_wav(
+                filename_wav
+            )
+        )
+
+    return data_chords
+
+
+def _is_cached():
+    raise 'not implemented'
+
+
+def _get_cached_wav():
+    raise 'not implemented'
 
 
 def extract_tempo(
     filename_wav,
-    stub=False
+    # stub=False
 ):
-    if stub:
-        with open(files_stub['tempo'], 'r') as file:
-            data_tempo = jsonpickle.decode(file.read())
+    # if stub:
+    #     with open(files_stub['tempo'], 'r') as file:
+    #         data_tempo = jsonpickle.decode(file.read())
+    #
+    #     return data_tempo
+    # else:
+    #     raise 'did you actually think this was real?'
+
+    if _is_cached(filename_wav):
+        with open(_get_cached_wav(filename_wav), 'r') as file:
+            data_tempo = pickle.decode(file.read())
 
         return data_tempo
     else:
-        raise 'did you actually think this was real?'
+        data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
+
+        data_tempo = vamp.collect(data, rate, "vamp-aubio:aubiotempo")
+
+        utils.to_pickle(
+            data_tempo,
+            _get_cached_wav(
+                filename_wav
+            )
+        )
+
+    return data_tempo
 
 
 def extract_beats(
     filename_wav,
-    stub=False
+    from_cache=False
 ):
-    if stub:
-        with open(files_stub['beats'], 'r') as file:
-            data_beats = jsonpickle.decode(file.read())
+    if from_cache and _is_cached(filename_wav):
+        with open(_get_cached_wav(filename_wav), 'r') as file:
+            data_beats = pickle.decode(file.read())
 
         return data_beats
     else:
-        raise 'did you actually think this was real?'
+        data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
+
+        data_beats = vamp.collect(data, rate, "qm-vamp-plugins:qm-barbeattracker")
+
+        utils.to_pickle(
+            data_beats,
+            _get_cached_wav(
+                filename_wav
+            )
+        )
+
+    return data_beats
