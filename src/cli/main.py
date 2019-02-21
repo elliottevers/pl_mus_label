@@ -34,6 +34,50 @@ s_beat_end = 26.9 + 3 * 60
 
 # cadence_beats = 4
 
+durations = [4.1, 3.7, 4.6]
+
+pitches = ['C', 'C#', 'D']
+
+# measure = music21.stream.Measure()
+
+stream = music21.stream.Stream()
+
+for i, duration in enumerate(durations):
+    note = music21.note.Note(pitches[i])
+    note.duration = music21.duration.Duration(duration)
+    stream.append(note)
+
+# note1 = music21.note.Note('C')
+#
+# note1.duration = music21.duration.Duration(4/3)
+#
+# note2 = music21.note.Note('C')
+#
+# note2.duration = music21.duration.Duration(4/3)
+#
+# note3 = music21.note.Note('C')
+#
+# note3.duration = music21.duration.Duration(4/3)
+#
+# measure.append(
+#     note1
+# )
+#
+# measure.append(
+#     note2
+# )
+#
+# measure.append(
+#     note3
+# )
+
+stream.quantize((0.25,), inPlace=True)
+
+
+stream.show()
+
+exit(0)
+
 
 data_melody = ir.extract_melody(
     filename_wav,

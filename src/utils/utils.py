@@ -7,6 +7,8 @@ import json
 # CHORD = 'chord'
 CHORD_LIVE = 'chord_live'
 CHORD_SCORE = 'chord_score'
+FILE_CHORD_SCORE = '/some/filepath'
+FILE_CHORD_LIVE = '/some/filepath'
 
 
 cache_map = {
