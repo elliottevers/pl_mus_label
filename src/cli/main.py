@@ -322,18 +322,18 @@ if branch == 'vamp':
 
     # SEGMENTS
 
-    df_segments = prep_vamp.segments_to_df(
-        data_segments
-    )
-
-    tree_segments = song.MeshSong.get_interval_tree(
-        df_segments
-    )
-
-    mesh_song.set_tree(
-        tree_segments,
-        type='segment'
-    )
+    # df_segments = prep_vamp.segments_to_df(
+    #     data_segments
+    # )
+    #
+    # tree_segments = song.MeshSong.get_interval_tree(
+    #     df_segments
+    # )
+    #
+    # mesh_song.set_tree(
+    #     tree_segments,
+    #     type='segment'
+    # )
 
     # QUANTIZATION
 

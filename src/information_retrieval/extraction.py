@@ -41,15 +41,26 @@ def extract_melody(
 
 def extract_segments(
     filename_wav,
-    stub=False
+    from_cache=False
 ):
-    if stub:
-        with open(files_stub['segments'], 'r') as file:
-            data_segments = jsonpickle.decode(file.read())
+    if from_cache and _is_cached(filename_wav):
+        with open(_get_cached_wav(filename_wav), 'r') as file:
+            data_segments = pickle.decode(file.read())
 
         return data_segments
     else:
-        raise 'did you actually think this was real?'
+        data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
+
+        data_segments = vamp.collect(data, rate, "nnls-chroma:segmentino")
+
+        utils.to_pickle(
+            data_segments,
+            _get_cached_wav(
+                filename_wav
+            )
+        )
+
+    return data_segments
 
 
 def extract_chords(
