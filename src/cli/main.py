@@ -110,10 +110,10 @@ beatmap = [beat['timestamp'] for beat in data_beats]
 
 ##### post information extraction #####
 
-df_melody = prep_vamp.melody_to_df(
-    data_melody,
-    index_type='s'
-)
+# df_melody = prep_vamp.melody_to_df(
+#     data_melody,
+#     index_type='s'
+# )
 
 
 def get_name_column_duration(name_column):

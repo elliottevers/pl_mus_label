@@ -17,15 +17,26 @@ files_stub = {
 
 def extract_melody(
     filename_wav,
-    stub=False
+    from_cache=False
 ):
-    if stub:
-        with open(files_stub['melody'], 'r') as file:
-            data_melody = jsonpickle.decode(file.read())
+    if _is_cached(filename_wav):
+        with open(_get_cached_wav(filename_wav), 'r') as file:
+            data_melody = pickle.decode(file.read())
 
         return data_melody
     else:
-        raise 'did you actually think this was real?'
+        data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
+
+        data_melody = vamp.collect(data, rate, "mtg-melodia:melodia")
+
+        utils.to_pickle(
+            data_melody,
+            _get_cached_wav(
+                filename_wav
+            )
+        )
+
+    return data_melody
 
 
 def extract_segments(
