@@ -2,6 +2,7 @@ import mido
 from mido import Message, MetaMessage, MidiTrack
 import pandas as pd
 import itertools
+from music import song
 
 
 def get_name_column_duration(name_column):

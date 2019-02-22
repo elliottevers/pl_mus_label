@@ -371,13 +371,13 @@ if branch == 'vamp':
 
     # KEY CENTERS
 
-    stream_chords_and_bass = postp_mxl.extract_parts(
-        score_sans_key_centers
-    )
-
-    part_key_centers: music21.stream.Part = analysis_mxl.get_key_center_estimates(
-        stream_chords_and_bass
-    )
+    # stream_chords_and_bass = postp_mxl.extract_parts(
+    #     score_sans_key_centers
+    # )
+    #
+    # part_key_centers: music21.stream.Part = analysis_mxl.get_key_center_estimates(
+    #     stream_chords_and_bass
+    # )
 
     # TODO: since the above is slow to debug, use this as a sort of test stub
     # part_dummy = postp_mxl.extract_parts(

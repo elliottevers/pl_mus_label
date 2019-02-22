@@ -33,6 +33,8 @@ def main(args):
 
     type_substrate = args.type_substrate
 
+    name_part = args.name_part
+
     for i, params in filter_map:
         df_filtered = filt_hz.apply_filters(
             params
@@ -40,9 +42,10 @@ def main(args):
 
         conv_max.to_coll(
             df_filtered,
-            filepath=utils.get_path_melody_filtered(
+            filepath=utils.get_path_filtered(
                 i,
-                type_substrate=type_substrate
+                type_substrate=type_substrate,
+                name_part=name_part
             )
         )
 
@@ -55,6 +58,8 @@ if __name__ == '__main__':
     parser.add_argument('filter_map', help='filters to apply')
 
     parser.add_argument('type_substrate', help='hertz or midi')
+
+    parser.add_argument('name_part', help='monophonic line, probably melody or key center')
 
     args = parser.parse_args()
 

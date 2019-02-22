@@ -244,14 +244,14 @@ class MeshSong(object):
         #     for i_
         return MidiFile()
 
-    def add_key_centers(self, key_centers: pd.DataFrame) -> None:
-        self.data_quantized = pd.merge(
-            self.data.reset_index(),
-            key_centers.reset_index(),
-            on='beat',
-            how='outer' # TODO: we could probably make this 'inner'
-        ).set_index(
-            'beat'
-        ).sort_index(
-            by='beat'
-        )
+    # def add_key_centers(self, key_centers: pd.DataFrame) -> None:
+    #     self.data_quantized = pd.merge(
+    #         self.data.reset_index(),
+    #         key_centers.reset_index(),
+    #         on='beat',
+    #         how='outer' # TODO: we could probably make this 'inner'
+    #     ).set_index(
+    #         'beat'
+    #     ).sort_index(
+    #         by='beat'
+    #     )

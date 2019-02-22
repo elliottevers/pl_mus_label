@@ -6,11 +6,13 @@ from typing import List, Dict, Any
 from filter import vamp as vamp_filter
 from convert import vamp as vamp_convert
 from preprocess import vamp as prep_vamp
-from postprocess import music_xml as postp_mxl
+from postprocess import music_xml as postp_mxl, midi as postp_mid
 from music import song
 import music21
 import json
 from utils import utils
+from convert import max as conv_max
+from analysis_discrete import music_xml as analysis_mxl
 
 
 # TODO: get the filepath of the cache module
@@ -21,10 +23,6 @@ def main(args):
     messenger = mes.Messenger()
 
     messenger.message(['running'])
-
-    filename_wav = utils.FILE_WAV
-
-    # length of Ableton live track in beats
 
     beats_length_track_live = args.beats_length_track_live
 
@@ -37,7 +35,7 @@ def main(args):
     beat_end = args.beat_end
 
     # length of wav file in s
-    y, sr = librosa.load(filename_wav)
+    y, sr = librosa.load(utils.FILE_WAV)
 
     duration_s_audio = librosa.get_duration(y=y, sr=sr)
 
@@ -45,24 +43,41 @@ def main(args):
 
     s_beat_end = (beat_end / beats_length_track_live) * duration_s_audio
 
-    data_segments = ir.extract_segments(
-        utils.FILE_WAV
+    # filename_wav = args.filename
+
+    score_chords = postp_mxl.thaw_stream(
+        utils.FILE_CHORD_SCORE
     )
 
-    df_segments = prep_vamp.segments_to_df(
-        data_segments
+    # SCORE UPPER VOICES
+
+    # TODO: postp_mxl should be agnostic to dataframes
+    score_upper_voicings = postp_mxl.extract_upper_voices(
+        score_chords
     )
 
-    tree_segments = song.MeshSong.get_interval_tree(
-        df_segments
+    # SCORE BASS
+
+    score_bass = postp_mxl.extract_bass(
+        score_chords
     )
 
-    mesh_song = song.MeshSong()
-
-    mesh_song.set_tree(
-        tree_segments,
-        type='segment'
+    score_upper_voicings_and_bass = postp_mxl.combine_streams(
+        score_upper_voicings,
+        score_bass,
     )
+
+    part_key_centers: music21.stream.Part = analysis_mxl.get_key_center_estimates(
+        score_upper_voicings_and_bass
+    )
+
+    # score to quantized df
+
+    df_key_center_quantized = postp_mxl.part_to_df_quantized(
+        part_key_centers
+    )
+
+    # TODO: need to render alongside of audio file in Ableton Live track, so need beatmap
 
     data_beats = ir.extract_beats(
         utils.FILE_WAV,
@@ -73,53 +88,35 @@ def main(args):
         data_beats
     )
 
-    mesh_song.set_tree(
-        tree_segments,
-        type='chord'
-    )
-
-    mesh_song.quantize(
+    df_key_center_synced = postp_mid.add_index_s(
+        df_key_center_quantized,
         beatmap,
         s_beat_start,
-        s_beat_end,
-        columns=['chord']
+        s_beat_end
     )
 
-    # index beat, index ms audio file, index beat live audio track
-    df_with_live_audio_index = song.MeshSong.add_live_index(
-        mesh_song.data_quantized,
-        beat_start_live=beat_start,
-        beat_end_live=beat_end,
-        beats_length_track_live=beats_length_track_live
+    df_synced_and_embellished = filt_mid.interpolate(
+        df_key_center_synced,
+        sample_rate=.0029
     )
 
-    # TODO: save Live JSON for chords synced with audio track in Live
-
-    dict_write_json_live = song.MeshSong.to_json_live(
-        df_with_live_audio_index,
-        columns=['segment']
+    conv_max.to_coll(
+        df_synced_and_embellished,
+        filepath=utils.FILE_COLL_KEY_CENTER_RAW
     )
 
-    utils.to_json_live(
-        dict_write_json_live,
-        filename_chords_to_live=utils.FILE_SEGMENT_LIVE
-    )
-
-    score_segment = postp_mxl.df_grans_to_score(
-        df_with_live_audio_index,
-        parts=['segment']
-    )
-
-    postp_mxl.freeze_stream(
-        stream=score_segment,
-        filepath=utils.SEGMENT_SCORE
+    messenger.message(
+        [
+            utils.MESSAGE_FILE_COLL,
+            utils.FILE_COLL_KEY_CENTER_RAW
+        ]
     )
 
     messenger.message(['done'])
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Extract Chords')
+    parser = argparse.ArgumentParser(description='Extract Melody')
 
     parser.add_argument('beats_length_track_live', help='length of track in Live')
 
