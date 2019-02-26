@@ -1,7 +1,6 @@
 import pandas as pd
 from mido import MidiFile, MidiTrack, Message, MetaMessage, bpm2tempo
 from typing import List, Dict, Any, Optional, Tuple
-from music import note, chord
 from convert import midi as convert_midi
 from intervaltree import IntervalTree, Interval
 import music21

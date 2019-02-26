@@ -2,6 +2,7 @@ from typing import List
 import pickle
 import cache
 import json
+import os
 
 
 # CHORD = 'chord'
@@ -10,6 +11,14 @@ CHORD_SCORE = 'chord_score'
 FILE_CHORD_SCORE = '/some/filepath'
 FILE_CHORD_LIVE = '/some/filepath'
 
+
+def _get_dir_cache():
+    return os.path.dirname(os.path.abspath(cache.__file__))
+
+
+FILE_CLIPS_EXPORT = os.path.join(_get_dir_cache(), 'json', 'live', 'from_live.json')
+
+CLIPS_EXPORT = os.path.join(_get_dir_cache(), 'pickle', 'live', 'from_live.pkl')
 
 cache_map = {
 
@@ -24,9 +33,6 @@ def to_pickle(object, filename):
     with open(filename, "wb") as f:
         pickle.dump(obj=object, file=f)
 
-
-def _get_dir_cache():
-    return False
 
 
 def get_path_cache(filename):

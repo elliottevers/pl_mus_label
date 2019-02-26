@@ -6,6 +6,82 @@ from typing import List, Dict, Any, Optional, Tuple
 from itertools import groupby
 from fractions import Fraction
 import math
+from utils import utils
+import json
+
+
+def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Score:
+
+    with open(filepath) as f:
+        json_read = json.load(f)
+
+    partmap = {}
+
+    # beat_length_score = json_read['length_beats']
+
+    for name_part in utils.intersection(parts, list(json_read.keys())):
+        part = music21.stream.Part()
+        part.id = name_part
+
+        # mode = 'polyphonic' if name_part == 'chord' else 'monophonic'
+
+        # list_structs = live_to_xml(
+        #     nl.NoteLive.parse_list(
+        #         json_read[name_part]['notes']
+        #     ),
+        #     mode=mode
+        # )
+
+        # for note_live in notes_live:
+        #     note = music21.note.Note(
+        #         pitch=note_live.pitch
+        #     )
+        #     note.duration = music21.duration.Duration(
+        #         note_live.beats_duration
+        #     )
+        #
+        #     note.offset = note_live.beat_start
+        #
+        #     notes.append(note)
+
+        notes = nl.NoteLive.parse_list(
+            json_read[name_part]['notes']
+        )
+
+        for note_live in notes:
+
+            note = music21.note.Note(
+                pitch=note_live.pitch
+            )
+            note.duration = music21.duration.Duration(
+                note_live.beats_duration
+            )
+
+            # note.offset = note_live.beat_start
+
+            part.insert(
+                note_live.beat_start,
+                note
+            )
+
+        # for struct in list_structs:
+        #     part.insert(struct.offset, struct)
+
+        # part.makeMeasures(inPlace=True)
+
+        # part.makeRests(fillGaps=True).makeMeasures()
+
+        if name_part == 'chord':
+            part = part.makeVoices(inPlace=False)
+
+        partmap[name_part] = part.makeRests(fillGaps=True, inPlace=False).makeMeasures(inPlace=False)
+
+    score = music21.stream.Score()
+
+    for _, part in partmap.items():
+        score.append(part)
+
+    return score
 
 
 def get_lowest_note(chord):
@@ -269,6 +345,7 @@ def df_grans_to_score(
     return score
 
 
+# TODO: replace
 def live_to_xml(
         notes_live: List[nl.NoteLive],
         mode: str = 'monophonic'

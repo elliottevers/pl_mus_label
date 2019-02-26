@@ -51,7 +51,8 @@ def extract_segments(
     else:
         data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
 
-        data_segments = vamp.collect(data, rate, "nnls-chroma:segmentino")
+        data_segments = vamp.collect(data, rate, 'qm-vamp-plugins:qm-segmenter')
+        # data_segments = vamp.collect(data, rate, 'nnls-chroma:segmentino')
 
         utils.to_pickle(
             data_segments,
