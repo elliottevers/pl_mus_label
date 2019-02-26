@@ -20,6 +20,8 @@ FILE_CLIPS_EXPORT = os.path.join(_get_dir_cache(), 'json', 'live', 'from_live.js
 
 CLIPS_EXPORT = os.path.join(_get_dir_cache(), 'pickle', 'live', 'from_live.pkl')
 
+CLIPS_EXPORT_MID = os.path.join(_get_dir_cache(), 'midi', 'clips_export.mid')
+
 cache_map = {
 
 }

@@ -21,7 +21,6 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
 
     for name_part in utils.intersection(parts, list(json_read.keys())):
         part = music21.stream.Part()
-        part.id = name_part
 
         notes = nl.NoteLive.parse_list(
             json_read[name_part]['notes']
@@ -42,9 +41,17 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
             )
 
         if name_part == 'chord':
-            part = part.makeVoices(inPlace=False)
+            part.makeVoices()
 
-        partmap[name_part] = part.makeRests(fillGaps=True, inPlace=False).makeMeasures(inPlace=False)
+        part.makeRests(fillGaps=True)
+
+        part.makeMeasures()
+
+        part.id = name_part
+
+        part.partName = name_part
+
+        partmap[name_part] = part
 
     score = music21.stream.Score()
 

@@ -1,41 +1,35 @@
 from mido import MidiFile, Message, MidiTrack
 import pandas as pd
 from subprocess import call as call_shell
-
-filepath_midi = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/ChordTracks/chords_tswift_tears.mid'
-
-
-# def get_lowest_note(chord):
-#     return chord.notes[0]
-#
-#
-# def get_highest_notes(chord):
-#     if not chord:
-#         return None
-#     else:
-#         return chord.notes[1:]
-#
-#
-# # TODO: create music21 Note from lowest pitch of music21 chord
-# def extract_bass(df_chords) -> pd.DataFrame:
-#     return df_chords['chord'].apply(get_lowest_note).to_frame(name='bass')
-#
-#
-# # TODO: create music21 Chord from highest pitches of music21 chord
-# def extract_upper_voices(df_chords) -> pd.DataFrame:
-#     return df_chords['chord'].apply(get_highest_notes).to_frame(name='chord')
+import music21
 
 
-def to_df(filepath_midi, name_column='chords') -> pd.DataFrame:
-    return merged
+def to_mid(score: music21.stream.Score, fp, channel_map={'bass': 2, 'chord': 3, 'melody': 4}) -> None:
+    mf = music21.midi.translate.streamToMidiFile(score)
+    # for part in score.parts:
+    #     for name_part, channel in channel_map.items():
+    #         mf = music21.midi.translate.streamToMidiFile(part)
+    #
+    #         for event in mf.tracks[0].events:
+    #             event.channel = channel
+    # TODO: this is sketchy, but music21 doesn't provice option to specify which part is mapped to which track
+    def extract_track_map(score):
+        track_map = []
+        for part in score:
+            track_map.append(part.partName)
 
+        return track_map
 
-index_track_bass = 1
-index_track_upper = 2
+    track_map = extract_track_map(score)
 
-file_midi = MidiFile(filepath_midi)
+    for i, _ in enumerate(mf.tracks):
+        for event in mf.tracks[i].events:
+            event.channel = channel_map[track_map[i]]
 
-testing = 1
+    mf.open(fp, 'wb')
+    mf.write()
+    mf.close()
+
 # dir_tracks = '/Users/elliottevers/Downloads/'
 #
 # filename_to_channel_mapping = {

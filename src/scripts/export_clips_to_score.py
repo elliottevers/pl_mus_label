@@ -18,11 +18,10 @@ def main(args):
 
     messenger.message(['running'])
 
+    # TODO: set tempo
     score_clips = postp_mxl.from_json(
         utils.FILE_CLIPS_EXPORT
     )
-
-    score_clips.show()
 
     postp_mxl.freeze_stream(
         stream=score_clips,
