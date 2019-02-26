@@ -12,56 +12,6 @@ import music21
 import json
 from utils import utils
 
-# s = music21.stream.Stream()
-# s.insert(0, music21.note.Note('C4', quarterLength=4))
-# s.repeatInsert(music21.note.Note('b-4', quarterLength=0.5), [x * 0.5 for x in list(range(8))])
-# s.makeVoices(inPlace=True)
-# s.show()
-
-
-# len(s.voices)
-#
-# [n.pitch for n in s.voices[0].notes]
-#
-# [str(n.pitch) for n in s.voices[1].notes]
-
-# exit(0)
-
-# note1 = music21.note.Note('C')
-#
-# note3 = music21.note.Note('E')
-#
-# # note1.offset = 2.0
-#
-# note1.duration = music21.duration.Duration(1.0)
-#
-# note3.duration = music21.duration.Duration(1.0)
-#
-# note2 = music21.note.Note('D')
-#
-# note4 = music21.note.Note('F')
-#
-# # note2.offset = 4.0
-#
-# note2.duration = music21.duration.Duration(1.0)
-#
-# note4.duration = music21.duration.Duration(1.0)
-#
-# score = music21.stream.Part()
-#
-# score.insert(2.0, note1)
-#
-# score.insert(2.0, note3)
-#
-# score.insert(5.0, note2)
-#
-# score.insert(5.0, note4)
-#
-# score.show()
-#
-# # score.makeRests(fillGaps=True, inPlace=False).makeMeasures(inPlace=False).show()
-#
-# exit(0)
 
 def main(args):
     messenger = mes.Messenger()
@@ -172,16 +122,12 @@ def main(args):
     #     filepath=utils.CHORD_SCORE
     # )
 
-    # TODO: implement
     score_clips = postp_mxl.from_json(
         utils.FILE_CLIPS_EXPORT
     )
 
     score_clips.show()
 
-    exit(0)
-
-    # TODO: implement
     postp_mxl.freeze_stream(
         stream=score_clips,
         filepath=utils.CLIPS_EXPORT

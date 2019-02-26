@@ -23,27 +23,6 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
         part = music21.stream.Part()
         part.id = name_part
 
-        # mode = 'polyphonic' if name_part == 'chord' else 'monophonic'
-
-        # list_structs = live_to_xml(
-        #     nl.NoteLive.parse_list(
-        #         json_read[name_part]['notes']
-        #     ),
-        #     mode=mode
-        # )
-
-        # for note_live in notes_live:
-        #     note = music21.note.Note(
-        #         pitch=note_live.pitch
-        #     )
-        #     note.duration = music21.duration.Duration(
-        #         note_live.beats_duration
-        #     )
-        #
-        #     note.offset = note_live.beat_start
-        #
-        #     notes.append(note)
-
         notes = nl.NoteLive.parse_list(
             json_read[name_part]['notes']
         )
@@ -57,19 +36,10 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
                 note_live.beats_duration
             )
 
-            # note.offset = note_live.beat_start
-
             part.insert(
                 note_live.beat_start,
                 note
             )
-
-        # for struct in list_structs:
-        #     part.insert(struct.offset, struct)
-
-        # part.makeMeasures(inPlace=True)
-
-        # part.makeRests(fillGaps=True).makeMeasures()
 
         if name_part == 'chord':
             part = part.makeVoices(inPlace=False)
