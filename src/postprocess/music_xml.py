@@ -1,5 +1,5 @@
 import pandas as pd
-import music21
+from music21 import *
 import numpy as np
 from live import note as nl
 from typing import List, Dict, Any, Optional, Tuple
@@ -10,7 +10,7 @@ from utils import utils
 import json
 
 
-def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Score:
+def from_json(filepath, parts=['melody', 'chord', 'bass']) -> stream.Score:
 
     with open(filepath) as f:
         json_read = json.load(f)
@@ -20,7 +20,7 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
     # beat_length_score = json_read['length_beats']
 
     for name_part in utils.intersection(parts, list(json_read.keys())):
-        part = music21.stream.Part()
+        part = stream.Part()
 
         notes = nl.NoteLive.parse_list(
             json_read[name_part]['notes']
@@ -28,10 +28,10 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
 
         for note_live in notes:
 
-            note = music21.note.Note(
+            note = note.Note(
                 pitch=note_live.pitch
             )
-            note.duration = music21.duration.Duration(
+            note.duration = duration.Duration(
                 note_live.beats_duration
             )
 
@@ -53,7 +53,7 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
 
         partmap[name_part] = part
 
-    score = music21.stream.Score()
+    score = stream.Score()
 
     for _, part in partmap.items():
         score.append(part)
@@ -65,12 +65,12 @@ def get_lowest_note(chord):
     return list(chord.pitches)[0]
 
 
-def get_highest_notes(chord):
-    if not chord:
+def get_highest_notes(chord_local):
+    if not chord_local:
         return None
     else:
-        return music21.chord.Chord(
-            list(chord.pitches)[1:]
+        return chord.Chord(
+            list(chord_local.pitches)[1:]
         )
 
 
@@ -82,8 +82,8 @@ def extract_upper_voices(df_chords) -> pd.DataFrame:
     return df_chords['chord'].apply(get_highest_notes).to_frame(name='chord')
 
 
-def extract_parts(score: music21.stream.Score, parts=['chord', 'bass']) -> music21.stream.Score:
-    score_diminished = music21.stream.Score()
+def extract_parts(score: stream.Score, parts=['chord', 'bass']) -> stream.Score:
+    score_diminished = stream.Score()
 
     for i_part, name_part in enumerate(parts):
         score_diminished.insert(i_part, score.getElementById(name_part))
@@ -91,7 +91,7 @@ def extract_parts(score: music21.stream.Score, parts=['chord', 'bass']) -> music
     return score_diminished
 
 
-def add_part(part: music21.stream.Part, score: music21.stream.Score, id='key_center') -> music21.stream.Score:
+def add_part(part: stream.Part, score: stream.Score, id='key_center') -> stream.Score:
     part.id = id
     score.insert(
         len(score.elements),
@@ -101,66 +101,69 @@ def add_part(part: music21.stream.Part, score: music21.stream.Score, id='key_cen
 
 
 def freeze_stream(stream, filepath) -> None:
-    stream_frozen = music21.freezeThaw.StreamFreezer(stream)
+    stream_frozen = freezeThaw.StreamFreezer(stream)
     stream_frozen.write(fmt='pickle', fp=filepath)
 
 
-def thaw_stream(filepath) -> music21.stream.Stream:
-    thawer = music21.freezeThaw.StreamThawer()
+def thaw_stream(filepath) -> stream.Stream:
+    thawer = freezeThaw.StreamThawer()
     thawer.open(fp=filepath)
     return thawer.stream
 
 
-def set_tempo(score: music21.stream.Score, bpm: int = 60) -> music21.stream.Score:
+def set_tempo(score: stream.Score, bpm: int = 60) -> stream.Score:
 
     marks_to_remove = []
 
     # remove current
-    for mark in score.flat.getElementsByClass(music21.tempo.MetronomeMark):
+    for mark in score.flat.getElementsByClass(tempo.MetronomeMark):
         marks_to_remove.append(mark)
 
     for mark in marks_to_remove:
         score.remove(mark, recurse=True)
 
     # add new
-    for measure in score.parts[0].getElementsByClass(music21.stream.Measure):
+    for measure in score.parts[0].getElementsByClass(stream.Measure):
         if measure.offset == 0.0:
-            tempo = music21.tempo.MetronomeMark(number=bpm)
+            tempo = tempo.MetronomeMark(number=bpm)
             tempo.offset = 0.0
             measure.append(tempo)
 
     return score
 
 
-def get_struct_score(object, name_part):
+def get_struct_score(object, name_part, dur):
     if name_part == 'melody':
         if not object > 0:
-            struct_score = music21.note.Rest()
+            struct_score = note.Rest()
         else:
-            struct_score = music21.note.Note(
-                pitch=music21.pitch.Pitch(
+            struct_score = note.Note(
+                pitch=pitch.Pitch(
                     midi=int(object)
                 )
             )
     elif name_part == 'chord':
         if not object:
-            struct_score = music21.note.Rest()
+            struct_score = note.Rest()
         else:
-            struct_score = music21.chord.fromIntervalVector(
+            struct_score = chord.fromIntervalVector(
                 object
             )
+
     elif name_part == 'bass':
-        struct_score = music21.note.Note(
+        struct_score = note.Note(
             pitch=object
         )
     elif name_part == 'segment':
-        struct_score = music21.note.Note(
-            pitch=music21.pitch.Pitch(
+        struct_score = note.Note(
+            pitch=pitch.Pitch(
                 midi=60
             )
         )
     else:
         raise 'part ' + name_part + ' not in dataframe to render to score'
+
+    struct_score.duration = dur
 
     return struct_score
 
@@ -209,19 +212,19 @@ def df_grans_quantized_to_score(
             'segment'
         ],
         resolution_measure=48
-) -> music21.stream.Score:
+) -> stream.Score:
 
-    score = music21.stream.Score()
+    score = stream.Score()
 
     for i_part, name_part in enumerate(parts):
 
-        part = music21.stream.Part()
+        part = stream.Part()
 
         part.id = name_part
 
         counter_measure = 1
 
-        measure = music21.stream.Measure(
+        measure = stream.Measure(
             number=counter_measure
         )
 
@@ -239,13 +242,13 @@ def df_grans_quantized_to_score(
             if int(acc_duration) > 0 and int(acc_duration) % 4 == 0:
                 part.append(measure)
                 counter_measure = counter_measure + 1
-                measure = music21.stream.Measure(
+                measure = stream.Measure(
                     number=counter_measure
                 )
                 acc_duration = 0
 
             struct_score = get_struct_score(obj, name_part)
-            struct_score.duration = music21.duration.Duration(duration_to_nearest_gran)
+            struct_score.duration = duration.Duration(duration_to_nearest_gran)
             measure.append(struct_score)
             acc_duration = acc_duration + duration_to_nearest_gran
 
@@ -264,52 +267,117 @@ def df_grans_to_score(
             'bass',
             'segment'
         ]
-) -> music21.stream.Score:
+) -> stream.Score:
 
-    score = music21.stream.Score()
+    score = stream.Score()
 
     for i_part, name_part in enumerate(parts):
 
-        part = music21.stream.Part()
+        part = stream.Part()
 
         part.id = name_part
 
         # df_grans['event'] = (df_grans[name_part].shift(1) != df_grans[name_part]).astype(int).cumsum()
-
-        # df_events = df_grans.reset_index().groupby([name_part, 'event'])[column_index].apply(np.array)
+        #
+        # df_events = df_grans.reset_index().groupby([name_part, 'event'])['chord'].apply(np.array)
 
         # beat_to_struct_score = dict()
 
+        # df_grans.index[0][0]
+        #
+        # df_grans.index[0][1]
+        #
+        # df_grans.loc[df_grans.index[0]]
 
+        obj_first = df_grans.loc[df_grans.index[0]][0]
 
+        offset_first = df_grans.index[0][0]
 
+        # part.insert(
+        #     offset_first,
+        #     get_struct_score(
+        #         obj_first,
+        #         name_part
+        #     )
+        # )
 
+        counter = 0
 
+        # part.show()
+        #
+        # exit(0)
 
+        obj_last = obj_first
 
-
-
-        counter_measure = 1
-
-        measure = music21.stream.Measure(
-            number=counter_measure
-        )
+        offset_last = offset_first
 
         for row in df_grans.itertuples():
 
+            counter = counter + 1
+
+            if counter == 1:
+                continue
+
             index = row[0]
             index_beat = index[0]
-            # index_s = index[1]
-
             obj = row[1]
-            if int(index_beat) == index_beat and int(index_beat) % 4 == 0:
-                part.append(measure)
-                counter_measure = counter_measure + 1
-                measure = music21.stream.Measure(
-                    number=counter_measure
+
+            if obj != obj_last:
+
+                dur = duration.Duration(index_beat - offset_last)
+
+                offset = offset_last
+
+                part.insert(
+                    offset,
+                    get_struct_score(
+                        obj_last,
+                        name_part,
+                        dur
+                    )
                 )
 
-            measure.append(get_struct_score(obj, name_part))
+                obj_last = obj
+
+                offset_last = index_beat
+
+            # if
+            # if int(index_beat) == index_beat and int(index_beat) % 4 == 0:
+            #     part.append(measure)
+            #     counter_measure = counter_measure + 1
+            #     measure = stream.Measure(
+            #         number=counter_measure
+            #     )
+            #
+            # measure.append(get_struct_score(obj, name_part))
+
+
+
+        part.show('text')
+
+        exit(0)
+
+        # counter_measure = 1
+        #
+        # measure = stream.Measure(
+        #     number=counter_measure
+        # )
+        #
+        # for row in df_grans.itertuples():
+        #
+        #     index = row[0]
+        #     index_beat = index[0]
+        #     # index_s = index[1]
+        #
+        #     obj = row[1]
+        #     if int(index_beat) == index_beat and int(index_beat) % 4 == 0:
+        #         part.append(measure)
+        #         counter_measure = counter_measure + 1
+        #         measure = stream.Measure(
+        #             number=counter_measure
+        #         )
+        #
+        #     measure.append(get_struct_score(obj, name_part))
 
 
 
@@ -324,7 +392,7 @@ def df_grans_to_score(
         #     if int(beat) == beat and int(beat) % 4 == 0:
         #         part.append(measure)
         #         counter_measure = counter_measure + 1
-        #         measure = music21.stream.Measure(
+        #         measure = stream.Measure(
         #             number=counter_measure
         #         )
         #
@@ -352,10 +420,10 @@ def live_to_xml(
         notes = []
 
         for note_live in notes_live:
-            note = music21.note.Note(
+            note = note.Note(
                 pitch=note_live.pitch
             )
-            note.duration = music21.duration.Duration(
+            note.duration = duration.Duration(
                 note_live.beats_duration
             )
 
@@ -381,9 +449,9 @@ def live_to_xml(
 
         for group in groups_notes:
 
-            chord = music21.chord.Chord([
-                music21.note.Note(
-                    pitch=music21.pitch.Pitch(
+            chord = chord.Chord([
+                note.Note(
+                    pitch=pitch.Pitch(
                         midi=note_live.pitch
                     )
                 ).name for
@@ -394,7 +462,7 @@ def live_to_xml(
             # TODO: this makes the assumption that all notes in the group have the same offsets and duration
 
             chord.offset = group[-1].beat_start
-            chord.duration = music21.duration.Duration(group[-1].beats_duration)
+            chord.duration = duration.Duration(group[-1].beats_duration)
             chords.append(chord)
 
         return chords
