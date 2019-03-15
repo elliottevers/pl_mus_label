@@ -73,4 +73,6 @@ def to_tempo(data_tempo):
 
 
 def extract_beatmap(data_beats):
-    return [beat['timestamp'] for beat in data_beats['list']]
+    return [
+        beat['timestamp'] for beat in data_beats['list']
+    ]

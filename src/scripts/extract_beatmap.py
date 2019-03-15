@@ -45,6 +45,8 @@ def main(args):
         filename_wav
     )
 
+    beatmap_manual.tolist()
+
     exit(0)
     # messenger.message(['done'])
 

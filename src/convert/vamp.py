@@ -10,7 +10,14 @@ def vamp_chord_to_dict(s_to_label_chords: List[Dict[float, Any]]) -> Dict[float,
 
     for event in s_to_label_chords:
 
-        chord_realized = music21.harmony.ChordSymbol(event['label'].replace('b', '-'))
+        event_non_slash = event['label'].split('/', 1)[0]
+
+        if len(event_non_slash) > 1 and event_non_slash[1] == 'b':
+            event_non_slash = list(event_non_slash)
+            event_non_slash[1] = '-'
+            event_non_slash = ''.join(event_non_slash)
+
+        chord_realized = music21.harmony.ChordSymbol(event_non_slash)
 
         chord_midi = music21.chord.Chord(
             notes=[

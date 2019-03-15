@@ -107,14 +107,19 @@ class MeshSong(object):
 
         dfs_quantized: Dict[str, pd.DataFrame] = dict()
 
-        # TODO: GENERALIZE
-        col_to_tree_map = {
-            'melody': self.tree_melody,
-            # 'bass': self.tree_bass,
-            # 'chord': self.tree_chord,
-            # 'segment': self.tree_segment
-            # 'key_center': self.tree_key_center
-        }
+        # # TODO: GENERALIZE
+        # col_to_tree_map = {
+        #     'melody': self.tree_melody,
+        #     # 'bass': self.tree_bass,
+        #     # 'chord': self.tree_chord,
+        #     # 'segment': self.tree_segment
+        #     # 'key_center': self.tree_key_center
+        # }
+
+        col_to_tree_map = {}
+
+        for name_col in columns:
+            col_to_tree_map[name_col] = getattr(self, 'tree_' + name_col)
 
         for name_column in columns:
 
@@ -157,7 +162,7 @@ class MeshSong(object):
                     )
 
                     column.append(
-                        interval_winner.data
+                        sum(list(interval_winner.data))  # interval_winner.data
                     )
                     column_beat.append(
                         beat
@@ -198,7 +203,7 @@ class MeshSong(object):
         # ).sort_index(
         # )
 
-        return dfs_quantized['melody']
+        return dfs_quantized
 
     @staticmethod
     def get_struct(obj):
