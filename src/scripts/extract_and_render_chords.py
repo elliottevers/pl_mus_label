@@ -14,7 +14,7 @@ from utils import utils
 
 
 # TODO: get the filepath of the cache module
-filename_chords_to_live = utils.get_path_cache(utils.CHORD_LIVE)
+filename_chords_to_live = utils.get_path_cache(utils.FILE_CHORD_TO_LIVE)
 
 
 def main(args):
@@ -22,7 +22,7 @@ def main(args):
 
     messenger.message(['running'])
 
-    filename_wav = utils.FILE_WAV  # args.filename
+    filename_wav = utils.FILE_WAV_DOWNLOADED  # args.filename
 
     # length of Ableton live track in beats
 

@@ -25,6 +25,29 @@ class MeshSong(object):
     def __init__(self):
         self.data = None
 
+    def quantize(
+            self,
+            beatmap,
+            s_beat_start,
+            s_beat_end,
+            columns=[
+                'melody',
+                'bass',
+                'chords',
+                'segments'
+            ]
+    ) -> None:
+
+        gran_map = MeshSong.get_gran_map(self.trim_beatmap(beatmap, s_beat_start, s_beat_end))
+
+        self.data_quantized = self._get_maximum_overlap(gran_map, columns)
+
+    def set_tree(self, interval_tree: IntervalTree, type: str) -> None:
+        if type not in ['melody', 'chord', 'bass', 'segment', 'key_center']:
+            raise('interval tree of type ' + type + ' not supported')
+        # TODO: this is a bit scary now isn't it?
+        setattr(self, 'tree_' + type, interval_tree)
+
     # TODO: put somewhere else
     @staticmethod
     def get_note(pitch_midi):
@@ -176,29 +199,6 @@ class MeshSong(object):
         # )
 
         return dfs_quantized['melody']
-
-    def quantize(
-            self,
-            beatmap,
-            s_beat_start,
-            s_beat_end,
-            columns=[
-                'melody',
-                'bass',
-                'chords',
-                'segments'
-            ]
-    ) -> None:
-
-        gran_map = MeshSong.get_gran_map(self.trim_beatmap(beatmap, s_beat_start, s_beat_end))
-
-        self.data_quantized = self._get_maximum_overlap(gran_map, columns)
-
-    def set_tree(self, interval_tree: IntervalTree, type: str) -> None:
-        if type not in ['melody', 'chord', 'bass', 'segment', 'key_center']:
-            raise('interval tree of type ' + type + ' not supported')
-        # TODO: this is a bit scary now isn't it?
-        setattr(self, 'tree_' + type, interval_tree)
 
     @staticmethod
     def get_struct(obj):

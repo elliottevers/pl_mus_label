@@ -4,6 +4,12 @@ import vamp
 import pickle
 import os
 from utils import utils
+from preprocess import vamp as vamp_prep
+
+import subprocess
+
+dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
+file_log = os.path.join(dir_projects, '.log.txt')
 
 
 # files_stub = {
@@ -88,65 +94,127 @@ def extract_chords(
     return data_chords
 
 
-def _is_cached():
-    raise 'not implemented'
+def _is_cached(filename):
+    return False
 
 
 def _get_cached_wav():
     raise 'not implemented'
 
 
+def _get_name_project_most_recent():
+    return subprocess.run(
+        ['head', '-1', file_log],
+        stdout=subprocess.PIPE
+    ).stdout.rstrip().decode("utf-8")
+
+
+def _get_project_dir():
+    return os.path.join(dir_projects, 'projects', _get_name_project_most_recent())
+
+
+def _get_dirname_audio():
+    return os.path.join(_get_project_dir(), 'audio')
+
+
+def _get_dirname_audio_warped():
+    return os.path.join(_get_project_dir(), 'audio_warped')
+
+
+def _get_dirname_tempo():
+    return os.path.join(_get_project_dir(), 'tempo')
+
+
+# def _get_wav_raw():
+#     return os.path.join(_get_dirname_audio(), _get_name_project_most_recent() + '.wav')
+
+
 def extract_tempo(
-    filename_wav,
-    # stub=False
+
 ):
-    # if stub:
-    #     with open(files_stub['tempo'], 'r') as file:
-    #         data_tempo = jsonpickle.decode(file.read())
+
+    # if _is_cached(project_name):
+    #     with open(_get_cached_wav(project_name), 'r') as file:
+    #         data_tempo = pickle.decode(file.read())
     #
     #     return data_tempo
     # else:
-    #     raise 'did you actually think this was real?'
 
-    if _is_cached(filename_wav):
-        with open(_get_cached_wav(filename_wav), 'r') as file:
-            data_tempo = pickle.decode(file.read())
+    project_name = _get_name_project_most_recent()
 
-        return data_tempo
-    else:
-        data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
+    data, rate = librosa.load(
+        os.path.join(_get_dirname_audio(), project_name + '.wav')
+    )
 
-        data_tempo = vamp.collect(data, rate, "vamp-aubio:aubiotempo")
+    data_tempo = vamp.collect(data, rate, "qm-vamp-plugins:qm-tempotracker")
 
-        utils.to_pickle(
-            data_tempo,
-            _get_cached_wav(
-                filename_wav
-            )
-        )
+    results = subprocess.run(
+        ['mkdir', os.path.join(_get_project_dir(), 'tempo')],
+        stdout=subprocess.PIPE
+    )
 
-    return data_tempo
+    estimate_tempo = vamp_prep.to_tempo(data_tempo)
+
+    utils.to_pickle(
+        estimate_tempo,
+        os.path.join(_get_dirname_audio(), project_name)
+    )
+
+    return estimate_tempo
 
 
 def extract_beats(
     filename_wav,
-    from_cache=False
+    # from_cache=False
 ):
-    if from_cache and _is_cached(filename_wav):
-        with open(_get_cached_wav(filename_wav), 'r') as file:
-            data_beats = pickle.decode(file.read())
+    # if from_cache and _is_cached(filename_wav):
+    #     with open(_get_cached_wav(filename_wav), 'r') as file:
+    #         data_beats = pickle.decode(file.read())
+    #
+    #     return data_beats
+    # else:
+    #     data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
+    #
+    #     data_beats = vamp.collect(data, rate, "qm-vamp-plugins:qm-barbeattracker")
+    #
+    #     utils.to_pickle(
+    #         data_beats,
+    #         _get_cached_wav(
+    #             filename_wav
+    #         )
+    #     )
+    #
+    # return data_beats
 
-        return data_beats
-    else:
-        data, rate = librosa.load(os.path.join(_get_dirname_audio(), filename_wav))
 
-        data_beats = vamp.collect(data, rate, "qm-vamp-plugins:qm-barbeattracker")
 
-        utils.to_pickle(
-            data_beats,
-            _get_cached_wav(
-                filename_wav
-            )
-        )
 
-    return data_beats
+
+
+    # project_name = _get_name_project_most_recent()
+    #
+    # data, rate = librosa.load(
+    #     os.path.join(_get_dirname_audio(), project_name + '.wav')
+    # )
+    #
+    # data_tempo = vamp.collect(data, rate, "qm-vamp-plugins:qm-tempotracker")
+    #
+    # results = subprocess.run(
+    #     ['mkdir', os.path.join(_get_project_dir(), 'tempo')],
+    #     stdout=subprocess.PIPE
+    # )
+    #
+    # estimate_tempo = vamp_prep.to_tempo(data_tempo)
+    #
+    # utils.to_pickle(
+    #     estimate_tempo,
+    #     os.path.join(_get_dirname_audio(), project_name)
+    # )
+
+    data, rate = librosa.load(
+        filename_wav
+    )
+
+    data_beats = vamp.collect(data, rate, "qm-vamp-plugins:qm-tempotracker")
+
+    return vamp_prep.extract_beatmap(data_beats)

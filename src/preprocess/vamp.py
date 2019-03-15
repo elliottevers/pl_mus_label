@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as pd, numpy as np
 from typing import List, Dict, Any, Optional, Tuple
 import music21
 
@@ -61,5 +61,16 @@ def extract_tempomap(data_tempo):
     return data_tempo[1]
 
 
+def to_tempo(data_tempo):
+    return np.median(
+        [
+            float(string_nonempty)
+            for string_nonempty
+            in [el['label'].replace(' bpm', '') for el in data_tempo['list']]
+            if string_nonempty
+        ]
+    )
+
+
 def extract_beatmap(data_beats):
-    return [beat['timestamp'] for beat in data_beats]
+    return [beat['timestamp'] for beat in data_beats['list']]

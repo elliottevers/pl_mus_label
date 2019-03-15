@@ -52,7 +52,7 @@ n_bins = 26  # 3
 quantiles = 'empirical'
 sax = SAX(n_bins=n_bins, quantiles=quantiles)
 
-data, rate = librosa.load("/Users/elliottevers/Documents/git-repos.nosync/audio/tswift.wav")
+data, rate = librosa.load("/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/audio/youtube/tswift_teardrops.wav")
 
 # TODO: melody extraction
 melody = vamp.collect(data, rate, "mtg-melodia:melodia")

@@ -35,7 +35,7 @@ def main(args):
     beat_end = args.beat_end
 
     # length of wav file in s
-    y, sr = librosa.load(utils.FILE_WAV)
+    y, sr = librosa.load(utils.FILE_WAV_DOWNLOADED)
 
     duration_s_audio = librosa.get_duration(y=y, sr=sr)
 
@@ -88,22 +88,26 @@ def main(args):
         data_beats
     )
 
-    df_key_center_synced = postp_mid.add_index_s(
-        df_key_center_quantized,
-        beatmap,
-        s_beat_start,
-        s_beat_end
-    )
 
-    df_synced_and_embellished = filt_mid.interpolate(
-        df_key_center_synced,
-        sample_rate=.0029
-    )
+    # TODO: render key centers to Live tracks
+    # TODO: this means we need a Live Index, so use the beatmap, start beat, end beat, song-length ms to add that
 
-    conv_max.to_coll(
-        df_synced_and_embellished,
-        filepath=utils.FILE_COLL_KEY_CENTER_RAW
-    )
+    # df_key_center_synced = postp_mid.add_index_s(
+    #     df_key_center_quantized,
+    #     beatmap,
+    #     s_beat_start,
+    #     s_beat_end
+    # )
+    #
+    # df_synced_and_embellished = filt_mid.interpolate(
+    #     df_key_center_synced,
+    #     sample_rate=.0029
+    # )
+    #
+    # conv_max.to_coll(
+    #     df_synced_and_embellished,
+    #     filepath=utils.FILE_COLL_KEY_CENTER_RAW
+    # )
 
     messenger.message(
         [

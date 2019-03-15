@@ -19,6 +19,7 @@ from analysis_discrete import music_xml as analysis_mxl
 filename_chords_to_live = utils.get_path_cache(utils.CHORD_LIVE)
 
 
+# TODO: shouldn't be thawing stream - should always convert from Live to stream so that we can make manual edits
 def main(args):
     messenger = mes.Messenger()
 
@@ -67,9 +68,10 @@ def main(args):
         score_bass,
     )
 
-    part_key_centers: music21.stream.Part = analysis_mxl.get_key_center_estimates(
-        score_upper_voicings_and_bass
-    )
+    # TODO: these there already extracted, filtered, and saved - just load from cache
+    # part_key_centers: music21.stream.Part = analysis_mxl.get_key_center_estimates(
+    #     score_upper_voicings_and_bass
+    # )
 
     # score to quantized df
 
@@ -88,29 +90,30 @@ def main(args):
         data_beats
     )
 
-    df_key_center_synced = postp_mid.add_index_s(
-        df_key_center_quantized,
-        beatmap,
-        s_beat_start,
-        s_beat_end
-    )
+    # TODO: merge everything to master score -
+    # df_key_center_synced = postp_mid.add_index_s(
+    #     df_key_center_quantized,
+    #     beatmap,
+    #     s_beat_start,
+    #     s_beat_end
+    # )
+    #
+    # df_synced_and_embellished = filt_mid.interpolate(
+    #     df_key_center_synced,
+    #     sample_rate=.0029
+    # )
+    #
+    # conv_max.to_coll(
+    #     df_synced_and_embellished,
+    #     filepath=utils.FILE_COLL_KEY_CENTER_RAW
+    # )
 
-    df_synced_and_embellished = filt_mid.interpolate(
-        df_key_center_synced,
-        sample_rate=.0029
-    )
-
-    conv_max.to_coll(
-        df_synced_and_embellished,
-        filepath=utils.FILE_COLL_KEY_CENTER_RAW
-    )
-
-    messenger.message(
-        [
-            utils.MESSAGE_FILE_COLL,
-            utils.FILE_COLL_KEY_CENTER_RAW
-        ]
-    )
+    # messenger.message(
+    #     [
+    #         utils.MESSAGE_FILE_COLL,
+    #         utils.FILE_COLL_KEY_CENTER_RAW
+    #     ]
+    # )
 
     # score_full = postp_mxl.combine_streams(
     #     score_melody,

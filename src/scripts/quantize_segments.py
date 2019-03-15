@@ -24,10 +24,12 @@ def main(args):
     )
 
     postp_mxl.freeze_stream(
-        utils.FILE_SEGMENT_SCORE,
+        stream_segments,
         utils.FILE_SEGMENT_SCORE
     )
 
+    # TODO: need to add Live Index first, so need start beat, end beat, and ms length song
+    # TODO: but then we need a dataframe, so implement score -> df quantized
     dict_write_json_live = postp_mxl.to_json_live(
         stream_segments,
         parts=['segment']
@@ -35,7 +37,7 @@ def main(args):
 
     utils.to_json_live(
         dict_write_json_live,
-        filename_segments_to_live=utils.FILE_SEGMENT_LIVE
+        filename_segments_to_live=utils.FILE_SEGMENT_TO_LIVE
     )
 
     messenger.message(['done'])

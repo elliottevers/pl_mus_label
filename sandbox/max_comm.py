@@ -1,25 +1,24 @@
 import argparse
-
+import time
 
 def main(args):
-    # print('flag\n')
-    # print(str(args.f) + '\n')
-    # print('option\n')
-    # print(args.o + '\n')
-    # print('argument\n')
-    # print(args.argument + '\n')
-
     import json
 
-    from message import messenger
+    # from message import messenger
+    #
+    # messenger_flag = messenger.Messenger('flag')
+    # messenger_option = messenger.Messenger('option')
+    # messenger_argument = messenger.Messenger('argument')
+    #
+    # messenger_flag.message([str(args.f)])
+    # messenger_option.message([str(args.o)])
+    # messenger_argument.message([str(args.argument)])
 
-    messenger_flag = messenger.Messenger('flag')
-    messenger_option = messenger.Messenger('option')
-    messenger_argument = messenger.Messenger('argument')
+    time.sleep(10)
 
-    messenger_flag.message([str(args.f)])
-    messenger_option.message([str(args.o)])
-    messenger_argument.message([str(args.argument)])
+    print(str(args.argument))
+    print(str(args.f))
+    print(str(args.o))
 
     # testing = 1
     # test_val_json = {
@@ -37,11 +36,10 @@ if __name__ == '__main__':
     parser.add_argument('argument', help='help for argument')
     #
     parser.add_argument('--o', help='help for option')
-    #
+    # #
     parser.add_argument('-f', help='help for flag', action='store_true')
     #
     args = parser.parse_args()
     #
     main(args)
 
-    # print('message')

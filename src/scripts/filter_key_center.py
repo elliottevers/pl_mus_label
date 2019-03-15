@@ -32,7 +32,7 @@ def main(args):
 
     messenger.message(['running'])
 
-    index_key_center_filtered_chosen = args.index_melody_mid_filtered_chosen
+    index_key_center_filtered_chosen = args.index_key_center_mid_filtered_chosen
 
     # data_beats = ir.extract_beats(
     #     utils.FILE_WAV,
@@ -43,6 +43,7 @@ def main(args):
     #     data_beats
     # )
 
+    # TODO: filter this
     df_key_center_filtered_chosen = conv_max.from_coll(
         filepath=utils.get_path_key_center_filtered(
             index_key_center_filtered_chosen

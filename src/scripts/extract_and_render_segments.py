@@ -22,10 +22,10 @@ def main(args):
 
     messenger.message(['running'])
 
-    filename_wav = utils.FILE_WAV
+    filename_wav = utils.FILE_WAV_DOWNLOADED
 
     # length of Ableton live track in beats
-
+    # TODO: this is for ms -> beat mapping for rendering to Ableton Live alongside raw audio
     beats_length_track_live = args.beats_length_track_live
 
     # beat start
@@ -46,7 +46,7 @@ def main(args):
     s_beat_end = (beat_end / beats_length_track_live) * duration_s_audio
 
     data_segments = ir.extract_segments(
-        utils.FILE_WAV
+        utils.FILE_WAV_DOWNLOADED
     )
 
     df_segments = prep_vamp.segments_to_df(
@@ -65,7 +65,7 @@ def main(args):
     )
 
     data_beats = ir.extract_beats(
-        utils.FILE_WAV,
+        utils.FILE_WAV_DOWNLOADED,
         from_cache=True
     )
 
@@ -75,14 +75,14 @@ def main(args):
 
     mesh_song.set_tree(
         tree_segments,
-        type='chord'
+        type='segment'
     )
 
     mesh_song.quantize(
         beatmap,
         s_beat_start,
         s_beat_end,
-        columns=['chord']
+        columns=['segment']
     )
 
     # index beat, index ms audio file, index beat live audio track
@@ -94,7 +94,7 @@ def main(args):
     )
 
     # TODO: save Live JSON for chords synced with audio track in Live
-
+    # NB: this should have an index of beats in Live
     dict_write_json_live = song.MeshSong.to_json_live(
         df_with_live_audio_index,
         columns=['segment']
@@ -102,7 +102,7 @@ def main(args):
 
     utils.to_json_live(
         dict_write_json_live,
-        filename_chords_to_live=utils.FILE_SEGMENT_LIVE
+        filename_chords_to_live=utils.FILE_SEGMENT_TO_LIVE
     )
 
     score_segment = postp_mxl.df_grans_to_score(
@@ -112,7 +112,7 @@ def main(args):
 
     postp_mxl.freeze_stream(
         stream=score_segment,
-        filepath=utils.SEGMENT_SCORE
+        filepath=utils.SCORE_SEGMENT
     )
 
     messenger.message(['done'])
