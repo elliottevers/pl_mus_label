@@ -195,6 +195,8 @@ def main(args):
         parts=['melody', 'chord', 'bass']
     )
 
+    # save mxl representation of score before loading to live
+
     score_frozen = music21.freezeThaw.StreamFreezer(score)
 
     score_frozen.write(fmt='pickle', fp=filepath_frozen)
@@ -203,9 +205,7 @@ def main(args):
 
     thawer.open(fp=filepath_frozen)
 
-    # thawer.stream.show('midi')
-
-    exit(0)
+    # write to json file loaded by Ableton Live
 
     with open(filename_to_max, 'w') as outfile:
         json.dump(

@@ -158,10 +158,19 @@ def main(args):
         beatmap,
         s_beat_start,
         s_beat_end,
+        beat_start - 1,  # transitioning indices here
         columns=['chord']
     )
 
     data_quantized_chords = mesh_song.data_quantized['chord']
+
+    # print(data_quantized_chords[data_quantized_chords.index.get_level_values(1) == 16.574693417907703])
+    # print(data_quantized_chords[data_quantized_chords.index.get_level_values(1) == 24.61090840840841])
+
+    score = postp_mxl.df_grans_to_score(
+        data_quantized_chords,
+        parts=['chord']
+    )
 
     exit(0)
 

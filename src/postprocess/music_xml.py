@@ -143,9 +143,12 @@ def get_struct_score(object, name_part):
                 )
             )
     elif name_part == 'chord':
-        struct_score = music21.chord.fromIntervalVector(
-            object
-        )
+        if not object:
+            struct_score = music21.note.Rest()
+        else:
+            struct_score = music21.chord.fromIntervalVector(
+                object
+            )
     elif name_part == 'bass':
         struct_score = music21.note.Note(
             pitch=object
@@ -277,6 +280,15 @@ def df_grans_to_score(
 
         # beat_to_struct_score = dict()
 
+
+
+
+
+
+
+
+
+
         counter_measure = 1
 
         measure = music21.stream.Measure(
@@ -298,6 +310,15 @@ def df_grans_to_score(
                 )
 
             measure.append(get_struct_score(obj, name_part))
+
+
+
+
+
+
+
+
+
 
         # for beat in df_grans.index.get_level_values(0).tolist():
         #     if int(beat) == beat and int(beat) % 4 == 0:

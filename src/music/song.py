@@ -30,6 +30,7 @@ class MeshSong(object):
             beatmap,
             s_beat_start,
             s_beat_end,
+            pos_first_beat,
             columns=[
                 'melody',
                 'bass',
@@ -38,7 +39,10 @@ class MeshSong(object):
             ]
     ) -> None:
 
-        gran_map = MeshSong.get_gran_map(self.trim_beatmap(beatmap, s_beat_start, s_beat_end))
+        gran_map = MeshSong.get_gran_map(
+            self.trim_beatmap(beatmap, s_beat_start, s_beat_end),
+            pos_first_beat
+        )
 
         self.data_quantized = self._get_maximum_overlap(gran_map, columns)
 
@@ -65,7 +69,7 @@ class MeshSong(object):
             return pitch_midi
 
     @staticmethod
-    def get_gran_map(beatmap, quantize='16T'):
+    def get_gran_map(beatmap, offset_first_beat, quantize='16T'):
 
         gran_map = dict()
 
@@ -74,7 +78,7 @@ class MeshSong(object):
 
         for beat, s in enumerate(beatmap[:-1], 1):
             index_beatmap = beat - 1
-            beat_interpolated = np.linspace(beat, beat + 1, num_samples)
+            beat_interpolated = np.linspace(beat + offset_first_beat, beat + 1 + offset_first_beat, num_samples)
             s_interpolated = np.linspace(beatmap[index_beatmap], beatmap[index_beatmap + 1], num_samples)
             gran_map.update(dict(zip(beat_interpolated, s_interpolated)))
 
@@ -132,7 +136,8 @@ class MeshSong(object):
 
             # TODO: create an accumulator for automatic "diff"-ing
 
-            for beat in beats[:-1]:
+            # for beat in beats[:-1]:
+            for beat in beats:
 
                 s = gran_map[beat]
 
@@ -162,7 +167,7 @@ class MeshSong(object):
                     )
 
                     column.append(
-                        sum(list(interval_winner.data))  # interval_winner.data
+                        interval_winner.data  # sum(list(interval_winner.data))
                     )
                     column_beat.append(
                         beat
