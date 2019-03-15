@@ -14,7 +14,7 @@ from utils import utils
 import numpy as np
 import os
 from information_retrieval import extraction
-
+from live import note as nl
 
 # TODO: get the filepath of the cache module
 # filename_chords_to_live = utils.get_path_cache(utils.FILE_CHORD_TO_LIVE)
@@ -172,37 +172,100 @@ def main(args):
         parts=['chord']
     )
 
+    json_live = {}
+
+    def struct_to_notes_live(struct_21, name_part):
+
+        try:
+            if struct_21.name == 'rest':
+                return []
+        except AttributeError:
+            pass
+
+        notes = []
+
+        if name_part == 'melody':
+            # if not object > 0:
+            #     struct_score = note.Rest()
+            # else:
+            #     struct_score = note.Note(
+            #         pitch=pitch.Pitch(
+            #             midi=int(object)
+            #         )
+            #     )
+            testing = 1
+        elif name_part == 'chord':
+            beats_offset = float(struct_21.offset)
+            beats_duration = float(struct_21.duration.quarterLength)
+            velocity = 90
+            muted = 0
+
+            for pitch in struct_21.pitches:
+                notes.append(
+                    nl.NoteLive.parse(
+                        [pitch.midi, beats_offset, beats_duration, velocity, muted]
+                    )
+                )
+
+        elif name_part == 'bass':
+            # struct_score = note.Note(
+            #     pitch=object
+            # )
+            testing = 1
+        elif name_part == 'segment':
+            # struct_score = note.Note(
+            #     pitch=pitch.Pitch(
+            #         midi=60
+            #     )
+            # )
+            testing = 1
+        else:
+            raise 'part ' + name_part + ' not able to be converted to Live'
+
+        return notes
+
+    for part in score:
+        json_live[part.id] = {'notes': []}
+        for obj in part:
+            # length_beats = float(obj.duration.quarterLength)
+            # offset_beats = obj.offset
+            notes = struct_to_notes_live(obj, part.id)
+            for note_live in notes:
+                json_live[part.id]['notes'].append(note_live.encode())
+
+    # print(json_live)
+
     exit(0)
 
-    # index beat, index ms audio file, index beat live audio track
-    df_with_live_audio_index = song.MeshSong.add_live_index(
-        mesh_song.data_quantized,
-        beat_start_live=beat_start,
-        beat_end_live=beat_end,
-        beats_length_track_live=beats_length_track_live
-    )
-
-    # TODO: save Live JSON for chords synced with audio track in Live
-
-    dict_write_json_live = song.MeshSong.to_json_live(
-        df_with_live_audio_index,
-        columns=['chord']
-    )
-
-    utils.to_json_live(
-        dict_write_json_live,
-        filename_chords_to_live=filename_chords_to_live
-    )
-
-    score_chords = postp_mxl.df_grans_to_score(
-        df_with_live_audio_index,
-        parts=['chord']
-    )
-
-    postp_mxl.freeze_stream(
-        stream=score_chords,
-        filepath=utils.CHORD_SCORE
-    )
+    # # index beat, index ms audio file, index beat live audio track
+    # df_with_live_audio_index = song.MeshSong.add_live_index(
+    #     mesh_song.data_quantized,
+    #     beat_start_live=beat_start,
+    #     beat_end_live=beat_end,
+    #     beats_length_track_live=beats_length_track_live
+    # )
+    #
+    # # TODO: save Live JSON for chords synced with audio track in Live
+    #
+    # dict_write_json_live = song.MeshSong.to_json_live(
+    #     df_with_live_audio_index,
+    #     columns=['chord']
+    # )
+    #
+    # utils.to_json_live(
+    #     dict_write_json_live,
+    #     filename_chords_to_live=filename_chords_to_live
+    # )
+    #
+    # score_chords = postp_mxl.df_grans_to_score(
+    #     df_with_live_audio_index,
+    #     parts=['chord']
+    # )
+    #
+    # postp_mxl.freeze_stream(
+    #     stream=score_chords,
+    #     filepath=utils.CHORD_SCORE
+    # )
 
     # messenger.message(['done'])
 

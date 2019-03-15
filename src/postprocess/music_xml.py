@@ -353,9 +353,9 @@ def df_grans_to_score(
 
 
 
-        part.show('text')
-
-        exit(0)
+        # part.show('text')
+        #
+        # exit(0)
 
         # counter_measure = 1
         #
