@@ -19,6 +19,7 @@ from live import note as nl
 # TODO: get the filepath of the cache module
 # filename_chords_to_live = utils.get_path_cache(utils.FILE_CHORD_TO_LIVE)
 
+dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
 
 # TODO: replace
 
@@ -226,14 +227,21 @@ def main(args):
 
     for part in score:
         json_live[part.id] = {'notes': []}
+        notes_final = []
         for obj in part:
-            # length_beats = float(obj.duration.quarterLength)
-            # offset_beats = obj.offset
             notes = struct_to_notes_live(obj, part.id)
             for note_live in notes:
-                json_live[part.id]['notes'].append(note_live.encode())
+                notes_final.append(note_live.encode())
 
-    # print(json_live)
+        json_live[part.id]['notes'].append(' '.join(['notes', str(len(notes_final))]))
+        for note_final in notes_final:
+            json_live[part.id]['notes'].append(note_final)
+        json_live[part.id]['notes'].append(' '.join(['notes', 'done']))
+
+    utils.to_json_live(
+        json_live,
+        filename_chords_to_live=os.path.join(dir_projects, 'json_live.json')
+    )
 
     exit(0)
 
