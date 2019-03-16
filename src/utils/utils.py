@@ -59,6 +59,10 @@ def get_dirname_beat():
     return os.path.join(get_project_dir(), 'beat')
 
 
+def get_dirname_score():
+    return os.path.join(get_project_dir(), 'score')
+
+
 def get_tuple_beats(filepath):
     obj_beat = from_pickle(filepath)
     return obj_beat['beat_start'], obj_beat['beat_end'], obj_beat['length_beats'], obj_beat['beatmap']
@@ -91,3 +95,28 @@ def create_dir_beat():
         ['mkdir', os.path.join(get_project_dir(), 'beat')],
         stdout=subprocess.PIPE
     )
+
+
+def create_dir_score():
+    if os.path.exists(
+        os.path.join(get_project_dir(), 'score')
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', os.path.join(get_project_dir(), 'score')],
+            stdout=subprocess.PIPE
+        )
+
+
+def create_dir_segment():
+    if os.path.exists(
+        os.path.join(get_project_dir(), 'score', 'segment')
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', os.path.join(get_project_dir(), 'score', 'segment')],
+            stdout=subprocess.PIPE
+        )
+

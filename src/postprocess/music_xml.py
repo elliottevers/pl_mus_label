@@ -86,9 +86,13 @@ def extract_parts(score: stream.Score, parts=['chord', 'bass']) -> stream.Score:
     score_diminished = stream.Score()
 
     for i_part, name_part in enumerate(parts):
-        score_diminished.insert(i_part, score.getElementById(name_part))
+        score_diminished.insert(i_part, extract_part(score, name_part))
 
     return score_diminished
+
+
+def extract_part(score: stream.Score, name_part):  #   -> stream.Part:
+    return score.getElementById(name_part)
 
 
 def add_part(part: stream.Part, score: stream.Score, id='key_center') -> stream.Score:

@@ -83,12 +83,33 @@ def main(args):
 
     data_quantized_chords = mesh_song.data_quantized['segment']
 
-    # print(data_quantized_chords[data_quantized_chords.index.get_level_values(1) == 16.574693417907703])
-    # print(data_quantized_chords[data_quantized_chords.index.get_level_values(1) == 24.61090840840841])
-
     score = postp_mxl.df_grans_to_score(
         data_quantized_chords,
         parts=['segment']
+    )
+
+    stream_segment = postp_mxl.extract_part(
+        score,
+        'segment'
+    )
+
+    utils.create_dir_score()
+
+    utils.create_dir_segment()
+
+    filename_pickle = os.path.join(
+        utils.get_dirname_score(),
+        'segment',
+        ''.join([utils._get_name_project_most_recent(), '.pkl'])
+    )
+
+    postp_mxl.freeze_stream(
+        stream_segment,
+        filename_pickle
+    )
+
+    stream_segment_thawed = postp_mxl.thaw_stream(
+        filename_pickle
     )
 
     messenger.message(['done'])
@@ -96,12 +117,6 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract Segments')
-
-    # parser.add_argument('beats_length_track_live', help='length of track in Live')
-    #
-    # parser.add_argument('beat_start', help='first beat in Live')
-    #
-    # parser.add_argument('beat_end', help='last beat in Live')
 
     args = parser.parse_args()
 
