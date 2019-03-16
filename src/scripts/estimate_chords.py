@@ -38,8 +38,8 @@ def main(args):
     # filename_wav = utils.FILE_WAV_DOWNLOADED
 
     filename_wav = os.path.join(
-        extraction._get_dirname_audio_warped(),
-        extraction._get_name_project_most_recent() + '.wav'
+        utils.get_dirname_audio_warped(),
+        utils._get_name_project_most_recent() + '.wav'
     )
 
     y, sr = librosa.load(
@@ -51,9 +51,11 @@ def main(args):
         sr=sr
     )
 
-    beatmap, beat_start, beat_end, beats_length_track_live = utils.load_pickle(
-        extraction._get_dirname_beat(),
-        extraction._get_name_project_most_recent() + '.pkl'
+    beat_start, beat_end, length_beats, beatmap = utils.get_tuple_beats(
+        os.path.join(
+            utils.get_dirname_beat(),
+            utils._get_name_project_most_recent() + '.pkl'
+        )
     )
 
     # duration_s_audio_warped = 148.670
@@ -74,21 +76,23 @@ def main(args):
 
     # beats_length_track_live = 74 * 4 + 1
 
-    s_beat_start = (beat_start / beats_length_track_live) * duration_s_audio
+    s_beat_start = (beat_start / length_beats) * duration_s_audio
 
-    s_beat_end = (beat_end / (beats_length_track_live)) * duration_s_audio
+    s_beat_end = (beat_end / (length_beats)) * duration_s_audio
 
     # NB: chords from raw audio
     data_chords = ir.extract_chords(
-        extraction._get_dirname_audio_warped(),
-        extraction._get_name_project_most_recent() + '.wav'
+        os.path.join(
+            utils.get_dirname_audio_warped(),
+            utils._get_name_project_most_recent() + '.wav'
+        )
     )
 
-    # TODO: implement
-    utils.save(
-        'chord',
-        data_chords
-    )
+    # TODO: implement when doing caching
+    # utils.save(
+    #     'chord',
+    #     data_chords
+    # )
 
     mesh_song = song.MeshSong()
 
@@ -96,6 +100,7 @@ def main(args):
         data_chords
     )
 
+    # TODO: refactor, this is slow
     events_chords: Dict[float, music21.chord.Chord] = vamp_convert.vamp_chord_to_dict(
         non_empty_chords
     )
@@ -104,12 +109,13 @@ def main(args):
         events_chords
     )
 
-    df_upper_voicings = postp_mxl.extract_upper_voices(
-        df_chords
-    )
+    # TODO: put somewhere else
+    # df_upper_voicings = postp_mxl.extract_upper_voices(
+    #     df_chords
+    # )
 
     chord_tree = song.MeshSong.get_interval_tree(
-        df_upper_voicings
+        df_chords
     )
 
     mesh_song.set_tree(
@@ -152,6 +158,10 @@ def main(args):
         data_quantized_chords,
         parts=['chord']
     )
+
+    score.show()
+
+    exit(0)
 
     json_live = {}
 

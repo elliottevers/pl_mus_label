@@ -59,6 +59,11 @@ def get_dirname_beat():
     return os.path.join(get_project_dir(), 'beat')
 
 
+def get_tuple_beats(filepath):
+    obj_beat = from_pickle(filepath)
+    return obj_beat['beat_start'], obj_beat['beat_end'], obj_beat['length_beats'], obj_beat['beatmap']
+
+
 def intersection(former: List, latter: List) -> List:
     return [value for value in former if value in latter]
 

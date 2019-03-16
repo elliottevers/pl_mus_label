@@ -29,6 +29,33 @@ def chords_to_df(chords: Dict[Any, music21.chord.Chord], index_type='s'):
 
 
 def segments_to_df(data_segments, index_type='s'):
+    # segments = [
+    #     {
+    #         'timestamp': segment['timestamp'],
+    #         'duration': segment['duration'],
+    #         'label': segment['label']
+    #     }
+    #     for segment
+    #     in data_segments
+    # ]
+    #
+    # df_segments = pd.DataFrame(
+    #     data={
+    #         'segment': [
+    #             segment['label']
+    #             for segment
+    #             in segments
+    #         ]
+    #     },
+    #     index=[
+    #         segment['timestamp'] for segment in segments
+    #     ]
+    # )
+    #
+    # df_segments.index.name = index_type
+    #
+    # return df_segments
+
     segments = [
         {
             'timestamp': segment['timestamp'],
@@ -39,17 +66,21 @@ def segments_to_df(data_segments, index_type='s'):
         in data_segments
     ]
 
+    data = [
+        segment['label']
+        for segment
+        in segments
+    ]
+
+    index = [
+        segment['timestamp'].to_float() for segment in segments
+    ]
+
     df_segments = pd.DataFrame(
         data={
-            'segment': [
-                segment['label']
-                for segment
-                in segments
-            ]
+            'segment': data
         },
-        index=[
-            segment['timestamp'] for segment in segments
-        ]
+        index=index
     )
 
     df_segments.index.name = index_type

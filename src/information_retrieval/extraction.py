@@ -52,28 +52,24 @@ def extract_melody(
 
 
 def extract_segments(
-    filename_wav,
-    from_cache=False
+    filename_wav
 ):
-    # if from_cache and _is_cached(filename_wav):
-    #     with open(utils.get_cached_wav(filename_wav), 'r') as file:
-    #         data_segments = pickle.decode(file.read())
-    #
-    #     return data_segments
-    # else:
-    data, rate = librosa.load(os.path.join(utils.get_dirname_audio(), filename_wav))
+    data, rate = librosa.load(
+        filename_wav
+    )
 
     data_segments = vamp.collect(data, rate, 'qm-vamp-plugins:qm-segmenter')
     # data_segments = vamp.collect(data, rate, 'nnls-chroma:segmentino')
 
-    utils.to_pickle(
-        data_segments,
-        utils.get_cached_wav(
-            filename_wav
-        )
-    )
+    # TODO: but not yet
+    # utils.to_pickle(
+    #     data_segments,
+    #     utils.get_cached_wav(
+    #         filename_wav
+    #     )
+    # )
 
-    return data_segments
+    return data_segments['list']
 
 
 # def extract_chords(

@@ -57,12 +57,19 @@ def main(args):
         utils._get_name_project_most_recent() + '.pkl'
     )
 
+    data_beats = {
+        'beat_start': int(args.s),
+        'beat_end': int(args.e),
+        'length_beats': int(args.length_beats),
+        'beatmap': beatmap_manual
+    }
+
     utils.to_pickle(
-        beatmap_manual,
+        data_beats,
         filepath_beatmap
     )
 
-    beatmap_thawed = utils.from_pickle(
+    data_beats_thawed = utils.from_pickle(
         filepath_beatmap
     )
 
@@ -77,6 +84,8 @@ if __name__ == '__main__':
     parser.add_argument('--s', help='beat start')
 
     parser.add_argument('--e', help='beat end')
+
+    parser.add_argument('--length_beats', help='length in beats')
 
     parser.add_argument('-m', help='manual', action='store_true')
 
