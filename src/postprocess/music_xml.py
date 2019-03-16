@@ -203,59 +203,59 @@ def get_struct_score(object, name_part, dur):
 #     return df_diff
 
 
-def df_grans_quantized_to_score(
-        df_grans: pd.DataFrame,
-        parts=[
-            'melody',
-            'chord',
-            'bass',
-            'segment'
-        ],
-        resolution_measure=48
-) -> stream.Score:
-
-    score = stream.Score()
-
-    for i_part, name_part in enumerate(parts):
-
-        part = stream.Part()
-
-        part.id = name_part
-
-        counter_measure = 1
-
-        measure = stream.Measure(
-            number=counter_measure
-        )
-
-        acc_duration = 0
-
-        for row in df_grans.itertuples():
-            index = row[0]
-            index_beat_offset = index[0]
-            obj = row[1]
-            duration = row[2]
-
-            duration_to_nearest_gran = Fraction(int(round(resolution_measure * duration)), resolution_measure)
-            beat_offset_to_nearest_gran = Fraction(int(round(resolution_measure * index_beat_offset)), resolution_measure)
-
-            if int(acc_duration) > 0 and int(acc_duration) % 4 == 0:
-                part.append(measure)
-                counter_measure = counter_measure + 1
-                measure = stream.Measure(
-                    number=counter_measure
-                )
-                acc_duration = 0
-
-            struct_score = get_struct_score(obj, name_part)
-            struct_score.duration = duration.Duration(duration_to_nearest_gran)
-            measure.append(struct_score)
-            acc_duration = acc_duration + duration_to_nearest_gran
-
-
-        score.insert(i_part, part)
-
-    return score
+# def df_grans_quantized_to_score(
+#         df_grans: pd.DataFrame,
+#         parts=[
+#             'melody',
+#             'chord',
+#             'bass',
+#             'segment'
+#         ],
+#         resolution_measure=48
+# ) -> stream.Score:
+#
+#     score = stream.Score()
+#
+#     for i_part, name_part in enumerate(parts):
+#
+#         part = stream.Part()
+#
+#         part.id = name_part
+#
+#         counter_measure = 1
+#
+#         measure = stream.Measure(
+#             number=counter_measure
+#         )
+#
+#         acc_duration = 0
+#
+#         for row in df_grans.itertuples():
+#             index = row[0]
+#             index_beat_offset = index[0]
+#             obj = row[1]
+#             duration = row[2]
+#
+#             duration_to_nearest_gran = Fraction(int(round(resolution_measure * duration)), resolution_measure)
+#             beat_offset_to_nearest_gran = Fraction(int(round(resolution_measure * index_beat_offset)), resolution_measure)
+#
+#             if int(acc_duration) > 0 and int(acc_duration) % 4 == 0:
+#                 part.append(measure)
+#                 counter_measure = counter_measure + 1
+#                 measure = stream.Measure(
+#                     number=counter_measure
+#                 )
+#                 acc_duration = 0
+#
+#             struct_score = get_struct_score(obj, name_part)
+#             struct_score.duration = duration.Duration(duration_to_nearest_gran)
+#             measure.append(struct_score)
+#             acc_duration = acc_duration + duration_to_nearest_gran
+#
+#
+#         score.insert(i_part, part)
+#
+#     return score
 
 
 def df_grans_to_score(
@@ -277,35 +277,11 @@ def df_grans_to_score(
 
         part.id = name_part
 
-        # df_grans['event'] = (df_grans[name_part].shift(1) != df_grans[name_part]).astype(int).cumsum()
-        #
-        # df_events = df_grans.reset_index().groupby([name_part, 'event'])['chord'].apply(np.array)
-
-        # beat_to_struct_score = dict()
-
-        # df_grans.index[0][0]
-        #
-        # df_grans.index[0][1]
-        #
-        # df_grans.loc[df_grans.index[0]]
-
         obj_first = df_grans.loc[df_grans.index[0]][0]
 
         offset_first = df_grans.index[0][0]
 
-        # part.insert(
-        #     offset_first,
-        #     get_struct_score(
-        #         obj_first,
-        #         name_part
-        #     )
-        # )
-
         counter = 0
-
-        # part.show()
-        #
-        # exit(0)
 
         obj_last = obj_first
 
@@ -340,71 +316,6 @@ def df_grans_to_score(
                 obj_last = obj
 
                 offset_last = index_beat
-
-            # if
-            # if int(index_beat) == index_beat and int(index_beat) % 4 == 0:
-            #     part.append(measure)
-            #     counter_measure = counter_measure + 1
-            #     measure = stream.Measure(
-            #         number=counter_measure
-            #     )
-            #
-            # measure.append(get_struct_score(obj, name_part))
-
-
-
-        # part.show('text')
-        #
-        # exit(0)
-
-        # counter_measure = 1
-        #
-        # measure = stream.Measure(
-        #     number=counter_measure
-        # )
-        #
-        # for row in df_grans.itertuples():
-        #
-        #     index = row[0]
-        #     index_beat = index[0]
-        #     # index_s = index[1]
-        #
-        #     obj = row[1]
-        #     if int(index_beat) == index_beat and int(index_beat) % 4 == 0:
-        #         part.append(measure)
-        #         counter_measure = counter_measure + 1
-        #         measure = stream.Measure(
-        #             number=counter_measure
-        #         )
-        #
-        #     measure.append(get_struct_score(obj, name_part))
-
-
-
-
-
-
-
-
-
-
-        # for beat in df_grans.index.get_level_values(0).tolist():
-        #     if int(beat) == beat and int(beat) % 4 == 0:
-        #         part.append(measure)
-        #         counter_measure = counter_measure + 1
-        #         measure = stream.Measure(
-        #             number=counter_measure
-        #         )
-        #
-        #     measure.append(get_struct_score(obj, name_part))
-
-            # TODO: what does this do?
-            # if beat in beat_to_struct_score:
-            # struct_score = beat_to_struct_score[beat]
-            # get_struct_score()
-            # measure.append(
-            #     struct_score
-            # )
 
         score.insert(i_part, part)
 

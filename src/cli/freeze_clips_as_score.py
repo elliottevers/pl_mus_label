@@ -27,12 +27,12 @@ def main(args):
 
     messenger.message(['running'])
 
-    with open(filename_out_max) as f:
-        json_read = json.load(f)
+    # with open(filename_out_max) as f:
+    #     json_read = json.load(f)
 
-    dict_write = dict(
-
-    )
+    # dict_write = dict(
+    #
+    # )
 
     parts = ['melody', 'chord', 'bass', 'segment', 'key_center']
 
@@ -102,53 +102,53 @@ def main(args):
 
     df_gran_master.index.name = 'beat'
 
-    for part in utils.intersection(parts, list(json_read.keys())):
-
-        dict_write[part] = {
-
-        }
-
-        dict_write[part]['notes'] = [
-
-        ]
-
-        dict_write[part]['notes'].append(
-            ' '.join(
-                [
-                    'notes',
-                    str(
-                        (
-                            len(json_read[part]['notes']) - 2
-                        )
-                    )
-                ]
-            )
-        )
-
-        index = get_index_gran(
-            song_start_beats,
-            song_end_beats
-        )
-
-        df_gran = pd.DataFrame(
-            data=np.full(
-                (len(index), 1),
-                0  # TODO: does this make sense for all data
-            ),
-            index=index,
-            columns=[part]
-        )
-
-        df_gran.index.name = 'beat'
-
-        mode = 'polyphonic' if part == 'chord' else 'monophonic'
-
-        list_structs = postp_mxl.live_to_xml(
-            note_live.NoteLive.parse_list(
-                json_read[part]['notes']
-            ),
-            mode=mode
-        )
+    # for part in utils.intersection(parts, list(json_read.keys())):
+    #
+    #     dict_write[part] = {
+    #
+    #     }
+    #
+    #     dict_write[part]['notes'] = [
+    #
+    #     ]
+    #
+    #     dict_write[part]['notes'].append(
+    #         ' '.join(
+    #             [
+    #                 'notes',
+    #                 str(
+    #                     (
+    #                         len(json_read[part]['notes']) - 2
+    #                     )
+    #                 )
+    #             ]
+    #         )
+    #     )
+    #
+    #     index = get_index_gran(
+    #         song_start_beats,
+    #         song_end_beats
+    #     )
+    #
+    #     df_gran = pd.DataFrame(
+    #         data=np.full(
+    #             (len(index), 1),
+    #             0  # TODO: does this make sense for all data
+    #         ),
+    #         index=index,
+    #         columns=[part]
+    #     )
+    #
+    #     df_gran.index.name = 'beat'
+    #
+    #     mode = 'polyphonic' if part == 'chord' else 'monophonic'
+    #
+    #     list_structs = postp_mxl.live_to_xml(
+    #         note_live.NoteLive.parse_list(
+    #             json_read[part]['notes']
+    #         ),
+    #         mode=mode
+    #     )
         for struct_score in list_structs:
 
             # dict_write[part]['notes'].append(

@@ -23,14 +23,11 @@ dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked
 
 # TODO: replace
 
-beatmap_manual = np.linspace(
-    0,
-    float(148.66997732426304),
-    int(297) - int(1) + 1
-)
-
-
-# add live index (beats)
+# beatmap_manual = np.linspace(
+#     0,
+#     float(148.66997732426304),
+#     int(297) - int(1) + 1
+# )
 
 
 def main(args):
@@ -54,32 +51,43 @@ def main(args):
         sr=sr
     )
 
-    duration_s_audio = 148.670
+    beatmap, beat_start, beat_end, beats_length_track_live = utils.load_pickle(
+        extraction._get_dirname_beat(),
+        extraction._get_name_project_most_recent() + '.pkl'
+    )
+
+    # duration_s_audio_warped = 148.670
+
     # length of Ableton live track in beats
 
     # beats_length_track_live = args.beats_length_track_live
 
-    # beat start
+    # beat_start = args.beat_start
 
-    beat_start = (9 - 1) * 4 + 1  # 1  # args.beat_start
+    # beat_start = (9 - 1) * 4 + 1  # 1  # args.beat_start
 
-    # beat end
+    # beat_end = args.beat_end
 
-    beat_end = (13 - 1) * 4 + 1  # 297  # args.beat_end
+    # beat_end = (13 - 1) * 4 + 1  # 297  # args.beat_end
 
-    # length of wav file in s
-    # y, sr = librosa.load(filename_wav)
-    #
-    # duration_s_audio = librosa.get_duration(y=y, sr=sr)
+    # beats_length_track_live = args.beats_length_track_live
 
-    beats_length_track_live = 74 * 4 + 1
+    # beats_length_track_live = 74 * 4 + 1
 
     s_beat_start = (beat_start / beats_length_track_live) * duration_s_audio
 
     s_beat_end = (beat_end / (beats_length_track_live)) * duration_s_audio
 
+    # NB: chords from raw audio
     data_chords = ir.extract_chords(
-        filename_wav
+        extraction._get_dirname_audio_warped(),
+        extraction._get_name_project_most_recent() + '.wav'
+    )
+
+    # TODO: implement
+    utils.save(
+        'chord',
+        data_chords
     )
 
     mesh_song = song.MeshSong()
@@ -109,38 +117,8 @@ def main(args):
         type='chord'
     )
 
-
-    # s_to_label_chords: List[Dict[float, Any]] = data_chords
-    #
-    # non_empty_chords = vamp_filter.vamp_filter_non_chords(
-    #     s_to_label_chords
-    # )
-    #
-    # events_chords: Dict[float, music21.chord.Chord] = vamp_convert.vamp_chord_to_dict(
-    #     non_empty_chords
-    # )
-    #
-    # df_chords = prep_vamp.chords_to_df(
-    #     events_chords
-    # )
-    #
-    # df_upper_voicings = postp_mxl.extract_upper_voices(
-    #     df_chords
-    # )
-    #
-    # chord_tree = song.MeshSong.get_interval_tree(
-    #     df_upper_voicings
-    # )
-    #
-
-
-
-
-
-    # mesh_song = song.MeshSong()
-    #
     # data_beats = ir.extract_beats(
-    #     filename_wav,
+    #     filepath_beat,
     #     from_cache=True
     # )
     #
@@ -148,7 +126,9 @@ def main(args):
     #     data_beats
     # )
 
-    beatmap = beatmap_manual
+    # beatmap = utils.load_pickle(
+    #     filepath_beat
+    # )
 
     mesh_song.set_tree(
         chord_tree,
@@ -175,67 +155,73 @@ def main(args):
 
     json_live = {}
 
-    def struct_to_notes_live(struct_21, name_part):
+    # # TODO: put in module
+    # def struct_to_notes_live(struct_21, name_part):
+    #
+    #     try:
+    #         if struct_21.name == 'rest':
+    #             return []
+    #     except AttributeError:
+    #         pass
+    #
+    #     notes = []
+    #
+    #     if name_part == 'melody':
+    #         # if not object > 0:
+    #         #     struct_score = note.Rest()
+    #         # else:
+    #         #     struct_score = note.Note(
+    #         #         pitch=pitch.Pitch(
+    #         #             midi=int(object)
+    #         #         )
+    #         #     )
+    #         testing = 1
+    #     elif name_part == 'chord':
+    #         beats_offset = float(struct_21.offset)
+    #         beats_duration = float(struct_21.duration.quarterLength)
+    #         velocity = 90
+    #         muted = 0
+    #
+    #         for pitch in struct_21.pitches:
+    #             notes.append(
+    #                 nl.NoteLive.parse(
+    #                     [pitch.midi, beats_offset, beats_duration, velocity, muted]
+    #                 )
+    #             )
+    #
+    #     elif name_part == 'bass':
+    #         # struct_score = note.Note(
+    #         #     pitch=object
+    #         # )
+    #         testing = 1
+    #     elif name_part == 'segment':
+    #         # struct_score = note.Note(
+    #         #     pitch=pitch.Pitch(
+    #         #         midi=60
+    #         #     )
+    #         # )
+    #         testing = 1
+    #     else:
+    #         raise 'part ' + name_part + ' not able to be converted to Live'
+    #
+    #     return notes
 
-        try:
-            if struct_21.name == 'rest':
-                return []
-        except AttributeError:
-            pass
-
-        notes = []
-
-        if name_part == 'melody':
-            # if not object > 0:
-            #     struct_score = note.Rest()
-            # else:
-            #     struct_score = note.Note(
-            #         pitch=pitch.Pitch(
-            #             midi=int(object)
-            #         )
-            #     )
-            testing = 1
-        elif name_part == 'chord':
-            beats_offset = float(struct_21.offset)
-            beats_duration = float(struct_21.duration.quarterLength)
-            velocity = 90
-            muted = 0
-
-            for pitch in struct_21.pitches:
-                notes.append(
-                    nl.NoteLive.parse(
-                        [pitch.midi, beats_offset, beats_duration, velocity, muted]
-                    )
-                )
-
-        elif name_part == 'bass':
-            # struct_score = note.Note(
-            #     pitch=object
-            # )
-            testing = 1
-        elif name_part == 'segment':
-            # struct_score = note.Note(
-            #     pitch=pitch.Pitch(
-            #         midi=60
-            #     )
-            # )
-            testing = 1
-        else:
-            raise 'part ' + name_part + ' not able to be converted to Live'
-
-        return notes
-
+    # TODO: put in module
     for part in score:
         json_live[part.id] = {'notes': []}
         notes_final = []
+
         for obj in part:
-            notes = struct_to_notes_live(obj, part.id)
+            notes = conv_mxl.struct_to_notes_live(obj, part.id)
+            # TODO: filter lowest note here to extract upper voicings
             for note_live in notes:
                 notes_final.append(note_live.encode())
 
         json_live[part.id]['notes'].append(' '.join(['notes', str(len(notes_final))]))
+
         for note_final in notes_final:
             json_live[part.id]['notes'].append(note_final)
+
         json_live[part.id]['notes'].append(' '.join(['notes', 'done']))
 
     utils.to_json_live(
@@ -243,39 +229,7 @@ def main(args):
         filename_chords_to_live=os.path.join(dir_projects, 'json_live.json')
     )
 
-    exit(0)
-
-    # # index beat, index ms audio file, index beat live audio track
-    # df_with_live_audio_index = song.MeshSong.add_live_index(
-    #     mesh_song.data_quantized,
-    #     beat_start_live=beat_start,
-    #     beat_end_live=beat_end,
-    #     beats_length_track_live=beats_length_track_live
-    # )
-    #
-    # # TODO: save Live JSON for chords synced with audio track in Live
-    #
-    # dict_write_json_live = song.MeshSong.to_json_live(
-    #     df_with_live_audio_index,
-    #     columns=['chord']
-    # )
-    #
-    # utils.to_json_live(
-    #     dict_write_json_live,
-    #     filename_chords_to_live=filename_chords_to_live
-    # )
-    #
-    # score_chords = postp_mxl.df_grans_to_score(
-    #     df_with_live_audio_index,
-    #     parts=['chord']
-    # )
-    #
-    # postp_mxl.freeze_stream(
-    #     stream=score_chords,
-    #     filepath=utils.CHORD_SCORE
-    # )
-
-    # messenger.message(['done'])
+    messenger.message(['done'])
 
 
 if __name__ == '__main__':

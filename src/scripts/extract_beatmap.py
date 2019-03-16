@@ -1,18 +1,15 @@
 from information_retrieval import extraction as ir
-# from message import messenger as mes
+from message import messenger as mes
 import argparse
 import numpy as np
 import librosa
 from information_retrieval import extraction
 import os
+from utils import utils
 
 
 def main(args):
-    # messenger = mes.Messenger()
-    #
-    # messenger.message(['running'])
-
-    # filename_wav = args.filename
+    messenger = mes.Messenger()
 
     beat_start = args.s
 
@@ -41,14 +38,21 @@ def main(args):
     else:
         return
 
-    beatmap_estimated = ir.extract_beats(
-        filename_wav
+    # beatmap_estimated = ir.extract_beats(
+    #     filename_wav
+    # )
+
+    filepath_beatmap = os.path.join(
+        extraction._get_dirname_beat(),
+        extraction._get_name_project_most_recent() + '.pkl'
     )
 
-    beatmap_manual.tolist()
+    utils.to_pickle(
+        beatmap_manual,
+        filepath_beatmap
+    )
 
-    exit(0)
-    # messenger.message(['done'])
+    messenger.message(['done'])
 
 
 if __name__ == '__main__':

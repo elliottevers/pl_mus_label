@@ -36,7 +36,6 @@ def to_pickle(object, filename):
         pickle.dump(obj=object, file=f)
 
 
-
 def get_path_cache(filename):
     raise 'not implemented'
 

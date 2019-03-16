@@ -1,0 +1,68 @@
+from information_retrieval import extraction as ir
+from message import messenger as mes
+import argparse
+from utils import utils
+from i_o import importer as io_importer, exporter as io_exporter
+from convert import music_xml as convert_mxl
+
+
+dir_projects = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/'
+
+file_json_comm = dir_projects + 'json_live.json'
+
+
+def main(args):
+
+    name_part = args.name_part
+
+    beat_multiple_quantization = args.beat_multiple
+
+    quarter_length_divisor = 1/float(beat_multiple_quantization)
+
+    importer = io_importer.Importer(
+        file_json_comm
+    )
+
+    importer.load([name_part])
+
+    notes_live = importer.get_part(name_part)
+
+    # convert ableton live notes to stream
+
+    stream = convert_mxl.from_notes_live(
+        notes_live,
+        name_part
+    )
+
+    # quantize stream
+
+    stream.quantize(
+        (quarter_length_divisor, ),
+        inPlace=True
+    )
+
+    notes_live = convert_mxl.to_notes_live(
+        stream
+    )
+
+    exporter = io_exporter.Exporter()
+
+    exporter.set_part(notes_live, name_part)
+
+    exporter.export(file_json_comm)
+
+    messenger = mes.Messenger()
+
+    messenger.message(['done'])
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Quantize Chords')
+
+    parser.add_argument('--beat_multiple', help='e.g., if 4, quantize to the measure')
+
+    parser.add_argument('--name_part', help='e.g., if 4, quantize to the measure')
+
+    args = parser.parse_args()
+
+    main(args)
