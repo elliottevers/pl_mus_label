@@ -121,9 +121,9 @@ def from_notes_live(notes_live, name_part):  # -> music21.stream.Stream:
 
 def to_note_live(note_21):
     return note_live.NoteLive(
-        pitch=note_21.pitch.midi,
-        beat_start=note_21.offset,
-        beats_duration=note_21.duration.quarterLength,
+        pitch=int(note_21.pitch.midi),
+        beat_start=float(note_21.offset),
+        beats_duration=float(note_21.duration.quarterLength),
         velocity=90,
         muted=0
     )

@@ -32,8 +32,8 @@ class NoteLive(object):
     def __init__(
             self,
             pitch: int,
-            beat_start: int,
-            beats_duration: int,
+            beat_start: float,
+            beats_duration: float,
             velocity: int,
             muted: int
     ):

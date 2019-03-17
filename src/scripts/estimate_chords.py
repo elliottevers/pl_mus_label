@@ -15,6 +15,7 @@ import numpy as np
 import os
 from information_retrieval import extraction
 from live import note as nl
+from convert import music_xml as conv_mxl
 
 # TODO: get the filepath of the cache module
 # filename_chords_to_live = utils.get_path_cache(utils.FILE_CHORD_TO_LIVE)
@@ -159,85 +160,51 @@ def main(args):
         parts=['chord']
     )
 
-    score.show()
+    part_chord = postp_mxl.extract_part(
+        score,
+        'chord'
+    )
 
-    exit(0)
+    utils.create_dir_score()
+
+    utils.create_dir_chord()
+
+    filename_pickle = os.path.join(
+        utils.get_dirname_score(),
+        'chord',
+        ''.join([utils._get_name_project_most_recent(), '.pkl'])
+    )
+
+    postp_mxl.freeze_stream(
+        part_chord,
+        filename_pickle
+    )
 
     json_live = {}
 
-    # # TODO: put in module
-    # def struct_to_notes_live(struct_21, name_part):
-    #
-    #     try:
-    #         if struct_21.name == 'rest':
-    #             return []
-    #     except AttributeError:
-    #         pass
-    #
-    #     notes = []
-    #
-    #     if name_part == 'melody':
-    #         # if not object > 0:
-    #         #     struct_score = note.Rest()
-    #         # else:
-    #         #     struct_score = note.Note(
-    #         #         pitch=pitch.Pitch(
-    #         #             midi=int(object)
-    #         #         )
-    #         #     )
-    #         testing = 1
-    #     elif name_part == 'chord':
-    #         beats_offset = float(struct_21.offset)
-    #         beats_duration = float(struct_21.duration.quarterLength)
-    #         velocity = 90
-    #         muted = 0
-    #
-    #         for pitch in struct_21.pitches:
-    #             notes.append(
-    #                 nl.NoteLive.parse(
-    #                     [pitch.midi, beats_offset, beats_duration, velocity, muted]
-    #                 )
-    #             )
-    #
-    #     elif name_part == 'bass':
-    #         # struct_score = note.Note(
-    #         #     pitch=object
-    #         # )
-    #         testing = 1
-    #     elif name_part == 'segment':
-    #         # struct_score = note.Note(
-    #         #     pitch=pitch.Pitch(
-    #         #         midi=60
-    #         #     )
-    #         # )
-    #         testing = 1
-    #     else:
-    #         raise 'part ' + name_part + ' not able to be converted to Live'
-    #
-    #     return notes
-
     # TODO: put in module
-    for part in score:
-        json_live[part.id] = {'notes': []}
-        notes_final = []
+    if False:
+        for part in score:
+            json_live[part.id] = {'notes': []}
+            notes_final = []
 
-        for obj in part:
-            notes = conv_mxl.struct_to_notes_live(obj, part.id)
-            # TODO: filter lowest note here to extract upper voicings
-            for note_live in notes:
-                notes_final.append(note_live.encode())
+            for obj in part:
+                notes = conv_mxl.struct_to_notes_live(obj, part.id)
+                # TODO: filter lowest note here to extract upper voicings
+                for note_live in notes:
+                    notes_final.append(note_live.encode())
 
-        json_live[part.id]['notes'].append(' '.join(['notes', str(len(notes_final))]))
+            json_live[part.id]['notes'].append(' '.join(['notes', str(len(notes_final))]))
 
-        for note_final in notes_final:
-            json_live[part.id]['notes'].append(note_final)
+            for note_final in notes_final:
+                json_live[part.id]['notes'].append(note_final)
 
-        json_live[part.id]['notes'].append(' '.join(['notes', 'done']))
+            json_live[part.id]['notes'].append(' '.join(['notes', 'done']))
 
-    utils.to_json_live(
-        json_live,
-        filename_chords_to_live=os.path.join(dir_projects, 'json_live.json')
-    )
+        utils.to_json_live(
+            json_live,
+            filename_chords_to_live=os.path.join(dir_projects, 'json_live.json')
+        )
 
     messenger.message(['done'])
 

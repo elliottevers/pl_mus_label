@@ -120,3 +120,26 @@ def create_dir_segment():
             stdout=subprocess.PIPE
         )
 
+
+def create_dir_chord():
+    if os.path.exists(
+        os.path.join(get_project_dir(), 'score', 'chord')
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', os.path.join(get_project_dir(), 'score', 'chord')],
+            stdout=subprocess.PIPE
+        )
+
+
+def create_dir_key_center():
+    if os.path.exists(
+        os.path.join(get_project_dir(), 'score', 'key_center')
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', os.path.join(get_project_dir(), 'score', 'key_center')],
+            stdout=subprocess.PIPE
+        )

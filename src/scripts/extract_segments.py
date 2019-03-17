@@ -16,6 +16,12 @@ import os
 
 dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
 
+# let dir_projects = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/';
+
+file_json_comm = os.path.join(
+    dir_projects, 'json_live.json'
+)
+
 
 def main(args):
 
@@ -108,11 +114,28 @@ def main(args):
         filename_pickle
     )
 
-    stream_segment_thawed = postp_mxl.thaw_stream(
-        filename_pickle
+    # stream_segment_thawed = postp_mxl.thaw_stream(
+    #     filename_pickle
+    # )
+
+    from convert import music_xml as convert_mxl
+    from i_o import exporter as io_exporter
+
+    notes_live = convert_mxl.to_notes_live(
+        stream_segment
     )
 
+    exporter = io_exporter.Exporter()
+
+    exporter.set_part(notes_live, 'segment')
+
+    exporter.export(file_json_comm)
+
+    messenger = mes.Messenger()
+
     messenger.message(['done'])
+
+    # messenger.message(['done'])
 
 
 if __name__ == '__main__':
