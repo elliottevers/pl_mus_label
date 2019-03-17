@@ -32,9 +32,17 @@ dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked
 file_log = os.path.join(dir_projects, '.log.txt')
 
 
+def write_name_project(name_project):
+    return subprocess.Popen(
+        ' '.join(['echo', name_project, '>>', file_log]),
+        shell=True,
+        stdout=subprocess.PIPE
+    )
+
+
 def _get_name_project_most_recent():
     return subprocess.run(
-        ['head', '-1', file_log],
+        ['tail', '-1', file_log],
         stdout=subprocess.PIPE
     ).stdout.rstrip().decode("utf-8")
 
@@ -87,6 +95,35 @@ def to_json_live(dict, filename_chords_to_live):
         json.dump(
             dict,
             outfile
+        )
+
+
+def create_dir_project():
+    if os.path.exists(
+        os.path.join(get_project_dir())
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', os.path.join(get_project_dir())],
+            stdout=subprocess.PIPE
+        )
+
+
+def get_path_dir_audio():
+    return os.path.join(get_project_dir(), 'audio')
+
+
+def create_dir_audio():
+    path_dir_audio = get_path_dir_audio()
+    if os.path.exists(
+            path_dir_audio
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', path_dir_audio],
+            stdout=subprocess.PIPE
         )
 
 
@@ -143,3 +180,5 @@ def create_dir_key_center():
             ['mkdir', os.path.join(get_project_dir(), 'score', 'key_center')],
             stdout=subprocess.PIPE
         )
+
+
