@@ -17,26 +17,12 @@ from information_retrieval import extraction
 from live import note as nl
 from convert import music_xml as conv_mxl
 
-# TODO: get the filepath of the cache module
-# filename_chords_to_live = utils.get_path_cache(utils.FILE_CHORD_TO_LIVE)
 
 dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
-
-# TODO: replace
-
-# beatmap_manual = np.linspace(
-#     0,
-#     float(148.66997732426304),
-#     int(297) - int(1) + 1
-# )
 
 
 def main(args):
     messenger = mes.Messenger()
-    #
-    # messenger.message(['running'])
-
-    # filename_wav = utils.FILE_WAV_DOWNLOADED
 
     filename_wav = os.path.join(
         utils.get_dirname_audio_warped(),
@@ -52,34 +38,16 @@ def main(args):
         sr=sr
     )
 
-    beat_start, beat_end, length_beats, beatmap = utils.get_tuple_beats(
+    beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = utils.get_tuple_beats(
         os.path.join(
             utils.get_dirname_beat(),
             utils._get_name_project_most_recent() + '.pkl'
         )
     )
 
-    # duration_s_audio_warped = 148.670
+    s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
 
-    # length of Ableton live track in beats
-
-    # beats_length_track_live = args.beats_length_track_live
-
-    # beat_start = args.beat_start
-
-    # beat_start = (9 - 1) * 4 + 1  # 1  # args.beat_start
-
-    # beat_end = args.beat_end
-
-    # beat_end = (13 - 1) * 4 + 1  # 297  # args.beat_end
-
-    # beats_length_track_live = args.beats_length_track_live
-
-    # beats_length_track_live = 74 * 4 + 1
-
-    s_beat_start = (beat_start / length_beats) * duration_s_audio
-
-    s_beat_end = (beat_end / (length_beats)) * duration_s_audio
+    s_beat_end = (beat_end_marker / length_beats) * duration_s_audio
 
     # NB: chords from raw audio
     data_chords = ir.extract_chords(
@@ -88,12 +56,6 @@ def main(args):
             utils._get_name_project_most_recent() + '.wav'
         )
     )
-
-    # TODO: implement when doing caching
-    # utils.save(
-    #     'chord',
-    #     data_chords
-    # )
 
     mesh_song = song.MeshSong()
 
@@ -110,11 +72,6 @@ def main(args):
         events_chords
     )
 
-    # TODO: put somewhere else
-    # df_upper_voicings = postp_mxl.extract_upper_voices(
-    #     df_chords
-    # )
-
     chord_tree = song.MeshSong.get_interval_tree(
         df_chords
     )
@@ -123,19 +80,6 @@ def main(args):
         chord_tree,
         type='chord'
     )
-
-    # data_beats = ir.extract_beats(
-    #     filepath_beat,
-    #     from_cache=True
-    # )
-    #
-    # beatmap = prep_vamp.extract_beatmap(
-    #     data_beats
-    # )
-
-    # beatmap = utils.load_pickle(
-    #     filepath_beat
-    # )
 
     mesh_song.set_tree(
         chord_tree,
@@ -146,14 +90,11 @@ def main(args):
         beatmap,
         s_beat_start,
         s_beat_end,
-        beat_start - 1,  # transitioning indices here
+        beat_start_marker,  # transitioning indices here - beat_start_marker - 1
         columns=['chord']
     )
 
     data_quantized_chords = mesh_song.data_quantized['chord']
-
-    # print(data_quantized_chords[data_quantized_chords.index.get_level_values(1) == 16.574693417907703])
-    # print(data_quantized_chords[data_quantized_chords.index.get_level_values(1) == 24.61090840840841])
 
     score = postp_mxl.df_grans_to_score(
         data_quantized_chords,
@@ -180,10 +121,10 @@ def main(args):
         filename_pickle
     )
 
-    json_live = {}
-
     # TODO: put in module
     if False:
+        json_live = {}
+
         for part in score:
             json_live[part.id] = {'notes': []}
             notes_final = []

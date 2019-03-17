@@ -139,7 +139,25 @@ def to_note_live(note_21):
 def to_notes_live(stream):
     notes_live = []
     for note_21 in stream:
-        notes_live.append(to_note_live(note_21))
+
+        if isinstance(note_21, music21.note.Note):
+            notes_live.append(to_note_live(note_21))
+
+        if isinstance(note_21, music21.chord.Chord):
+            offset = note_21.offset
+            duration = note_21.duration
+            for pitch in note_21.pitches:
+                note = music21.note.Note(
+                    pitch=pitch.midi,
+                    duration=duration
+                )
+                note.offset = offset
+                notes_live.append(
+                    to_note_live(
+                        note
+                    )
+                )
+
     return notes_live
 
 

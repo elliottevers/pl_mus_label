@@ -29,6 +29,7 @@ import subprocess
 
 
 dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
+
 file_log = os.path.join(dir_projects, '.log.txt')
 
 
@@ -73,7 +74,14 @@ def get_dirname_score():
 
 def get_tuple_beats(filepath):
     obj_beat = from_pickle(filepath)
-    return obj_beat['beat_start'], obj_beat['beat_end'], obj_beat['length_beats'], obj_beat['beatmap']
+    return (
+        obj_beat['beat_start_marker'],
+        obj_beat['beat_end_marker'],
+        obj_beat['beat_loop_bracket_lower'],
+        obj_beat['beat_loop_bracket_upper'],
+        obj_beat['length_beats'],
+        obj_beat['beatmap']
+    )
 
 
 def intersection(former: List, latter: List) -> List:
@@ -204,3 +212,8 @@ def create_dir_key_center():
         )
 
 
+def get_file_json_comm():
+
+    return os.path.join(
+        dir_projects, 'json_live.json'
+    )

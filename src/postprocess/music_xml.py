@@ -1,5 +1,5 @@
 import pandas as pd
-from music21 import *
+import music21
 import numpy as np
 from live import note as nl
 from typing import List, Dict, Any, Optional, Tuple
@@ -10,7 +10,7 @@ from utils import utils
 import json
 
 
-def from_json(filepath, parts=['melody', 'chord', 'bass']) -> stream.Score:
+def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Score:
 
     with open(filepath) as f:
         json_read = json.load(f)
@@ -20,7 +20,7 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> stream.Score:
     # beat_length_score = json_read['length_beats']
 
     for name_part in utils.intersection(parts, list(json_read.keys())):
-        part = stream.Part()
+        part = music21.stream.Part()
 
         notes = nl.NoteLive.parse_list(
             json_read[name_part]['notes']
@@ -31,7 +31,7 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> stream.Score:
             note = note.Note(
                 pitch=note_live.pitch
             )
-            note.duration = duration.Duration(
+            note.duration = music21.duration.Duration(
                 note_live.beats_duration
             )
 
@@ -53,7 +53,7 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> stream.Score:
 
         partmap[name_part] = part
 
-    score = stream.Score()
+    score = music21.stream.Score()
 
     for _, part in partmap.items():
         score.append(part)
@@ -69,7 +69,7 @@ def get_highest_notes(chord_local):
     if not chord_local:
         return None
     else:
-        return chord.Chord(
+        return music21.chord.Chord(
             list(chord_local.pitches)[1:]
         )
 
@@ -82,8 +82,26 @@ def extract_upper_voices(df_chords) -> pd.DataFrame:
     return df_chords['chord'].apply(get_highest_notes).to_frame(name='chord')
 
 
-def extract_parts(score: stream.Score, parts=['chord', 'bass']) -> stream.Score:
-    score_diminished = stream.Score()
+def extract_upper_voices_stream(stream) -> music21.stream.Part:
+    part_upper = music21.stream.Part()
+    part_upper.id = 'chord'
+
+    for obj in stream:
+        offset = obj.offset
+        duration = obj.duration
+        if isinstance(obj, music21.chord.Chord):
+            obj = music21.chord.Chord(
+                obj.pitches[1:],
+                duration=duration
+            )
+
+        part_upper.insert(offset, obj)
+
+    return part_upper
+
+
+def extract_parts(score: music21.stream.Score, parts=['chord', 'bass']) -> music21.stream.Score:
+    score_diminished = music21.stream.Score()
 
     for i_part, name_part in enumerate(parts):
         score_diminished.insert(i_part, extract_part(score, name_part))
@@ -91,11 +109,11 @@ def extract_parts(score: stream.Score, parts=['chord', 'bass']) -> stream.Score:
     return score_diminished
 
 
-def extract_part(score: stream.Score, name_part):  #   -> stream.Part:
+def extract_part(score: music21.stream.Score, name_part):  #   -> stream.Part:
     return score.getElementById(name_part)
 
 
-def add_part(part: stream.Part, score: stream.Score, id='key_center') -> stream.Score:
+def add_part(part: music21.stream.Part, score: music21.stream.Score, id='key_center') -> music21.stream.Score:
     part.id = id
     score.insert(
         len(score.elements),
@@ -104,30 +122,30 @@ def add_part(part: stream.Part, score: stream.Score, id='key_center') -> stream.
     return score
 
 
-def freeze_stream(stream, filepath) -> None:
-    stream_frozen = freezeThaw.StreamFreezer(stream)
-    stream_frozen.write(fmt='pickle', fp=filepath)
+# def freeze_stream(stream, filepath) -> None:
+#     stream_frozen = freezeThaw.StreamFreezer(stream)
+#     stream_frozen.write(fmt='pickle', fp=filepath)
+#
+#
+# def thaw_stream(filepath) -> stream.Stream:
+#     thawer = freezeThaw.StreamThawer()
+#     thawer.open(fp=filepath)
+#     return thawer.stream
 
 
-def thaw_stream(filepath) -> stream.Stream:
-    thawer = freezeThaw.StreamThawer()
-    thawer.open(fp=filepath)
-    return thawer.stream
-
-
-def set_tempo(score: stream.Score, bpm: int = 60) -> stream.Score:
+def set_tempo(score: music21.stream.Score, bpm: int = 60) -> music21.stream.Score:
 
     marks_to_remove = []
 
     # remove current
-    for mark in score.flat.getElementsByClass(tempo.MetronomeMark):
+    for mark in score.flat.getElementsByClass(music21.tempo.MetronomeMark):
         marks_to_remove.append(mark)
 
     for mark in marks_to_remove:
         score.remove(mark, recurse=True)
 
     # add new
-    for measure in score.parts[0].getElementsByClass(stream.Measure):
+    for measure in score.parts[0].getElementsByClass(music21.stream.Measure):
         if measure.offset == 0.0:
             tempo = tempo.MetronomeMark(number=bpm)
             tempo.offset = 0.0
@@ -139,28 +157,28 @@ def set_tempo(score: stream.Score, bpm: int = 60) -> stream.Score:
 def get_struct_score(object, name_part, dur):
     if name_part == 'melody':
         if not object > 0:
-            struct_score = note.Rest()
+            struct_score = music21.note.Rest()
         else:
-            struct_score = note.Note(
-                pitch=pitch.Pitch(
+            struct_score = music21.note.Note(
+                pitch=music21.pitch.Pitch(
                     midi=int(object)
                 )
             )
     elif name_part == 'chord':
         if not object:
-            struct_score = note.Rest()
+            struct_score = music21.note.Rest()
         else:
-            struct_score = chord.fromIntervalVector(
+            struct_score = music21.chord.fromIntervalVector(
                 object
             )
 
     elif name_part == 'bass':
-        struct_score = note.Note(
+        struct_score = music21.note.Note(
             pitch=object
         )
     elif name_part == 'segment':
-        struct_score = note.Note(
-            pitch=pitch.Pitch(
+        struct_score = music21.note.Note(
+            pitch=music21.pitch.Pitch(
                 midi=60
             )
         )
@@ -271,13 +289,13 @@ def df_grans_to_score(
             'bass',
             'segment'
         ]
-) -> stream.Score:
+) -> music21.stream.Score:
 
-    score = stream.Score()
+    score = music21.stream.Score()
 
     for i_part, name_part in enumerate(parts):
 
-        part = stream.Part()
+        part = music21.stream.Part()
 
         part.id = name_part
 
@@ -304,7 +322,7 @@ def df_grans_to_score(
 
             if obj != obj_last:
 
-                dur = duration.Duration(index_beat - offset_last)
+                dur = music21.duration.Duration(index_beat - offset_last)
 
                 offset = offset_last
 
@@ -338,7 +356,7 @@ def live_to_xml(
             note = note.Note(
                 pitch=note_live.pitch
             )
-            note.duration = duration.Duration(
+            note.duration = music21.duration.Duration(
                 note_live.beats_duration
             )
 
@@ -365,8 +383,8 @@ def live_to_xml(
         for group in groups_notes:
 
             chord = chord.Chord([
-                note.Note(
-                    pitch=pitch.Pitch(
+                music21.note.Note(
+                    pitch=music21.pitch.Pitch(
                         midi=note_live.pitch
                     )
                 ).name for
@@ -377,7 +395,7 @@ def live_to_xml(
             # TODO: this makes the assumption that all notes in the group have the same offsets and duration
 
             chord.offset = group[-1].beat_start
-            chord.duration = duration.Duration(group[-1].beats_duration)
+            chord.duration = music21.duration.Duration(group[-1].beats_duration)
             chords.append(chord)
 
         return chords

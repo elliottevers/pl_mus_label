@@ -12,10 +12,14 @@ def main(args):
     messenger = mes.Messenger(key_route='')
 
     # from start marker
-    beat_start = args.s.replace("\"", '')
+    beat_start_marker = args.s.replace("\"", '')
 
     # from end marker
-    beat_end = args.e.replace("\"", '')
+    beat_end_marker = args.e.replace("\"", '')
+
+    beat_loop_bracket_lower = args.l.replace("\"", '')
+
+    beat_loop_bracket_upper = args.u.replace("\"", '')
 
     length_beats = args.length_beats.replace("\"", '')
 
@@ -41,7 +45,7 @@ def main(args):
         beatmap = np.linspace(
             0,
             float(duration_s_audio),
-            int(beat_end) - int(beat_start) + 1 - 4
+            int(beat_end_marker) - int(beat_start_marker) + 1 - 4
         )
     else:
         beatmap = ir.extract_beats(
@@ -59,8 +63,10 @@ def main(args):
     )
 
     data_beats = {
-        'beat_start': int(beat_start),
-        'beat_end': int(beat_end),
+        'beat_start_marker': int(beat_start_marker),
+        'beat_end_marker': int(beat_end_marker),
+        'beat_loop_bracket_lower': int(beat_loop_bracket_lower),
+        'beat_loop_bracket_upper': int(beat_loop_bracket_upper),
         'length_beats': int(length_beats),
         'beatmap': beatmap
     }
@@ -78,9 +84,13 @@ if __name__ == '__main__':
 
     # parser.add_argument('filepath', help='audio file from which to extract beat estimates')
 
-    parser.add_argument('--s', help='beat start')
+    parser.add_argument('--s', help='beat start marker')
 
-    parser.add_argument('--e', help='beat end')
+    parser.add_argument('--e', help='beat end marker')
+
+    parser.add_argument('--l', help='beat loop bracket lower')
+
+    parser.add_argument('--u', help='beat loop bracket upper')
 
     parser.add_argument('--length-beats', help='length in beats')
 
