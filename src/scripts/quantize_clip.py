@@ -13,9 +13,9 @@ file_json_comm = dir_projects + 'json_live.json'
 
 def main(args):
 
-    name_part = args.name_part
+    name_part = args.name_part.replace("\"", '')
 
-    beat_multiple_quantization = args.beat_multiple
+    beat_multiple_quantization = args.beat_multiple.replace("\"", '')
 
     quarter_length_divisor = 1/float(beat_multiple_quantization)
 
@@ -29,12 +29,14 @@ def main(args):
 
     # convert ableton live notes to stream
 
-    stream = convert_mxl.from_notes_live(
-        notes_live,
-        name_part
-    )
+    from postprocess import music_xml as postp_mxl
 
-    # quantize stream
+    mode = 'polyphonic' if name_part == 'chord' else 'monophonic'
+
+    stream = postp_mxl.live_to_stream(
+        notes_live,
+        mode
+    )
 
     stream.quantize(
         (quarter_length_divisor, ),

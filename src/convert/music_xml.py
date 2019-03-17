@@ -98,7 +98,7 @@ def notes_live_to_struct():
 
 # TODO: not generalized to chords yet
 
-def from_notes_live(notes_live, name_part):  # -> music21.stream.Stream:
+def from_notes_live(notes_live, name_part, mode='monophonic'):  # -> music21.stream.Stream:
 
     part = music21.stream.Part()
 

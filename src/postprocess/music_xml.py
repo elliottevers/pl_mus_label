@@ -345,26 +345,24 @@ def df_grans_to_score(
 
 
 # TODO: replace
-def live_to_xml(
+def live_to_stream(
         notes_live: List[nl.NoteLive],
         mode: str = 'monophonic'
-) -> List:
+) -> music21.stream.Part:
+
+    part = music21.stream.Part()
+
     if mode == 'monophonic':
-        notes = []
 
         for note_live in notes_live:
-            note = note.Note(
+            note = music21.note.Note(
                 pitch=note_live.pitch
             )
             note.duration = music21.duration.Duration(
                 note_live.beats_duration
             )
 
-            note.offset = note_live.beat_start
-
-            notes.append(note)
-
-        return notes
+            part.insert(note_live.beat_start, note)
 
     elif mode == 'polyphonic':
         # TODO: this hard a hard requirement that they're sorted by beat beforehand
@@ -378,11 +376,9 @@ def live_to_xml(
             groups_notes.append(list(group_note))
             unique_onsets_beats.append(beat_start)
 
-        chords = []
-
         for group in groups_notes:
 
-            chord = chord.Chord([
+            chord = music21.chord.Chord([
                 music21.note.Note(
                     pitch=music21.pitch.Pitch(
                         midi=note_live.pitch
@@ -394,12 +390,12 @@ def live_to_xml(
 
             # TODO: this makes the assumption that all notes in the group have the same offsets and duration
 
-            chord.offset = group[-1].beat_start
             chord.duration = music21.duration.Duration(group[-1].beats_duration)
-            chords.append(chord)
 
-        return chords
+            part.insert(group[-1].beat_start, chord)
 
     else:
         raise 'mode ' + mode + 'not supported'
+
+    return part
 

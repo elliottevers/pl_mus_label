@@ -33,8 +33,6 @@ def main(args):
         stream_chord
     )
 
-    stream_upper_voices.show()
-
     notes_live = convert_mxl.to_notes_live(
         stream_upper_voices
     )
