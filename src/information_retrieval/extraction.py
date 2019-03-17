@@ -129,18 +129,8 @@ def extract_segments(
 #     return os.path.join(utils.get_dirname_audio(), utils.get_name_project_most_recent() + '.wav')
 
 
-def extract_tempo(
-
-):
-
-    # if _is_cached(project_name):
-    #     with open(utils.get_cached_wav(project_name), 'r') as file:
-    #         data_tempo = pickle.decode(file.read())
-    #
-    #     return data_tempo
-    # else:
-
-    project_name = utils.get_name_project_most_recent()
+def extract_tempo():
+    project_name = utils._get_name_project_most_recent()
 
     data, rate = librosa.load(
         os.path.join(utils.get_dirname_audio(), project_name + '.wav')

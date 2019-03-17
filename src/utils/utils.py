@@ -114,6 +114,10 @@ def get_path_dir_audio():
     return os.path.join(get_project_dir(), 'audio')
 
 
+def get_path_dir_audio_warped():
+    return os.path.join(get_project_dir(), 'audio_warped')
+
+
 def create_dir_audio():
     path_dir_audio = get_path_dir_audio()
     if os.path.exists(
@@ -127,11 +131,29 @@ def create_dir_audio():
         )
 
 
+def create_dir_audio_warped():
+    path_dir_audio_warped = get_path_dir_audio_warped()
+    if os.path.exists(
+            path_dir_audio_warped
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', path_dir_audio_warped],
+            stdout=subprocess.PIPE
+        )
+
+
 def create_dir_beat():
-    return subprocess.run(
-        ['mkdir', os.path.join(get_project_dir(), 'beat')],
-        stdout=subprocess.PIPE
-    )
+    if os.path.exists(
+        os.path.join(get_project_dir(), 'beat')
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', os.path.join(get_project_dir(), 'beat')],
+            stdout=subprocess.PIPE
+        )
 
 
 def create_dir_score():

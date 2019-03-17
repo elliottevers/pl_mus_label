@@ -1,19 +1,20 @@
 from information_retrieval import extraction as ir
 import argparse
+from message import messenger as mes
 
 
 def main(args):
-    tempo_estimate = ir.extract_tempo(
-        # args.name_project
-    )
+    tempo_estimate = ir.extract_tempo()
 
-    print(tempo_estimate)
+    messenger = mes.Messenger(key_route='')
+
+    messenger.message([str(tempo_estimate)])
+
+    messenger.message(['done'])
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Estimate Tempo')
-
-    # parser.add_argument('name_project', help='audio file from which to extract tempo')
 
     args = parser.parse_args()
 

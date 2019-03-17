@@ -9,13 +9,15 @@ from utils import utils
 
 
 def main(args):
-    messenger = mes.Messenger()
+    messenger = mes.Messenger(key_route='')
 
     # from start marker
-    beat_start = args.s
+    beat_start = args.s.replace("\"", '')
 
     # from end marker
-    beat_end = args.e
+    beat_end = args.e.replace("\"", '')
+
+    length_beats = args.length_beats.replace("\"", '')
 
     # path wav warped
     filename_wav = os.path.join(
@@ -36,17 +38,16 @@ def main(args):
     # e.g., 74.1.1 => beatmap_manual[73*4 + 0]
 
     if args.m:
-        beatmap_manual = np.linspace(
+        beatmap = np.linspace(
             0,
             float(duration_s_audio),
             int(beat_end) - int(beat_start) + 1 - 4
         )
     else:
+        beatmap = ir.extract_beats(
+            filename_wav
+        )
         return
-
-    # beatmap_estimated = ir.extract_beats(
-    #     filename_wav
-    # )
 
     utils.create_dir_beat(
 
@@ -58,18 +59,14 @@ def main(args):
     )
 
     data_beats = {
-        'beat_start': int(args.s),
-        'beat_end': int(args.e),
-        'length_beats': int(args.length_beats),
-        'beatmap': beatmap_manual
+        'beat_start': int(beat_start),
+        'beat_end': int(beat_end),
+        'length_beats': int(length_beats),
+        'beatmap': beatmap
     }
 
     utils.to_pickle(
         data_beats,
-        filepath_beatmap
-    )
-
-    data_beats_thawed = utils.from_pickle(
         filepath_beatmap
     )
 
@@ -85,7 +82,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--e', help='beat end')
 
-    parser.add_argument('--length_beats', help='length in beats')
+    parser.add_argument('--length-beats', help='length in beats')
 
     parser.add_argument('-m', help='manual', action='store_true')
 

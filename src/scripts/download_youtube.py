@@ -13,6 +13,8 @@ def main(args):
 
     utils.create_dir_audio()
 
+    utils.create_dir_audio_warped()
+
     dir_downloads = os.path.join(
         utils.dir_projects,
         'downloads'
