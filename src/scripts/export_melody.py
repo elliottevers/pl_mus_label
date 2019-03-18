@@ -6,6 +6,8 @@ from filter import midi as filt_midi
 from music import song
 import os
 from postprocess import music_xml as postp_mxl
+from i_o import exporter as io_exporter
+from convert import music_xml as conv_mxl
 
 
 def main(args):
@@ -55,9 +57,6 @@ def main(args):
         mesh_song.data_quantized['melody'],
         parts=['melody']
     )
-
-    from i_o import exporter as io_exporter
-    from convert import music_xml as conv_mxl
 
     exporter = io_exporter.Exporter()
 
