@@ -20,10 +20,10 @@ def main(args):
         index_type='s'
     )
 
-    df_melody.rename(columns={'melody': 'signal'})
+    df_melody[df_melody['melody'] < 0] = 0
 
     conv_max.to_coll(
-        df_melody,
+        df_melody.rename(columns={'melody': 'signal'}),
         conv_max.file_ts_coll
     )
 
