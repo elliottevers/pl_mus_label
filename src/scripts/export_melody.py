@@ -51,12 +51,29 @@ def main(args):
         columns=['melody']
     )
 
-    score_melody = postp_mxl.df_grans_to_score(
+    score = postp_mxl.df_grans_to_score(
         mesh_song.data_quantized['melody'],
         parts=['melody']
     )
 
+    from i_o import exporter as io_exporter
+    from convert import music_xml as conv_mxl
 
+    exporter = io_exporter.Exporter()
+
+    part_melody = postp_mxl.extract_part(
+        score,
+        'melody'
+    )
+
+    exporter.set_part(
+        conv_mxl.to_notes_live(part_melody),
+        'melody'
+    )
+
+    exporter.export(
+        utils.get_file_json_comm()
+    )
 
     # TODO: export to melody in live_json
 
