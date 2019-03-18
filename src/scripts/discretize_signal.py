@@ -26,7 +26,7 @@ def main(args):
     #
     # n_bins = note_midi_upper - note_midi_lower
 
-    n_bins = 24
+    n_bins = 26
 
     df = conv_max.from_coll(
         filename=conv_max.file_ts_coll

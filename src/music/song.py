@@ -111,15 +111,6 @@ class MeshSong(object):
 
         dfs_quantized: Dict[str, pd.DataFrame] = dict()
 
-        # # TODO: GENERALIZE
-        # col_to_tree_map = {
-        #     'melody': self.tree_melody,
-        #     # 'bass': self.tree_bass,
-        #     # 'chord': self.tree_chord,
-        #     # 'segment': self.tree_segment
-        #     # 'key_center': self.tree_key_center
-        # }
-
         col_to_tree_map = {}
 
         for name_col in columns:
