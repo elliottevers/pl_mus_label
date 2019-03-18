@@ -39,16 +39,18 @@ def main(args):
         sr=sr
     )
 
-    beat_start, beat_end, length_beats, beatmap = utils.get_tuple_beats(
+    beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = utils.get_tuple_beats(
         os.path.join(
             utils.get_dirname_beat(),
             utils._get_name_project_most_recent() + '.pkl'
         )
     )
 
-    s_beat_start = (beat_start / length_beats) * duration_s_audio
+    messenger.message(['length_beats', str(length_beats)])
 
-    s_beat_end = (beat_end / (length_beats)) * duration_s_audio
+    s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
+
+    s_beat_end = (beat_end_marker / (length_beats)) * duration_s_audio
 
     # NB: chords from raw audio
     data_segments = ir.extract_segments(
@@ -83,7 +85,7 @@ def main(args):
         beatmap,
         s_beat_start,
         s_beat_end,
-        beat_start - 1,  # transitioning indices here
+        beat_start_marker,  # transitioning indices here
         columns=['segment']
     )
 
@@ -109,7 +111,9 @@ def main(args):
         ''.join([utils._get_name_project_most_recent(), '.pkl'])
     )
 
-    postp_mxl.freeze_stream(
+    from utils import musix_xml as utils_mxl
+
+    utils_mxl.freeze_stream(
         stream_segment,
         filename_pickle
     )

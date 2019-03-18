@@ -6,7 +6,7 @@ import music21
 def melody_to_df(data_melody, index_type='s'):
     list_melody = data_melody[1]
 
-    sample_rate = data_melody[0]
+    sample_rate = data_melody[0].to_float()
 
     df_melody_hz = pd.DataFrame(
         data={'melody': list_melody},

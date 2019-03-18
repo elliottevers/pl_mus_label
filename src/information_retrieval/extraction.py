@@ -5,7 +5,7 @@ import pickle
 import os
 from utils import utils
 from preprocess import vamp as vamp_prep
-from filter import vamp as vamp_filter
+# from filter import vamp as vamp_filter
 from typing import List, Dict, Any, Optional, Tuple
 import music21
 from convert import vamp as vamp_convert
@@ -28,25 +28,11 @@ file_log = os.path.join(dir_projects, '.log.txt')
 
 
 def extract_melody(
-    filename_wav,
-    from_cache=False
+    filename_wav
 ):
-    # if _is_cached(filename_wav):
-    #     with open(utils.get_cached_wav(filename_wav), 'r') as file:
-    #         data_melody = pickle.decode(file.read())
-    #
-    #     return data_melody
-    # else:
-    data, rate = librosa.load(os.path.join(utils.get_dirname_audio(), filename_wav))
+    data, rate = librosa.load(os.path.join(utils.get_dirname_audio_warped(), filename_wav))
 
     data_melody = vamp.collect(data, rate, "mtg-melodia:melodia")
-
-    utils.to_pickle(
-        data_melody,
-        utils.get_cached_wav(
-            filename_wav
-        )
-    )
 
     return data_melody
 

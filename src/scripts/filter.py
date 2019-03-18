@@ -1,5 +1,5 @@
 from information_retrieval import extraction as ir
-from filter import seconds as s_filt
+# from filter import seconds as s_filt
 from preprocess import vamp as prep_vamp
 from message import messenger as mes
 from filter import hertz as filt_hz, midi as filt_mid

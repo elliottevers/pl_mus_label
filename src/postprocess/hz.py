@@ -10,3 +10,4 @@ def _handle_na(h):
 # TODO: does this already do a diff?
 def midify(df: pd.DataFrame):
     return df.apply(_handle_na).diff(1).cumsum().apply(librosa.hz_to_midi).round().apply(_handle_na)
+
