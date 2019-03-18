@@ -4,9 +4,7 @@ from utils import utils
 import os
 from information_retrieval import extraction as ir
 from preprocess import vamp as prep_vamp
-from convert import hz as postp_hz
-
-file_ts_coll = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/ts_hz.txt'
+from convert import max as conv_max
 
 
 def main(args):
@@ -22,9 +20,11 @@ def main(args):
         index_type='s'
     )
 
-    postp_hz.to_coll(
+    df_melody.rename(columns={'melody': 'signal'})
+
+    conv_max.to_coll(
         df_melody,
-        file_ts_coll
+        conv_max.file_ts_coll
     )
 
     messenger = mes.Messenger()
