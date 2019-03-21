@@ -152,6 +152,18 @@ def create_dir_score():
         )
 
 
+def create_dir_part(name_part):
+    if os.path.exists(
+        os.path.join(get_project_dir(), 'score', name_part)
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', os.path.join(get_project_dir(), 'score', name_part)],
+            stdout=subprocess.PIPE
+        )
+
+
 def create_dir_segment():
     if os.path.exists(
         os.path.join(get_project_dir(), 'score', 'segment')

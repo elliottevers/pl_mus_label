@@ -54,7 +54,7 @@ def main(args):
 
     mesh_song = song.MeshSong()
 
-    df_segments = prep_vamp.segments_to_df(
+    df_segments = prep_vafmp.segments_to_df(
         data_segments
     )
 

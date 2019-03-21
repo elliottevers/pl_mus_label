@@ -1,7 +1,5 @@
 from music21 import *
 
-
-
 stream = stream.Stream()
 
 duration1 = duration.Duration(1)
