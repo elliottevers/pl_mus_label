@@ -51,7 +51,6 @@ def main(args):
         beatmap = ir.extract_beats(
             filename_wav
         )
-        return
 
     utils.create_dir_beat(
 

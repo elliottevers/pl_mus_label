@@ -10,7 +10,7 @@ from postprocess import music_xml as postp_mxl
 from music import song
 import music21
 import json
-from utils import utils
+from utils import utils, musix_xml as utils_mxl
 import numpy as np
 import os
 from information_retrieval import extraction
@@ -116,7 +116,7 @@ def main(args):
         ''.join([utils._get_name_project_most_recent(), '.pkl'])
     )
 
-    postp_mxl.freeze_stream(
+    utils_mxl.freeze_stream(
         part_chord,
         filename_pickle
     )
