@@ -13,11 +13,6 @@ import pandas as pd
 import music21
 
 
-# TODO: the hardest thing here is:
-# 1) filter the raw timeseries for values outside of chosen range of notes
-# 2) discretize the ones left, keeping the index
-# 3) merge back into the
-
 def main(args):
 
     # note_midi_lower = args.note_midi_lower
@@ -31,6 +26,10 @@ def main(args):
     df = conv_max.from_coll(
         filename=conv_max.file_ts_coll
     )
+
+    # TODO: set all values that aren't in range to 0
+
+    # TODO: dynamically create alphabet map
 
     # df_within_user_defined_range = filt_hz.between(
     #     lower=note_midi_lower,
@@ -90,6 +89,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Discretize filtered Hertz melody')
+
+    # TODO: add discretization parameters
 
     # parser.add_argument('index_melody_hz_filtered_chosen', help='which of the filtered timeseries to discretize')
     #

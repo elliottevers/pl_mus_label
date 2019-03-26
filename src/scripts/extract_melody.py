@@ -35,9 +35,9 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='extract melody from raw audio')
 
-    parser.add_argument('--s', help='beat start')
-
-    parser.add_argument('--e', help='beat end')
+    # parser.add_argument('--s', help='beat start')
+    #
+    # parser.add_argument('--e', help='beat end')
 
     args = parser.parse_args()
 

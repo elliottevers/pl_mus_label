@@ -54,6 +54,8 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Apply filters to timeseries of extracted melody')
 
+    # TODO: add filtering parameters
+
     # parser.add_argument('filter_map', help='filters to apply')
 
     args = parser.parse_args()
