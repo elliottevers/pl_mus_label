@@ -6,7 +6,7 @@ from convert import max as conv_max
 import argparse
 from typing import Dict
 from scipy.stats import norm
-from pyts.quantization import SAX
+from pyts.quantization import SAX, SFA, MCB
 import numpy as np
 from convert import max as conv_max
 import pandas as pd
@@ -21,7 +21,7 @@ def main(args):
     #
     # n_bins = note_midi_upper - note_midi_lower
 
-    n_bins = 26
+    n_bins = 6
 
     df = conv_max.from_coll(
         filename=conv_max.file_ts_coll
@@ -40,6 +40,16 @@ def main(args):
         n_bins=n_bins,
         quantiles='empirical'
     )
+
+    # sfa = SFA(
+    #     n_bins=n_bins,
+    #     quantiles='empirical'
+    # )
+
+    # mcb = MCB(
+    #     n_bins=n_bins,
+    #     quantiles='gaussian'
+    # )
 
     def lookup_frequency(letter: str) -> int:
         alphabet_map = {
@@ -73,13 +83,15 @@ def main(args):
 
         return music21.pitch.Pitch(alphabet_map[letter]).frequency
 
-    df['signal_discretized'] = sax.fit_transform(df['signal'].values.reshape((1, len(df.index))))[0]
+    # df['signal_discretized'] = sfa.fit_transform(df['signal'].values.reshape((1, len(df.index))))[0]
+    df['signal_discretized'] = sfa.fit_transform(df['signal'].values.reshape((1, len(df.index))))
 
     df['signal_discretized'] = df['signal_discretized'].apply(lookup_frequency)
 
     conv_max.to_coll(
         df[['pos', 'signal_discretized']].rename(columns={'signal_discretized': 'signal'}),
-        filename=conv_max.file_ts_coll
+        # filename=conv_max.file_ts_coll
+        filename='/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/ts_hz_discretized.txt'
     )
 
     messenger = mes.Messenger()
