@@ -122,8 +122,6 @@ def main(args):
 
     exporter.export(utils.get_file_json_comm())
 
-    messenger = mes.Messenger()
-
     messenger.message(['done'])
 
 

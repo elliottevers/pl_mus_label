@@ -3,7 +3,6 @@ from message import messenger as mes
 import argparse
 import numpy as np
 import librosa
-from information_retrieval import extraction
 import os
 from utils import utils
 
@@ -80,8 +79,6 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Estimate Beats')
-
-    # parser.add_argument('filepath', help='audio file from which to extract beat estimates')
 
     parser.add_argument('--s', help='beat start marker')
 
