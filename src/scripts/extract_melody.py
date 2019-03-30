@@ -22,18 +22,17 @@ def main(args):
 
     df_melody[df_melody['melody'] < 0] = 0
 
-    df_melody.plot()
+    # df_melody.plot()
 
-    # import numpy as np
+    # TODO: anomaly detection
     # from saxpy.hotsax import find_discords_hotsax
+    # import numpy as np
     # import pandas as pd
     # import matplotlib.pyplot as plt
 
     # plt.show()
     # discords = find_discords_hotsax(df_melody.values.reshape(-1, ))
-    #
     # print(discords)
-
 
     conv_max.to_coll(
         df_melody.rename(columns={'melody': 'signal'}),
