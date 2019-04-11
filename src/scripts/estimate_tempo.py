@@ -6,7 +6,7 @@ from message import messenger as mes
 def main(args):
     tempo_estimate = ir.extract_tempo()
 
-    messenger = mes.Messenger(key_route='')
+    messenger = mes.Messenger()
 
     messenger.message([str(tempo_estimate)])
 

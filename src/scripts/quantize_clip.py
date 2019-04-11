@@ -1,14 +1,8 @@
-from information_retrieval import extraction as ir
 from message import messenger as mes
 import argparse
 from utils import utils
 from i_o import importer as io_importer, exporter as io_exporter
 from convert import music_xml as convert_mxl
-
-
-dir_projects = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/'
-
-file_json_comm = dir_projects + 'json_live.json'
 
 
 def main(args):
@@ -20,7 +14,7 @@ def main(args):
     quarter_length_divisor = 1/float(beat_multiple_quantization)
 
     importer = io_importer.Importer(
-        file_json_comm
+        utils.get_file_json_comm()
     )
 
     importer.load([name_part])
@@ -51,7 +45,7 @@ def main(args):
 
     exporter.set_part(notes_live, name_part)
 
-    exporter.export(file_json_comm)
+    exporter.export(utils.get_file_json_comm())
 
     messenger = mes.Messenger()
 

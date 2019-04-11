@@ -1,9 +1,7 @@
-from information_retrieval import extraction as ir
 from message import messenger as mes
 import argparse
 from utils import utils
-from i_o import importer as io_importer, exporter as io_exporter
-from convert import music_xml as convert_mxl
+from i_o import importer as io_importer
 
 
 def main(args):

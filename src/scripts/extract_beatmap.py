@@ -8,7 +8,7 @@ from utils import utils
 
 
 def main(args):
-    messenger = mes.Messenger(key_route='')
+    messenger = mes.Messenger()
 
     # from start marker
     beat_start_marker = args.s.replace("\"", '')

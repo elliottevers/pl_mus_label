@@ -7,18 +7,12 @@ from filter import vamp as vamp_filter
 from convert import vamp as vamp_convert
 from preprocess import vamp as prep_vamp
 from postprocess import music_xml as postp_mxl
+from convert import music_xml as convert_mxl
+from i_o import exporter as io_exporter
 from music import song
 import music21
-import json
 from utils import utils, musix_xml as utils_mxl
-import numpy as np
 import os
-from information_retrieval import extraction
-from live import note as nl
-from convert import music_xml as conv_mxl
-
-
-dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
 
 
 def main(args):
@@ -123,9 +117,6 @@ def main(args):
         filename_pickle
     )
 
-    from convert import music_xml as convert_mxl
-    from i_o import exporter as io_exporter
-
     notes_live = convert_mxl.to_notes_live(
         part_chord
     )
@@ -135,32 +126,6 @@ def main(args):
     exporter.set_part(notes_live, 'chord')
 
     exporter.export(utils.get_file_json_comm())
-
-    # TODO: put in module
-    if False:
-        json_live = {}
-
-        for part in score:
-            json_live[part.id] = {'notes': []}
-            notes_final = []
-
-            for obj in part:
-                notes = conv_mxl.struct_to_notes_live(obj, part.id)
-                # TODO: filter lowest note here to extract upper voicings
-                for note_live in notes:
-                    notes_final.append(note_live.encode())
-
-            json_live[part.id]['notes'].append(' '.join(['notes', str(len(notes_final))]))
-
-            for note_final in notes_final:
-                json_live[part.id]['notes'].append(note_final)
-
-            json_live[part.id]['notes'].append(' '.join(['notes', 'done']))
-
-        utils.to_json_live(
-            json_live,
-            filename_chords_to_live=os.path.join(dir_projects, 'json_live.json')
-        )
 
     messenger.message(['done'])
 
