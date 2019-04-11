@@ -30,8 +30,6 @@ def get_key_center_estimates(
     measures_window_size: int = 64
 ) -> music21.stream.Part:
 
-    measures_window_size = 2
-
     analyzer = music21.analysis.discrete.BellmanBudge()
 
     wa = music21.analysis.windowed.WindowedAnalysis(score, analyzer)

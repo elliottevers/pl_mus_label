@@ -129,24 +129,24 @@ def to_note_live(note_21):
     )
 
 
-# self.pitch = pitch
-# self.beat_start = beat_start
-# self.beats_duration = beats_duration
-# self.velocity = velocity
-# self.muted = muted
-
-
 def to_notes_live(stream):
     notes_live = []
-    for note_21 in stream:
 
-        if isinstance(note_21, music21.note.Note):
-            notes_live.append(to_note_live(note_21))
+    for struct_21 in stream:
 
-        if isinstance(note_21, music21.chord.Chord):
-            offset = note_21.offset
-            duration = note_21.duration
-            for pitch in note_21.pitches:
+        if isinstance(struct_21, music21.stream.Measure):
+            for note in struct_21:
+                note_absolute_offset = note
+                note_absolute_offset.offset = struct_21.offset + note.offset
+                notes_live.append(to_note_live(note))
+
+        if isinstance(struct_21, music21.note.Note):
+            notes_live.append(to_note_live(struct_21))
+
+        if isinstance(struct_21, music21.chord.Chord):
+            offset = struct_21.offset
+            duration = struct_21.duration
+            for pitch in struct_21.pitches:
                 note = music21.note.Note(
                     pitch=pitch.midi,
                     duration=duration
