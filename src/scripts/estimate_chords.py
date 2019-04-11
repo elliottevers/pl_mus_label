@@ -45,6 +45,8 @@ def main(args):
         )
     )
 
+    messenger.message(['length_beats', str(length_beats)])
+
     s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
 
     s_beat_end = (beat_end_marker / length_beats) * duration_s_audio
@@ -120,6 +122,19 @@ def main(args):
         part_chord,
         filename_pickle
     )
+
+    from convert import music_xml as convert_mxl
+    from i_o import exporter as io_exporter
+
+    notes_live = convert_mxl.to_notes_live(
+        part_chord
+    )
+
+    exporter = io_exporter.Exporter()
+
+    exporter.set_part(notes_live, 'chord')
+
+    exporter.export(utils.get_file_json_comm())
 
     # TODO: put in module
     if False:
