@@ -3,10 +3,20 @@ import pickle
 import json
 import os
 import subprocess
+from itertools import zip_longest
 
 dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
 
 file_log = os.path.join(dir_projects, '.log.txt')
+
+
+def grouper(n, iterable, padvalue=None):
+    """grouper(3, 'abcdefg', 'x') --> ('a','b','c'), ('d','e','f'), ('g','x','x')"""
+    return zip_longest(*[iter(iterable)]*n, fillvalue=padvalue)
+
+
+def most_common(lst):
+    return max(set(lst), key=lst.count)
 
 
 def write_name_project(name_project):

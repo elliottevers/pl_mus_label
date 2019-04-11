@@ -1,7 +1,10 @@
 from message import messenger as mes
 import argparse
+import os
 from utils import utils
 from i_o import importer as io_importer
+from postprocess import music_xml as postp_mxl
+from utils import musix_xml as utils_mxl
 
 
 def main(args):
@@ -18,8 +21,6 @@ def main(args):
 
     # convert ableton live notes to stream
 
-    from postprocess import music_xml as postp_mxl
-
     mode = 'polyphonic' if name_part == 'chord' else 'monophonic'
 
     stream = postp_mxl.live_to_stream(
@@ -31,8 +32,6 @@ def main(args):
 
     utils.create_dir_part(name_part)
 
-    import os
-
     filename_pickle = os.path.join(
         utils.get_dirname_score(),
         name_part,
@@ -43,8 +42,6 @@ def main(args):
             ]
         )
     )
-
-    from utils import musix_xml as utils_mxl
 
     utils_mxl.freeze_stream(
         stream,
