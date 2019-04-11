@@ -30,7 +30,7 @@ def main(args):
 
     mesh_song = song.MeshSong()
 
-    sample_rate = .003
+    sample_rate = .0029
 
     df_melody_diff.index = df_melody_diff.index * sample_rate
 

@@ -6,7 +6,10 @@ import music21
 def melody_to_df(data_melody, index_type='s'):
     list_melody = data_melody[1]
 
-    sample_rate = data_melody[0].to_float()
+    if not isinstance(data_melody[0], float):
+        sample_rate = data_melody[0].to_float()
+    else:
+        sample_rate = data_melody[0]
 
     df_melody_hz = pd.DataFrame(
         data={'melody': list_melody},
@@ -29,32 +32,6 @@ def chords_to_df(chords: Dict[Any, music21.chord.Chord], index_type='s'):
 
 
 def segments_to_df(data_segments, index_type='s'):
-    # segments = [
-    #     {
-    #         'timestamp': segment['timestamp'],
-    #         'duration': segment['duration'],
-    #         'label': segment['label']
-    #     }
-    #     for segment
-    #     in data_segments
-    # ]
-    #
-    # df_segments = pd.DataFrame(
-    #     data={
-    #         'segment': [
-    #             segment['label']
-    #             for segment
-    #             in segments
-    #         ]
-    #     },
-    #     index=[
-    #         segment['timestamp'] for segment in segments
-    #     ]
-    # )
-    #
-    # df_segments.index.name = index_type
-    #
-    # return df_segments
 
     segments = [
         {

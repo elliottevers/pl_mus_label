@@ -1,7 +1,6 @@
 import pandas as pd
 import music21
 from typing import List, Dict, Any, Optional, Tuple
-# from music import note as lib_note, song, chord as lib_chord
 import music21
 from live import note as note_live
 import numpy as np
@@ -43,58 +42,58 @@ from postprocess import music_xml as postp_mxl
 
 
 # TODO: put in module
-def struct_to_notes_live(struct_21, name_part):
-    try:
-        if struct_21.name == 'rest':
-            return []
-    except AttributeError:
-        pass
+# def struct_to_notes_live(struct_21, name_part):
+#     try:
+#         if struct_21.name == 'rest':
+#             return []
+#     except AttributeError:
+#         pass
+#
+#     notes = []
+#
+#     if name_part == 'melody':
+#         # if not object > 0:
+#         #     struct_score = note.Rest()
+#         # else:
+#         #     struct_score = note.Note(
+#         #         pitch=pitch.Pitch(
+#         #             midi=int(object)
+#         #         )
+#         #     )
+#         testing = 1
+#     elif name_part == 'chord':
+#         beats_offset = float(struct_21.offset)
+#         beats_duration = float(struct_21.duration.quarterLength)
+#         velocity = 90
+#         muted = 0
+#
+#         for pitch in struct_21.pitches:
+#             notes.append(
+#                 note_live.NoteLive.parse(
+#                     [pitch.midi, beats_offset, beats_duration, velocity, muted]
+#                 )
+#             )
+#
+#     elif name_part == 'bass':
+#         # struct_score = note.Note(
+#         #     pitch=object
+#         # )
+#         testing = 1
+#     elif name_part == 'segment':
+#         # struct_score = note.Note(
+#         #     pitch=pitch.Pitch(
+#         #         midi=60
+#         #     )
+#         # )
+#         testing = 1
+#     else:
+#         raise 'part ' + name_part + ' not able to be converted to Live'
+#
+#     return notes
 
-    notes = []
 
-    if name_part == 'melody':
-        # if not object > 0:
-        #     struct_score = note.Rest()
-        # else:
-        #     struct_score = note.Note(
-        #         pitch=pitch.Pitch(
-        #             midi=int(object)
-        #         )
-        #     )
-        testing = 1
-    elif name_part == 'chord':
-        beats_offset = float(struct_21.offset)
-        beats_duration = float(struct_21.duration.quarterLength)
-        velocity = 90
-        muted = 0
-
-        for pitch in struct_21.pitches:
-            notes.append(
-                note_live.NoteLive.parse(
-                    [pitch.midi, beats_offset, beats_duration, velocity, muted]
-                )
-            )
-
-    elif name_part == 'bass':
-        # struct_score = note.Note(
-        #     pitch=object
-        # )
-        testing = 1
-    elif name_part == 'segment':
-        # struct_score = note.Note(
-        #     pitch=pitch.Pitch(
-        #         midi=60
-        #     )
-        # )
-        testing = 1
-    else:
-        raise 'part ' + name_part + ' not able to be converted to Live'
-
-    return notes
-
-
-def notes_live_to_struct():
-    return
+# def notes_live_to_struct():
+#     return
 
 # TODO: not generalized to chords yet
 

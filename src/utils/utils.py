@@ -4,10 +4,22 @@ import json
 import os
 import subprocess
 from itertools import zip_longest
+import numpy as np
+import math
 
 dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
 
 file_log = os.path.join(dir_projects, '.log.txt')
+
+
+def find_nearest(array, value):
+    idx = np.searchsorted(array, value, side="left")
+    if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
+        # return array[idx-1]
+        return idx - 1
+    else:
+        # return array[idx]
+        return idx
 
 
 def grouper(n, iterable, padvalue=None):
