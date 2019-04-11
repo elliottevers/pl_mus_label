@@ -2,7 +2,12 @@ from message import messenger as mes
 import argparse
 from utils import utils
 from i_o import importer as io_importer, exporter as io_exporter
-from convert import music_xml as convert_mxl
+from convert import music_xml as convert_mxl, vamp as conv_vamp
+from postprocess import music_xml as postp_mxl
+from music import song
+import os
+import librosa
+from preprocess import vamp as prep_vamp
 
 
 def main(args):
@@ -21,10 +26,6 @@ def main(args):
 
     notes_live = importer.get_part(name_part)
 
-    # convert ableton live notes to stream
-
-    from postprocess import music_xml as postp_mxl
-
     mode = 'polyphonic' if name_part == 'chord' else 'monophonic'
 
     stream = postp_mxl.live_to_stream(
@@ -32,14 +33,7 @@ def main(args):
         mode
     )
 
-    from music import song
-
     if name_part == 'melody':
-
-        import os
-        import librosa
-        # from information_retrieval import extraction as ir
-        from preprocess import vamp as prep_vamp
 
         y, sr = librosa.load(
             os.path.join(
@@ -60,21 +54,9 @@ def main(args):
             )
         )
 
-        # messenger.message(['length_beats', str(length_beats)])
-
         s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
 
         s_beat_end = (beat_end_marker / (length_beats)) * duration_s_audio
-
-        # NB: chords from raw audio
-        # data_melody = ir.extract_segments(
-        #     os.path.join(
-        #         utils.get_dirname_audio_warped(),
-        #         utils._get_name_project_most_recent() + '.wav'
-        #     )
-        # )
-
-        from convert import vamp as conv_vamp
 
         data_melody = conv_vamp.to_data_melody(
             notes_live,
@@ -90,10 +72,6 @@ def main(args):
         )
 
         df_melody[df_melody['melody'] < 0] = 0
-
-        # df_melody = prep_vamp.melody_to_df(
-        #     data_melody
-        # )
 
         melody_tree = song.MeshSong.get_interval_tree(
             df_melody
