@@ -12,7 +12,7 @@ def main(args):
 
     score_full = music21.stream.Score()
 
-    for name_part in ['melody', 'chord', 'bass', 'key_center', 'segment']:
+    for name_part in ['melody', 'chord', 'bass', 'key_center']:
         filename_part = os.path.join(
             utils.get_dirname_score(),
             name_part,

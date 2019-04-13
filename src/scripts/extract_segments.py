@@ -7,6 +7,9 @@ from postprocess import music_xml as postp_mxl
 from music import song
 from utils import utils
 import os
+from convert import music_xml as convert_mxl
+from i_o import exporter as io_exporter
+from utils import musix_xml as utils_mxl
 
 
 def main(args):
@@ -102,15 +105,10 @@ def main(args):
         )
     )
 
-    from utils import musix_xml as utils_mxl
-
     utils_mxl.freeze_stream(
         stream_segment,
         filename_pickle
     )
-
-    from convert import music_xml as convert_mxl
-    from i_o import exporter as io_exporter
 
     notes_live = convert_mxl.to_notes_live(
         stream_segment

@@ -124,6 +124,10 @@ def get_path_dir_audio_warped():
     return os.path.join(get_project_dir(), 'audio_warped')
 
 
+def get_path_dir_session():
+    return os.path.join(get_project_dir(), 'session')
+
+
 def create_dir_audio():
     path_dir_audio = get_path_dir_audio()
     if os.path.exists(
@@ -146,6 +150,19 @@ def create_dir_audio_warped():
     else:
         return subprocess.run(
             ['mkdir', path_dir_audio_warped],
+            stdout=subprocess.PIPE
+        )
+
+
+def create_dir_session():
+    path_dir_session = get_path_dir_session()
+    if os.path.exists(
+            path_dir_session
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', path_dir_session],
             stdout=subprocess.PIPE
         )
 

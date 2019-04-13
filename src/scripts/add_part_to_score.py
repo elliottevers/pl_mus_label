@@ -19,6 +19,8 @@ def main(args):
 
     notes_live = importer.get_part(name_part)
 
+    notes_live = list(filter(lambda note: note.beats_duration > 0, notes_live))
+
     # convert ableton live notes to stream
 
     mode = 'polyphonic' if name_part == 'chord' else 'monophonic'
