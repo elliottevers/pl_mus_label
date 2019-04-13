@@ -22,6 +22,35 @@ import librosa
 #     )
 
 
+def to_data_monophonic(data_midi, offset_s_audio, duration_s_audio, beats_clip, sample_rate=.0029):
+
+    data = list()
+
+    data.append(sample_rate)
+
+    space_sample = np.zeros(int(duration_s_audio/sample_rate))
+
+    def beat_to_second(beat):
+        return (duration_s_audio/beats_clip) * beat
+
+    def second_to_index(s, array):
+        return int(s / duration_s_audio * len(array))
+
+    for note in data_midi:
+        offset_i_note = second_to_index(beat_to_second(note.beat_start), space_sample)
+        duration_i_note = second_to_index(beat_to_second(note.beats_duration), space_sample)
+        idx = list(range(offset_i_note, offset_i_note + duration_i_note))
+        space_sample[idx] = note.pitch
+
+    data.append(space_sample)
+
+    data_monophonic = {
+        'vector': tuple(data)
+    }
+
+    return data_monophonic
+
+
 def to_data_melody(data_midi, offset_s_audio, duration_s_audio, sample_rate=.0029):
 
     data = list()

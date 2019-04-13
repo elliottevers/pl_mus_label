@@ -61,7 +61,7 @@ def main(args):
         data_melody = conv_vamp.to_data_melody(
             notes_live,
             offset_s_audio=0,
-            duration_s_audio=177.15
+            duration_s_audio=duration_s_audio
         )
 
         mesh_song = song.MeshSong()

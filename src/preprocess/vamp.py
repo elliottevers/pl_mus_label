@@ -3,6 +3,24 @@ from typing import List, Dict, Any, Optional, Tuple
 import music21
 
 
+def monophony_to_df(data_monophonic, name_part, index_type='s'):
+    list_monophony = data_monophonic[1]
+
+    if not isinstance(data_monophonic[0], float):
+        sample_rate = data_monophonic[0].to_float()
+    else:
+        sample_rate = data_monophonic[0]
+
+    df_mid = pd.DataFrame(
+        data={name_part: list_monophony},
+        index=[i_sample * sample_rate for i_sample, sample in enumerate(list_monophony)]
+    )
+
+    df_mid.index.name = index_type
+
+    return df_mid
+
+
 def melody_to_df(data_melody, index_type='s'):
     list_melody = data_melody[1]
 
