@@ -358,11 +358,15 @@ def live_to_stream(
             note = music21.note.Note(
                 pitch=note_live.pitch
             )
+
             note.duration = music21.duration.Duration(
-                note_live.beats_duration
+                Fraction(int(round(48 * note_live.beats_duration)), 48)
             )
 
-            part.insert(note_live.beat_start, note)
+            part.insert(
+                Fraction(int(round(48 * note_live.beat_start)), 48),
+                note
+            )
 
     elif mode == 'polyphonic':
         # TODO: this hard a hard requirement that they're sorted by beat beforehand

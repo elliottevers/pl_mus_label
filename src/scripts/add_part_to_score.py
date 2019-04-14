@@ -30,11 +30,6 @@ def main(args):
         mode
     )
 
-    stream.quantize(
-        (4, 6),
-        inPlace=True
-    )
-
     utils.create_dir_score()
 
     utils.create_dir_part(name_part)

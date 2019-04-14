@@ -10,6 +10,8 @@ def main(args):
 
     messenger = mes.Messenger()
 
+    format = args.format.replace("\"", '')
+
     score_full = music21.stream.Score()
 
     for name_part in ['melody', 'chord', 'bass', 'key_center']:
@@ -24,13 +26,18 @@ def main(args):
             )
             score_full.append(stream_part)
 
-    score_full.show()
+    if format == 'midi':
+        score_full.show('midi')
+    else:
+        score_full.show()
 
     messenger.message(['done'])
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Extract Segments')
+    parser = argparse.ArgumentParser(description='show score')
+
+    parser.add_argument('--format', help='either MusicXML or MIDI')
 
     args = parser.parse_args()
 
