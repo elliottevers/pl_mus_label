@@ -1,7 +1,4 @@
-import mido
-from mido import Message, MetaMessage, MidiTrack
 import pandas as pd
-import itertools
 from music import song
 
 
@@ -13,7 +10,7 @@ def get_name_column_offset(name_column):
     return name_column + '_offset'
 
 
-def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.DataFrame:
+def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.0029) -> pd.DataFrame:
     offset_diff = []
     data_diff = []
     duration_diff = []
@@ -28,7 +25,7 @@ def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.Dat
             pass
         else:
             offset_diff.append(i)
-            data_diff.append(val)
+            data_diff.append(current_val)
             duration_diff.append(acc_duration)
             acc_duration = 0
             current_val = val

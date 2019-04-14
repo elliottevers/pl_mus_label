@@ -44,7 +44,7 @@ def main(args):
         beatmap = np.linspace(
             0,
             float(duration_s_audio),
-            int(beat_end_marker) - int(beat_start_marker) + 1 - 4
+            int(beat_end_marker) - int(beat_start_marker) + 1  # - 4
         )
     else:
         beatmap = ir.extract_beats(

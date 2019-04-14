@@ -8,6 +8,8 @@ from music import song
 import os
 import librosa
 from preprocess import vamp as prep_vamp
+from filter import midi as filt_midi
+from convert import live as conv_live
 
 
 def main(args):
@@ -43,13 +45,14 @@ def main(args):
 
     s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
 
-    s_beat_end = (beat_end_marker / (length_beats)) * duration_s_audio
+    s_beat_end = (beat_end_marker / length_beats) * duration_s_audio
 
     data_monophonic = conv_vamp.to_data_monophonic(
         notes_live,
         offset_s_audio=0,
         duration_s_audio=duration_s_audio,
-        beats_clip=length_beats
+        beatmap=beatmap,
+        sample_rate=float(1/100)
     )
 
     mesh_song = song.MeshSong()
@@ -62,8 +65,14 @@ def main(args):
 
     df[df[name_part] < 0] = 0
 
+    df_diff = filt_midi.to_diff(
+        df,
+        name_part,
+        sample_rate=float(1/100)
+    )
+
     interval_tree = song.MeshSong.get_interval_tree(
-        df
+        df_diff
     )
 
     mesh_song.set_tree(
@@ -75,11 +84,13 @@ def main(args):
         beatmap,
         s_beat_start,
         s_beat_end,
-        beat_start_marker,  # transitioning indices here
+        beat_start_marker,
         columns=[name_part]
     )
 
-    data_quantized = mesh_song.data_quantized[name_part]
+    data_quantized = conv_live.with_index_live(
+        mesh_song.data_quantized[name_part]
+    )
 
     score = postp_mxl.df_grans_to_score(
         data_quantized,
@@ -90,11 +101,6 @@ def main(args):
         score,
         name_part
     )
-
-    # stream.quantize(
-    #     (4, 6),
-    #     inPlace=True
-    # )
 
     notes_live = convert_mxl.to_notes_live(
         stream

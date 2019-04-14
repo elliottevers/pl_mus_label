@@ -1,7 +1,5 @@
 import pandas as pd
-from mido import MidiFile, MidiTrack, Message, MetaMessage, bpm2tempo
 from typing import List, Dict, Any, Optional, Tuple
-from convert import midi as convert_midi
 from intervaltree import IntervalTree, Interval
 import music21
 import math
@@ -127,7 +125,6 @@ class MeshSong(object):
 
             # TODO: create an accumulator for automatic "diff"-ing
 
-            # for beat in beats[:-1]:
             for beat in beats:
 
                 s = gran_map[beat]
@@ -178,26 +175,6 @@ class MeshSong(object):
             ).set_index(
                 ['beat', 's']
             )
-
-        # TODO: GENERALIZE
-        # TODO: segments, after they are fixed
-        # return pd.merge(
-        #     pd.merge(
-        #         pd.merge(
-        #             dfs_quantized['melody'],
-        #             dfs_quantized['bass'],
-        #             left_index=True,
-        #             right_index=True
-        #         ),
-        #         dfs_quantized['chord'],
-        #         left_index=True,
-        #         right_index=True
-        #     ),
-        #     dfs_quantized['segment'],
-        #     left_index=True,
-        #     right_index=True
-        # ).sort_index(
-        # )
 
         return dfs_quantized
 

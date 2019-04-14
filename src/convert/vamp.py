@@ -22,16 +22,22 @@ import librosa
 #     )
 
 
-def to_data_monophonic(data_midi, offset_s_audio, duration_s_audio, beats_clip, sample_rate=.0029):
+def to_data_monophonic(data_midi, offset_s_audio, duration_s_audio, beatmap, sample_rate=.0029):
+    # beatmap = np.linspace(
+    #     0,
+    #     float(duration_s_audio),
+    #     int(beat_end_marker) - int(beat_start_marker) + 1 - 4
+    # )
 
     data = list()
 
     data.append(sample_rate)
 
-    space_sample = np.zeros(int(duration_s_audio/sample_rate))
+    space_sample = np.zeros(int(duration_s_audio/sample_rate) + 1)
 
     def beat_to_second(beat):
-        return (duration_s_audio/beats_clip) * beat
+        # return (duration_s_audio/beats_clip) * beat
+        return beatmap[int(beat)] + (beatmap[int(beat) + 1] - beatmap[int(beat)])*(float(beat) - int(beat))
 
     def second_to_index(s, array):
         return int(s / duration_s_audio * len(array))
