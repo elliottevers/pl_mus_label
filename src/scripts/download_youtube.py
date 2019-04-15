@@ -1,7 +1,6 @@
 from message import messenger as mes
 import argparse
 from utils import utils
-import os
 import subprocess
 
 
@@ -17,33 +16,38 @@ def main(args):
 
     utils.create_dir_session()
 
-    dir_downloads = os.path.join(
-        utils.dir_projects,
-        'downloads'
-    )
+    audio_only = args.x
 
-    command_to_downloads = [
-        args.path_executable,
-        '-x' if args.x else '',
-        '--o',
-        dir_downloads + '/' + args.name_project + '.%(ext)s',
-        '--audio-format',
-        args.audio_format,
-        '--ffmpeg-location',
-        args.ffmpeg_location,
-        args.url[0]
-    ]
+    include_video = not audio_only
 
-    subprocess.run(
-        command_to_downloads,
-        stdout=subprocess.PIPE
-    ).stdout.rstrip().decode("utf-8")
+    if include_video:
+        utils.create_dir_video()
+
+        utils.create_dir_video_warped()
+
+        dir_video = utils.get_path_dir_video()
+
+        command_to_video = [
+            args.path_executable,
+            '--o',
+            dir_video + '/' + args.name_project + '.%(ext)s',
+            '-f',
+            'mp4',
+            '--ffmpeg-location',
+            args.ffmpeg_location,
+            args.url[0]
+        ]
+
+        subprocess.run(
+            command_to_video,
+            stdout=subprocess.PIPE
+        ).stdout.rstrip().decode("utf-8")
 
     dir_audio = utils.get_path_dir_audio()
 
     command_to_audio = [
         args.path_executable,
-        '-x' if args.x else '',
+        '-x',
         '--o',
         dir_audio + '/' + args.name_project + '.%(ext)s',
         '--audio-format',
