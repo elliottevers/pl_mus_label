@@ -49,12 +49,6 @@ def main(args):
         )
     )
 
-    # TODO: implement when doing caching
-    # utils.save(
-    #     'chord',
-    #     data_chords
-    # )
-
     mesh_song = song.MeshSong()
 
     df_segments = prep_vamp.segments_to_df(
