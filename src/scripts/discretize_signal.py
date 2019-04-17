@@ -4,7 +4,6 @@ from pyts.quantization import SAX, SFA, MCB
 from convert import max as conv_max
 import music21
 import string
-import math
 
 
 def main(args):

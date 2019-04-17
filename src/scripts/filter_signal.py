@@ -1,18 +1,15 @@
-from information_retrieval import extraction as ir
-# from filter import seconds as s_filt
-from preprocess import vamp as prep_vamp
 from message import messenger as mes
-from utils import utils
 from convert import max as conv_max
 import argparse
 from typing import Dict
 import pandas as pd
+from scipy import signal
+import numpy as np
 
 
 def main(args):
 
     # filter_map: Dict[int, Dict[str, float]] = args.filter_map
-
 
     filter = 'medfilt'
 
@@ -29,9 +26,6 @@ def main(args):
     )
 
     params = filter_map
-
-    from scipy import signal
-    import numpy as np
 
     for name_argument, values in params.items():
         for i_value, value in enumerate(values):
