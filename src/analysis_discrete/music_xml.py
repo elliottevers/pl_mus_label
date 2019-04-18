@@ -81,12 +81,11 @@ def _assign_key_centers(solutions, measures_window_size) -> List:
 
 
 def get_segments(
-    score: music21.stream.Score,
-    name_part
-) -> music21.stream.Score:
+    part: music21.stream.Part,
+) -> music21.stream.Part:
 
     segments, measure_lists = music21.search.segment.translateMonophonicPartToSegments(
-        score.parts[0].makeMeasures()
+        part.makeMeasures()
         # TODO: add this back in
         # postp_mxl.extract_part(
         #     score,
@@ -126,8 +125,4 @@ def get_segments(
 
         part.insert(list_measure[0] * 4, note_segment)
 
-    score = music21.stream.Score()
-
-    score.insert(0, part)
-
-    return score
+    return part

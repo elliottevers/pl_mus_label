@@ -10,6 +10,7 @@ import os
 from convert import music_xml as convert_mxl
 from i_o import exporter as io_exporter
 from utils import musix_xml as utils_mxl
+from analysis_discrete import music_xml
 
 
 def main(args):
@@ -37,52 +38,75 @@ def main(args):
 
     messenger.message(['length_beats', str(length_beats)])
 
-    s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
+    representation = args.representation.replace("\"", '')
 
-    s_beat_end = (beat_end_marker / (length_beats)) * duration_s_audio
+    if representation == 'symbolic':
 
-    # NB: chords from raw audio
-    data_segments = ir.extract_segments(
-        os.path.join(
-            utils.get_dirname_audio_warped(),
-            utils._get_name_project_most_recent() + '.wav'
+        filename_pickle = os.path.join(
+            utils.get_dirname_score(),
+            'melody',
+            ''.join([utils._get_name_project_most_recent(), '.pkl'])
         )
-    )
 
-    mesh_song = song.MeshSong()
+        part_melody = utils_mxl.thaw_stream(
+            filename_pickle
+        )
 
-    df_segments = prep_vamp.segments_to_df(
-        data_segments
-    )
+        stream_segment = music_xml.get_segments(
+            part_melody
+        )
 
-    segment_tree = song.MeshSong.get_interval_tree(
-        df_segments
-    )
+    elif representation == 'numeric':
 
-    mesh_song.set_tree(
-        segment_tree,
-        type='segment'
-    )
+        s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
 
-    mesh_song.quantize(
-        beatmap,
-        s_beat_start,
-        s_beat_end,
-        beat_start_marker,  # transitioning indices here
-        columns=['segment']
-    )
+        s_beat_end = (beat_end_marker / (length_beats)) * duration_s_audio
 
-    data_quantized_chords = mesh_song.data_quantized['segment']
+        # NB: chords from raw audio
+        data_segments = ir.extract_segments(
+            os.path.join(
+                utils.get_dirname_audio_warped(),
+                utils._get_name_project_most_recent() + '.wav'
+            )
+        )
 
-    score = postp_mxl.df_grans_to_score(
-        data_quantized_chords,
-        parts=['segment']
-    )
+        mesh_song = song.MeshSong()
 
-    stream_segment = postp_mxl.extract_part(
-        score,
-        'segment'
-    )
+        df_segments = prep_vamp.segments_to_df(
+            data_segments
+        )
+
+        segment_tree = song.MeshSong.get_interval_tree(
+            df_segments
+        )
+
+        mesh_song.set_tree(
+            segment_tree,
+            type='segment'
+        )
+
+        mesh_song.quantize(
+            beatmap,
+            s_beat_start,
+            s_beat_end,
+            beat_start_marker,  # transitioning indices here
+            columns=['segment']
+        )
+
+        data_quantized_chords = mesh_song.data_quantized['segment']
+
+        score = postp_mxl.df_grans_to_score(
+            data_quantized_chords,
+            parts=['segment']
+        )
+
+        stream_segment = postp_mxl.extract_part(
+            score,
+            'segment'
+        )
+
+    else:
+        raise ' '.join(['representation', representation, 'does not exist'])
 
     utils.create_dir_score()
 
@@ -119,6 +143,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract Segments')
+
+    parser.add_argument('--representation', help='either symbolic or numeric')
 
     args = parser.parse_args()
 

@@ -26,15 +26,6 @@ def main(args):
             )
             score_full.append(stream_part)
 
-
-    from analysis_discrete import music_xml
-
-    test = music_xml.get_segments(score_full, 'melody')
-
-    test.show()
-
-    exit(0)
-
     if format == 'midi':
         score_full.show('midi')
     else:
