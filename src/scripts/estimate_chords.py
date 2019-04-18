@@ -102,6 +102,10 @@ def main(args):
         'chord'
     )
 
+    for obj in part_chord:
+        if type(obj).__name__ is not 'Rest' and len(obj.pitches) < 4:
+            obj.add(obj.bass().midi + 12)
+
     utils.create_dir_score()
 
     utils.create_dir_chord()
