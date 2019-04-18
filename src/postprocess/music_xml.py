@@ -1,11 +1,9 @@
 import pandas as pd
 import music21
-import numpy as np
 from live import note as nl
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List
 from itertools import groupby
 from fractions import Fraction
-import math
 from utils import utils
 import json
 
@@ -16,8 +14,6 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
         json_read = json.load(f)
 
     partmap = {}
-
-    # beat_length_score = json_read['length_beats']
 
     for name_part in utils.intersection(parts, list(json_read.keys())):
         part = music21.stream.Part()
@@ -122,17 +118,6 @@ def add_part(part: music21.stream.Part, score: music21.stream.Score, id='key_cen
     return score
 
 
-# def freeze_stream(stream, filepath) -> None:
-#     stream_frozen = freezeThaw.StreamFreezer(stream)
-#     stream_frozen.write(fmt='pickle', fp=filepath)
-#
-#
-# def thaw_stream(filepath) -> stream.Stream:
-#     thawer = freezeThaw.StreamThawer()
-#     thawer.open(fp=filepath)
-#     return thawer.stream
-
-
 def set_tempo(score: music21.stream.Score, bpm: int = 60) -> music21.stream.Score:
 
     marks_to_remove = []
@@ -188,96 +173,6 @@ def get_struct_score(object, name_part, dur):
     struct_score.duration = dur
 
     return struct_score
-
-
-# def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.003) -> pd.DataFrame:
-#     offset_diff = []
-#     data_diff = []
-#     duration_diff = []
-#
-#     current_val = None
-#
-#     acc_duration = 0
-#
-#     # resolution_beats = 48
-#
-#     for i, val in df[name_column].iteritems():
-#         acc_duration = acc_duration + sample_rate
-#         if val == current_val:
-#             pass
-#         else:
-#             offset_diff.append(i)
-#             data_diff.append(val)
-#             duration_diff.append(acc_duration)
-#             acc_duration = 0
-#             current_val = val
-#
-#     df_diff = pd.DataFrame(
-#         data={
-#             name_column: data_diff,
-#             get_name_column_duration(name_column): duration_diff
-#         },
-#         index=offset_diff
-#     )
-#
-#     df_diff.index.name = get_name_column_offset(name_column)
-#
-#     return df_diff
-
-
-# def df_grans_quantized_to_score(
-#         df_grans: pd.DataFrame,
-#         parts=[
-#             'melody',
-#             'chord',
-#             'bass',
-#             'segment'
-#         ],
-#         resolution_measure=48
-# ) -> stream.Score:
-#
-#     score = stream.Score()
-#
-#     for i_part, name_part in enumerate(parts):
-#
-#         part = stream.Part()
-#
-#         part.id = name_part
-#
-#         counter_measure = 1
-#
-#         measure = stream.Measure(
-#             number=counter_measure
-#         )
-#
-#         acc_duration = 0
-#
-#         for row in df_grans.itertuples():
-#             index = row[0]
-#             index_beat_offset = index[0]
-#             obj = row[1]
-#             duration = row[2]
-#
-#             duration_to_nearest_gran = Fraction(int(round(resolution_measure * duration)), resolution_measure)
-#             beat_offset_to_nearest_gran = Fraction(int(round(resolution_measure * index_beat_offset)), resolution_measure)
-#
-#             if int(acc_duration) > 0 and int(acc_duration) % 4 == 0:
-#                 part.append(measure)
-#                 counter_measure = counter_measure + 1
-#                 measure = stream.Measure(
-#                     number=counter_measure
-#                 )
-#                 acc_duration = 0
-#
-#             struct_score = get_struct_score(obj, name_part)
-#             struct_score.duration = duration.Duration(duration_to_nearest_gran)
-#             measure.append(struct_score)
-#             acc_duration = acc_duration + duration_to_nearest_gran
-#
-#
-#         score.insert(i_part, part)
-#
-#     return score
 
 
 def df_grans_to_score(

@@ -1,16 +1,17 @@
 from message import messenger as mes
 from utils import utils
 import argparse
-from convert import max as conv_max
 from filter import midi as filt_midi
 from music import song
 import os
 from postprocess import music_xml as postp_mxl
 from i_o import exporter as io_exporter
-from convert import music_xml as conv_mxl
+from convert import music_xml as conv_mxl, midi as conv_mid, max as conv_max
 
 
 def main(args):
+
+    messenger = mes.Messenger()
 
     beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = utils.get_tuple_beats(
         os.path.join(
@@ -19,13 +20,21 @@ def main(args):
         )
     )
 
+    messenger.message(['length_beats', str(length_beats)])
+
     df = conv_max.from_coll(
         conv_max.file_ts_coll
     )
 
+    df = conv_mid.hz_to_mid(
+        df.rename(
+            columns={'signal': 'melody'}
+        )
+    )
+
     df_melody_diff = filt_midi.to_diff(
         df,
-        'signal'
+        'melody'
     )
 
     mesh_song = song.MeshSong()
@@ -74,11 +83,7 @@ def main(args):
         utils.get_file_json_comm()
     )
 
-    # TODO: export to melody in live_json
-
-    messenger = mes.Messenger()
-
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':
