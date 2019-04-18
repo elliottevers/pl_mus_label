@@ -89,8 +89,8 @@ def vamp_chord_to_dict(s_to_label_chords: List[Dict[float, Any]]) -> Dict[float,
         )
 
         # TODO: move this somewhere else
-        if len(chord_midi.pitches) < 4:
-            chord_midi.add(music21.pitch.Pitch(chord_midi.pitches[0].midi + 12))
+        # if len(chord_midi.pitches) < 4:
+        #     chord_midi.add(music21.pitch.Pitch(chord_midi.pitches[0].midi + 12))
 
         events_chords[event['timestamp']] = chord_midi
 

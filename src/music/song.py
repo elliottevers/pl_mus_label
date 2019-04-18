@@ -155,7 +155,7 @@ class MeshSong(object):
                     )
 
                     column.append(
-                        interval_winner.data  # sum(list(interval_winner.data))
+                        interval_winner.data
                     )
                     column_beat.append(
                         beat
@@ -181,7 +181,8 @@ class MeshSong(object):
     @staticmethod
     def get_struct(obj):
         if type(obj).__name__ == 'Chord':
-            return tuple(obj.intervalVector)
+            # return tuple(obj.intervalVector)
+            return [str(p) for p in obj.pitches]
         elif type(obj).__name__ == 'Note':
             return obj.pitch.midi
         else:
@@ -202,7 +203,7 @@ class MeshSong(object):
                     Interval(
                         index_struct_last,
                         index,
-                        MeshSong.get_struct(struct_current)  # struct_current
+                        MeshSong.get_struct(struct_current)
                     )
                 )
                 struct_last = struct_current

@@ -153,9 +153,11 @@ def get_struct_score(object, name_part, dur):
         if not object:
             struct_score = music21.note.Rest()
         else:
-            struct_score = music21.chord.fromIntervalVector(
-                object
-            )
+            # struct_score = music21.chord.fromIntervalVector(
+            #     object
+            # )
+            struct_score = music21.chord.Chord()
+            struct_score.pitches = object
 
     elif name_part == 'bass':
         struct_score = music21.note.Note(
