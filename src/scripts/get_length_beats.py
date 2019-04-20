@@ -1,18 +1,22 @@
 from message import messenger as mes
 import argparse
 from utils import utils
-import os
 
 
 def main(args):
 
     messenger = mes.Messenger()
 
-    _, _, _, _, length_beats, _ = utils.get_tuple_beats(
-        os.path.join(
-            utils.get_dirname_beat(),
-            utils._get_name_project_most_recent() + '.pkl'
-        )
+    (
+        _,
+        _,
+        _,
+        _,
+        length_beats,
+        _,
+        _
+    ) = utils.get_grid_beats(
+        use_warped=utils.b_use_warped()
     )
 
     messenger.message(['length_beats', str(length_beats)])

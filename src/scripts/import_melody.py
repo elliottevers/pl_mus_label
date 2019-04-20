@@ -3,7 +3,6 @@ from utils import utils
 import argparse
 from filter import midi as filt_midi
 from music import song
-import os
 from postprocess import music_xml as postp_mxl
 from i_o import exporter as io_exporter
 from convert import music_xml as conv_mxl, midi as conv_mid, max as conv_max
@@ -11,14 +10,21 @@ from convert import music_xml as conv_mxl, midi as conv_mid, max as conv_max
 
 def main(args):
 
-    messenger = mes.Messenger()
+    use_warped = utils.b_use_warped()
 
-    beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = utils.get_tuple_beats(
-        os.path.join(
-            utils.get_dirname_beat(),
-            utils._get_name_project_most_recent() + '.pkl'
-        )
+    (
+        beat_start_marker,
+        beat_end_marker,
+        s_beat_start,
+        s_beat_end,
+        length_beats,
+        duration_s_audio,
+        beatmap
+    ) = utils.get_grid_beats(
+        use_warped=use_warped
     )
+
+    messenger = mes.Messenger()
 
     messenger.message(['length_beats', str(length_beats)])
 
@@ -56,8 +62,8 @@ def main(args):
 
     mesh_song.quantize(
         beatmap,
-        beat_start_marker,
-        beat_end_marker,
+        s_beat_start,
+        s_beat_end,
         0,
         columns=['melody']
     )

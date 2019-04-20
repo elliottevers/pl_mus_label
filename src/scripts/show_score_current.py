@@ -31,7 +31,7 @@ def main(args):
     else:
         score_full.show()
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':

@@ -43,7 +43,7 @@ def main(args):
 
     exporter.export(utils.get_file_json_comm())
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':

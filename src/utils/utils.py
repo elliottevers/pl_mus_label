@@ -6,16 +6,53 @@ import subprocess
 from itertools import zip_longest
 import numpy as np
 import math
+import librosa
 
 dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
 
 file_log = os.path.join(dir_projects, '.log.txt')
 
 
+def get_grid_beats(
+        use_warped=True
+):
+    y, sr = librosa.load(
+        os.path.join(
+            get_dirname_audio_warped() if use_warped else get_dirname_audio(),
+            _get_name_project_most_recent() + '.wav'
+        )
+    )
+
+    duration_s_audio = librosa.get_duration(
+        y=y,
+        sr=sr
+    )
+
+    beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = get_tuple_beats(
+        os.path.join(
+            get_dirname_beat(),
+            _get_name_project_most_recent() + '.pkl'
+        )
+    )
+
+    s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
+
+    s_beat_end = (beat_end_marker / length_beats) * duration_s_audio
+
+    return beat_start_marker, beat_end_marker, s_beat_start, s_beat_end, length_beats, duration_s_audio, beatmap
+
+
+def b_use_warped():
+    return os.path.exists(
+        os.path.join(
+            get_dirname_audio_warped(),
+
+        )
+    )
+
+
 def rotate_items(dictionary, offset=0):
-    keys = list(dictionary.keys())
-    values = list(dictionary.values())
-    return dict(zip(rotate(keys, offset), values))
+    return dict(zip(rotate(list(dictionary.keys()), offset), list(dictionary.values())))
 
 
 def rotate(l, n):

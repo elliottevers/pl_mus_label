@@ -64,7 +64,7 @@ def main(args):
 
     messenger = mes.Messenger(key_route='')
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':

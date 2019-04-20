@@ -1,7 +1,6 @@
 from information_retrieval import extraction as ir
 from message import messenger as mes
 import argparse
-import librosa
 from typing import Dict
 from filter import vamp as vamp_filter
 from convert import vamp as vamp_convert
@@ -16,36 +15,50 @@ import os
 
 
 def main(args):
+
+    use_warped = True
+
     messenger = mes.Messenger()
 
-    filename_wav = os.path.join(
-        utils.get_dirname_audio_warped(),
-        utils._get_name_project_most_recent() + '.wav'
-    )
+    # filename_wav = os.path.join(
+    #     utils.get_dirname_audio_warped(),
+    #     utils._get_name_project_most_recent() + '.wav'
+    # )
+    #
+    # y, sr = librosa.load(
+    #     filename_wav
+    # )
+    #
+    # duration_s_audio = librosa.get_duration(
+    #     y=y,
+    #     sr=sr
+    # )
+    #
+    # beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = utils.get_tuple_beats(
+    #     os.path.join(
+    #         utils.get_dirname_beat(),
+    #         utils._get_name_project_most_recent() + '.pkl'
+    #     )
+    # )
+    #
+    # s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
+    #
+    # s_beat_end = (beat_end_marker / length_beats) * duration_s_audio
 
-    y, sr = librosa.load(
-        filename_wav
-    )
-
-    duration_s_audio = librosa.get_duration(
-        y=y,
-        sr=sr
-    )
-
-    beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = utils.get_tuple_beats(
-        os.path.join(
-            utils.get_dirname_beat(),
-            utils._get_name_project_most_recent() + '.pkl'
-        )
+    (
+        beat_start_marker,
+        beat_end_marker,
+        s_beat_start,
+        s_beat_end,
+        length_beats,
+        duration_s_audio,
+        beatmap
+    ) = utils.get_grid_beats(
+        use_warped=use_warped
     )
 
     messenger.message(['length_beats', str(length_beats)])
 
-    s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
-
-    s_beat_end = (beat_end_marker / length_beats) * duration_s_audio
-
-    # NB: chords from raw audio
     data_chords = ir.extract_chords(
         os.path.join(
             utils.get_dirname_audio_warped(),
@@ -131,7 +144,7 @@ def main(args):
 
     exporter.export(utils.get_file_json_comm())
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':

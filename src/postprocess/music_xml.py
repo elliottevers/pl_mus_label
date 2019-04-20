@@ -105,7 +105,7 @@ def extract_parts(score: music21.stream.Score, parts=['chord', 'bass']) -> music
     return score_diminished
 
 
-def extract_part(score: music21.stream.Score, name_part):  #   -> stream.Part:
+def extract_part(score: music21.stream.Score, name_part):
     return score.getElementById(name_part)
 
 
@@ -153,9 +153,6 @@ def get_struct_score(object, name_part, dur):
         if not object:
             struct_score = music21.note.Rest()
         else:
-            # struct_score = music21.chord.fromIntervalVector(
-            #     object
-            # )
             struct_score = music21.chord.Chord()
             struct_score.pitches = object
 
@@ -163,7 +160,7 @@ def get_struct_score(object, name_part, dur):
         struct_score = music21.note.Note(
             pitch=object
         )
-    elif name_part == 'segment':
+    elif name_part in ['segment', 'beatmap']:
         struct_score = music21.note.Note(
             pitch=music21.pitch.Pitch(
                 midi=60
@@ -179,7 +176,6 @@ def get_struct_score(object, name_part, dur):
 
 def df_grans_to_score(
         df_grans: pd.DataFrame,
-        # column_index='beat',
         parts=[
             'melody',
             'chord',

@@ -36,6 +36,9 @@ class MeshSong(object):
                 'segments'
             ]
     ) -> None:
+        # TODO: if we trim the beatmap to only consider beats between the start and end beat, why do we need the position of the first beat?
+
+        # TODO: this may have only been only incidentally working because the "beat_start_marker" has always been 0
 
         gran_map = MeshSong.get_gran_map(
             self.trim_beatmap(beatmap, s_beat_start, s_beat_end),
@@ -67,7 +70,11 @@ class MeshSong(object):
             return pitch_midi
 
     @staticmethod
-    def get_gran_map(beatmap, offset_first_beat, quantize='16T'):
+    def get_gran_map(
+            beatmap,
+            offset_first_beat,  # sample at which the first beat occurs
+            quantize='16T'
+    ):
 
         gran_map = dict()
 

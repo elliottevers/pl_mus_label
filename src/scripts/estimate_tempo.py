@@ -10,7 +10,7 @@ def main(args):
 
     messenger.message([str(tempo_estimate)])
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':

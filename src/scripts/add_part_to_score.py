@@ -52,7 +52,7 @@ def main(args):
 
     messenger = mes.Messenger()
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':

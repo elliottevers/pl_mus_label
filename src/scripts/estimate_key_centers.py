@@ -10,13 +10,20 @@ from utils import musix_xml as utils_mxl
 
 def main(args):
 
+    use_warped = True
+
     messenger = mes.Messenger()
 
-    _, _, _, _, length_beats, _ = utils.get_tuple_beats(
-        os.path.join(
-            utils.get_dirname_beat(),
-            utils._get_name_project_most_recent() + '.pkl'
-        )
+    (
+        _,
+        _,
+        _,
+        _,
+        length_beats,
+        _,
+        _
+    ) = utils.get_grid_beats(
+        use_warped=use_warped
     )
 
     messenger.message(['length_beats', str(length_beats)])
@@ -60,7 +67,7 @@ def main(args):
 
     exporter.export(utils.get_file_json_comm())
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':

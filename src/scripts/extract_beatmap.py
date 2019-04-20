@@ -22,34 +22,83 @@ def main(args):
 
     length_beats = args.length_beats.replace("\"", '')
 
+    # 1.631
+    # s - beat
+    # start
+    #
+    # 145.147 - beat
+    # end
+
+    # TODO: replace
+
+    s_start_marker = 1.631
+
+    s_end_marker = 145.147
+
+
+
     # path wav warped
-    filename_wav = os.path.join(
-        utils.get_dirname_audio_warped(),
-        utils._get_name_project_most_recent() + '.wav'
-    )
+    # filename_wav = os.path.join(
+    #     utils.get_dirname_audio_warped(),
+    #     utils._get_name_project_most_recent() + '.wav'
+    # )
 
-    y, sr = librosa.load(
-        filename_wav
-    )
-
-    duration_s_audio = librosa.get_duration(
-        y=y,
-        sr=sr
-    )
+    # y, sr = librosa.load(
+    #     filename_wav
+    # )
+    #
+    # duration_s_audio = librosa.get_duration(
+    #     y=y,
+    #     sr=sr
+    # )
 
     # NB: to look up beat in beatmap, subtract one from measure, multply by 4, then subtract one beat
     # e.g., 74.1.1 => beatmap_manual[73*4 + 0]
 
     if args.m:
+
+        filename_wav = os.path.join(
+            utils.get_dirname_audio_warped(),
+            utils._get_name_project_most_recent() + '.wav'
+        )
+
+        y, sr = librosa.load(
+            filename_wav
+        )
+
+        duration_s_audio = librosa.get_duration(
+            y=y,
+            sr=sr
+        )
+
         beatmap = np.linspace(
             0,
             float(duration_s_audio),
             int(beat_end_marker) - int(beat_start_marker) + 1  # - 4
         )
     else:
+
+        filename_wav = os.path.join(
+            utils.get_dirname_audio(),
+            utils._get_name_project_most_recent() + '.wav'
+        )
+
+        # y, sr = librosa.load(
+        #     filename_wav
+        # )
+        #
+        # duration_s_audio = librosa.get_duration(
+        #     y=y,
+        #     sr=sr
+        # )
+
         beatmap = ir.extract_beats(
             filename_wav
         )
+
+        [val.to_float() for val in beatmap]
+
+        # TODO: determine length_beats from estimated beatmap
 
     utils.create_dir_beat(
 
@@ -61,10 +110,10 @@ def main(args):
     )
 
     data_beats = {
-        'beat_start_marker': int(beat_start_marker),
-        'beat_end_marker': int(beat_end_marker),
-        'beat_loop_bracket_lower': int(beat_loop_bracket_lower),
-        'beat_loop_bracket_upper': int(beat_loop_bracket_upper),
+        'beat_start_marker': int(beat_start_marker),  # make float for automatic
+        'beat_end_marker': int(beat_end_marker),  # make float for automatic
+        'beat_loop_bracket_lower': int(beat_loop_bracket_lower),  # looks like this might not matter
+        'beat_loop_bracket_upper': int(beat_loop_bracket_upper),  # looks like this might not matter
         'length_beats': int(length_beats),
         'beatmap': beatmap
     }
@@ -74,7 +123,7 @@ def main(args):
         filepath_beatmap
     )
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':

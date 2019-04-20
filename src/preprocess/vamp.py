@@ -1,5 +1,6 @@
-import pandas as pd, numpy as np
-from typing import List, Dict, Any, Optional, Tuple
+import pandas as pd
+import numpy as np
+from typing import Dict, Any
 import music21
 
 
@@ -81,6 +82,20 @@ def segments_to_df(data_segments, index_type='s'):
     df_segments.index.name = index_type
 
     return df_segments
+
+
+def beatmap_to_df(beatmap, index_type='s'):
+
+    df_beatmap = pd.DataFrame(
+        data={
+            'beatmap': beatmap
+        },
+        index=list(range(len(beatmap)))
+    )
+
+    df_beatmap.index.name = index_type
+
+    return df_beatmap
 
 
 def extract_tempomap(data_tempo):

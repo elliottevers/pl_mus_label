@@ -8,9 +8,12 @@ from convert import max as conv_max
 
 
 def main(args):
+
+    use_warped = utils.b_use_warped()
+
     data_melody = ir.extract_melody(
         os.path.join(
-            utils.get_dirname_audio_warped(),
+            utils.get_dirname_audio_warped() if use_warped else utils.get_dirname_audio(),
             utils._get_name_project_most_recent() + '.wav'
         )
     )
@@ -41,7 +44,7 @@ def main(args):
 
     messenger = mes.Messenger()
 
-    messenger.message(['done'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':
