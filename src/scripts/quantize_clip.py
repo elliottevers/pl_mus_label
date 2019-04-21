@@ -4,17 +4,16 @@ from utils import utils
 from i_o import importer as io_importer, exporter as io_exporter
 from convert import music_xml as convert_mxl, vamp as conv_vamp
 from postprocess import music_xml as postp_mxl
-from music import song
+from quantize import mesh
 from preprocess import vamp as prep_vamp
+import os
 
 
 def main(args):
 
-    name_part = args.name_part.replace("\"", '')
+    name_part = utils.parse_arg(args.name_part)
 
-    beat_multiple_quantization = args.beat_multiple.replace("\"", '')
-
-    use_warped = True
+    beat_multiple_quantization = utils.parse_arg(args.beat_multiple)
 
     quarter_length_divisor = 1/float(beat_multiple_quantization)
 
@@ -28,32 +27,40 @@ def main(args):
 
     mode = 'polyphonic' if name_part == 'chord' else 'monophonic'
 
-    stream = postp_mxl.live_to_stream(
+    (
+        s_beat_start,
+        s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
+        length_beats,
+        beatmap
+    ) = utils.get_tuple_beats()
+
+    stream = convert_mxl.live_to_stream(
         notes_live,
-        mode
+        beatmap=beatmap,
+        s_beat_start=s_beat_start,
+        s_beat_end=s_beat_end,
+        tempo=tempo,
+        mode=mode
     )
 
     if name_part == 'melody':
 
-        (
-            beat_start_marker,
-            beat_end_marker,
-            s_beat_start,
-            s_beat_end,
-            length_beats,
-            duration_s_audio,
-            beatmap
-        ) = utils.get_grid_beats(
-            use_warped=use_warped
-        )
-
         data_melody = conv_vamp.to_data_melody(
             notes_live,
             offset_s_audio=0,
-            duration_s_audio=duration_s_audio
+            duration_s_audio=utils.get_duration_s_audio(
+                filename=os.path.join(
+                    utils.get_dirname_audio_warped() if use_warped else utils.get_dirname_audio(),
+                    utils._get_name_project_most_recent() + '.wav'
+                ),
+                use_warped=utils.b_use_warped()
+            )
         )
 
-        mesh_song = song.MeshSong()
+        mesh_score = mesh.MeshScore()
 
         df_melody = prep_vamp.melody_to_df(
             (data_melody['vector'][0], data_melody['vector'][1]),
@@ -62,24 +69,24 @@ def main(args):
 
         df_melody[df_melody['melody'] < 0] = 0
 
-        melody_tree = song.MeshSong.get_interval_tree(
+        melody_tree = mesh.MeshScore.get_interval_tree(
             df_melody
         )
 
-        mesh_song.set_tree(
+        mesh_score.set_tree(
             melody_tree,
             type='melody'
         )
 
-        mesh_song.quantize(
+        mesh_score.quantize(
             beatmap,
             s_beat_start,
             s_beat_end,
-            beat_start_marker,  # transitioning indices here
+            0,
             columns=['melody']
         )
 
-        data_quantized_melody = mesh_song.data_quantized['melody']
+        data_quantized_melody = mesh_score.data_quantized['melody']
 
         score = postp_mxl.df_grans_to_score(
             data_quantized_melody,
@@ -97,7 +104,11 @@ def main(args):
         )
 
     notes_live = convert_mxl.to_notes_live(
-        stream
+        stream,
+        beatmap=beatmap,
+        s_beat_start=s_beat_start,
+        s_beat_end=s_beat_end,
+        tempo=tempo
     )
 
     exporter = io_exporter.Exporter()

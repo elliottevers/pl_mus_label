@@ -8,7 +8,7 @@ from preprocess import vamp as prep_vamp
 from postprocess import music_xml as postp_mxl
 from convert import music_xml as convert_mxl
 from i_o import exporter as io_exporter
-from music import song
+from quantize import mesh
 import music21
 from utils import utils, musix_xml as utils_mxl
 import os
@@ -16,57 +16,28 @@ import os
 
 def main(args):
 
-    use_warped = True
-
     messenger = mes.Messenger()
 
-    # filename_wav = os.path.join(
-    #     utils.get_dirname_audio_warped(),
-    #     utils._get_name_project_most_recent() + '.wav'
-    # )
-    #
-    # y, sr = librosa.load(
-    #     filename_wav
-    # )
-    #
-    # duration_s_audio = librosa.get_duration(
-    #     y=y,
-    #     sr=sr
-    # )
-    #
-    # beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = utils.get_tuple_beats(
-    #     os.path.join(
-    #         utils.get_dirname_beat(),
-    #         utils._get_name_project_most_recent() + '.pkl'
-    #     )
-    # )
-    #
-    # s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
-    #
-    # s_beat_end = (beat_end_marker / length_beats) * duration_s_audio
-
     (
-        beat_start_marker,
-        beat_end_marker,
         s_beat_start,
         s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
         length_beats,
-        duration_s_audio,
         beatmap
-    ) = utils.get_grid_beats(
-        use_warped=use_warped
-    )
+    ) = utils.get_tuple_beats()
 
     messenger.message(['length_beats', str(length_beats)])
 
     data_chords = ir.extract_chords(
         os.path.join(
-            utils.get_dirname_audio_warped(),
+            utils.get_dirname_audio_warped() if utils.b_use_warped() else utils.get_dirname_audio(),
             utils._get_name_project_most_recent() + '.wav'
         )
     )
 
-    mesh_song = song.MeshSong()
+    mesh_score = mesh.MeshScore()
 
     non_empty_chords = vamp_filter.vamp_filter_non_chords(
         data_chords
@@ -81,29 +52,29 @@ def main(args):
         events_chords
     )
 
-    chord_tree = song.MeshSong.get_interval_tree(
+    chord_tree = mesh.MeshScore.get_interval_tree(
         df_chords
     )
 
-    mesh_song.set_tree(
+    mesh_score.set_tree(
         chord_tree,
         type='chord'
     )
 
-    mesh_song.set_tree(
+    mesh_score.set_tree(
         chord_tree,
         type='chord'
     )
 
-    mesh_song.quantize(
+    mesh_score.quantize(
         beatmap,
         s_beat_start,
         s_beat_end,
-        beat_start_marker,  # transitioning indices here - beat_start_marker - 1
+        0,
         columns=['chord']
     )
 
-    data_quantized_chords = mesh_song.data_quantized['chord']
+    data_quantized_chords = mesh_score.data_quantized['chord']
 
     score = postp_mxl.df_grans_to_score(
         data_quantized_chords,
@@ -115,9 +86,10 @@ def main(args):
         'chord'
     )
 
-    for obj in part_chord:
-        if type(obj).__name__ is not 'Rest' and len(obj.pitches) < 4:
-            obj.add(obj.bass().midi + 12)
+    part_chord = postp_mxl.force_texture(
+        part_chord,
+        num_voices=4
+    )
 
     utils.create_dir_score()
 
@@ -135,7 +107,11 @@ def main(args):
     )
 
     notes_live = convert_mxl.to_notes_live(
-        part_chord
+        part_chord,
+        beatmap=beatmap,
+        s_beat_start=s_beat_start,
+        s_beat_end=s_beat_end,
+        tempo=tempo
     )
 
     exporter = io_exporter.Exporter()

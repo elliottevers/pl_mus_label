@@ -2,103 +2,60 @@ from information_retrieval import extraction as ir
 from message import messenger as mes
 import argparse
 import numpy as np
-import librosa
 import os
 from utils import utils
 
 
 def main(args):
+
+    use_warped = args.m
+
     messenger = mes.Messenger()
 
-    # from start marker
-    beat_start_marker = args.s.replace("\"", '')
+    s_beat_start = utils.parse_arg(args.s_beat_start)
 
-    # from end marker
-    beat_end_marker = args.e.replace("\"", '')
+    s_beat_end = utils.parse_arg(args.s_beat_end)
 
-    beat_loop_bracket_lower = args.l.replace("\"", '')
+    tempo = utils.parse_arg(args.tempo)
 
-    beat_loop_bracket_upper = args.u.replace("\"", '')
+    beat_start = utils.parse_arg(args.beat_start)
 
-    length_beats = args.length_beats.replace("\"", '')
+    beat_end = utils.parse_arg(args.beat_end)
 
-    # 1.631
-    # s - beat
-    # start
-    #
-    # 145.147 - beat
-    # end
+    length_beats = utils.parse_arg(args.length_beats)
 
-    # TODO: replace
-
-    s_start_marker = 1.631
-
-    s_end_marker = 145.147
-
-
-
-    # path wav warped
-    # filename_wav = os.path.join(
-    #     utils.get_dirname_audio_warped(),
-    #     utils._get_name_project_most_recent() + '.wav'
-    # )
-
-    # y, sr = librosa.load(
-    #     filename_wav
-    # )
-    #
-    # duration_s_audio = librosa.get_duration(
-    #     y=y,
-    #     sr=sr
-    # )
+    filename_wav = os.path.join(
+        utils.get_dirname_audio_warped() if use_warped else utils.get_dirname_audio(),
+        utils._get_name_project_most_recent() + '.wav'
+    )
 
     # NB: to look up beat in beatmap, subtract one from measure, multply by 4, then subtract one beat
     # e.g., 74.1.1 => beatmap_manual[73*4 + 0]
 
-    if args.m:
+    if use_warped:
 
-        filename_wav = os.path.join(
-            utils.get_dirname_audio_warped(),
-            utils._get_name_project_most_recent() + '.wav'
-        )
+        s_beat_start = 0
 
-        y, sr = librosa.load(
-            filename_wav
-        )
-
-        duration_s_audio = librosa.get_duration(
-            y=y,
-            sr=sr
+        s_beat_end = utils.get_duration_s_audio(
+            filename=filename_wav,
+            use_warped=use_warped
         )
 
         beatmap = np.linspace(
             0,
-            float(duration_s_audio),
-            int(beat_end_marker) - int(beat_start_marker) + 1  # - 4
+            s_beat_end,
+            int(beat_end) - int(beat_start) + 1
         )
+
     else:
 
-        filename_wav = os.path.join(
-            utils.get_dirname_audio(),
-            utils._get_name_project_most_recent() + '.wav'
-        )
+        beatmap = [val.to_float() for val in ir.extract_beats(filename_wav)]
 
-        # y, sr = librosa.load(
-        #     filename_wav
-        # )
-        #
-        # duration_s_audio = librosa.get_duration(
-        #     y=y,
-        #     sr=sr
-        # )
+        length_beats = utils.get_num_beats(beatmap, s_beat_start, s_beat_end)
 
-        beatmap = ir.extract_beats(
-            filename_wav
-        )
+        beat_start = 0
 
-        [val.to_float() for val in beatmap]
-
-        # TODO: determine length_beats from estimated beatmap
+        beat_end = beat_start + length_beats - 1
 
     utils.create_dir_beat(
 
@@ -110,10 +67,11 @@ def main(args):
     )
 
     data_beats = {
-        'beat_start_marker': int(beat_start_marker),  # make float for automatic
-        'beat_end_marker': int(beat_end_marker),  # make float for automatic
-        'beat_loop_bracket_lower': int(beat_loop_bracket_lower),  # looks like this might not matter
-        'beat_loop_bracket_upper': int(beat_loop_bracket_upper),  # looks like this might not matter
+        's_beat_start': float(s_beat_start),
+        's_beat_end': float(s_beat_end),
+        'tempo': int(tempo),
+        'beat_start': int(beat_start),
+        'beat_end': int(beat_end),
         'length_beats': int(length_beats),
         'beatmap': beatmap
     }
@@ -129,15 +87,17 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Estimate Beats')
 
-    parser.add_argument('--s', help='beat start marker')
+    parser.add_argument('--s_beat_start', help='beat start marker in seconds')
 
-    parser.add_argument('--e', help='beat end marker')
+    parser.add_argument('--s_beat_end', help='beat end marker in seconds')
 
-    parser.add_argument('--l', help='beat loop bracket lower')
+    parser.add_argument('--tempo', help='tempo')
 
-    parser.add_argument('--u', help='beat loop bracket upper')
+    parser.add_argument('--beat_start', help='start marker in beats')
 
-    parser.add_argument('--length-beats', help='length in beats')
+    parser.add_argument('--beat_end', help='end marker in beats')
+
+    parser.add_argument('--length_beats', help='length in beats')
 
     parser.add_argument('-m', help='manual', action='store_true')
 

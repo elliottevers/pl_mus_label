@@ -13,33 +13,29 @@ dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked
 file_log = os.path.join(dir_projects, '.log.txt')
 
 
-def get_grid_beats(
-        use_warped=True
-):
+def parse_arg(arg):
+    return arg if arg is None else arg.replace("\"", '')
+
+
+def get_duration_s_audio(filename, use_warped=True) -> float:
     y, sr = librosa.load(
-        os.path.join(
-            get_dirname_audio_warped() if use_warped else get_dirname_audio(),
-            _get_name_project_most_recent() + '.wav'
+        filename
+    )
+
+    return float(
+        librosa.get_duration(
+            y=y,
+            sr=sr
         )
     )
 
-    duration_s_audio = librosa.get_duration(
-        y=y,
-        sr=sr
-    )
 
-    beat_start_marker, beat_end_marker, beat_loop_bracket_lower, beat_loop_bracket_upper, length_beats, beatmap = get_tuple_beats(
-        os.path.join(
-            get_dirname_beat(),
-            _get_name_project_most_recent() + '.pkl'
-        )
-    )
+def get_beat_nearest(beatmap, s_beat):
+    return min([abs(s_beat_beatmap - s_beat) for s_beat_beatmap in beatmap])
 
-    s_beat_start = (beat_start_marker / length_beats) * duration_s_audio
 
-    s_beat_end = (beat_end_marker / length_beats) * duration_s_audio
-
-    return beat_start_marker, beat_end_marker, s_beat_start, s_beat_end, length_beats, duration_s_audio, beatmap
+def get_num_beats(beatmap, s_beat_start, s_beat_end):
+    return len(list(filter(lambda x: get_beat_nearest(beatmap, s_beat_start) <= x <= get_beat_nearest(beatmap, s_beat_end), beatmap)))
 
 
 def b_use_warped():
@@ -115,13 +111,19 @@ def get_dirname_score():
     return os.path.join(get_project_dir(), 'score')
 
 
-def get_tuple_beats(filepath):
-    obj_beat = from_pickle(filepath)
+def get_tuple_beats():
+    obj_beat = from_pickle(
+        os.path.join(
+            get_dirname_beat(),
+            _get_name_project_most_recent() + '.pkl'
+        )
+    )
     return (
-        obj_beat['beat_start_marker'],
-        obj_beat['beat_end_marker'],
-        obj_beat['beat_loop_bracket_lower'],
-        obj_beat['beat_loop_bracket_upper'],
+        obj_beat['s_beat_start'],
+        obj_beat['s_beat_end'],
+        obj_beat['tempo'],
+        obj_beat['beat_start'],
+        obj_beat['beat_end'],
         obj_beat['length_beats'],
         obj_beat['beatmap']
     )

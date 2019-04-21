@@ -3,7 +3,7 @@ from message import messenger as mes
 import argparse
 from preprocess import vamp as prep_vamp
 from postprocess import music_xml as postp_mxl
-from music import song
+from quantize import mesh
 from utils import utils
 import os
 from convert import music_xml as convert_mxl
@@ -59,13 +59,13 @@ def main(args):
             )
         )
 
-        mesh_song = song.MeshSong()
+        mesh_song = mesh_song.MeshScore()
 
         df_segments = prep_vamp.segments_to_df(
             data_segments
         )
 
-        segment_tree = song.MeshSong.get_interval_tree(
+        segment_tree = mesh_song.MeshScore.get_interval_tree(
             df_segments
         )
 

@@ -1,5 +1,5 @@
 import pandas as pd
-from music import song
+from quantize import mesh
 
 
 def get_name_column_duration(name_column):
@@ -47,7 +47,7 @@ def to_diff(df: pd.DataFrame, name_column='melody', sample_rate=0.0029) -> pd.Da
 def to_df_beat_unquantized(df_diff, name_column, beatmap, beat_first, beat_last):
     # TODO: partmap
 
-    beatmap_trimmed = song.MeshSong.trim_beatmap(beatmap, beat_first, beat_last)
+    beatmap_trimmed = mesh.MeshScore.trim_beatmap(beatmap, beat_first, beat_last)
 
     def find_index_of_nearest_below(array, value):
         return array.index(max(list(filter(lambda y: y <= 0, [x - value for x in array]))) + value)

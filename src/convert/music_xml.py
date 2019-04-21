@@ -1,134 +1,159 @@
-import pandas as pd
 import music21
-from typing import List, Dict, Any, Optional, Tuple
-import music21
-from live import note as note_live
-import numpy as np
-from postprocess import music_xml as postp_mxl
+from live import note as nl
+from typing import List, Dict, Tuple
+from quantize import mesh
+from itertools import groupby
+from fractions import Fraction
 
 
-# def df_beats_to_score(df: pd.DataFrame, column_index='beat', partmap={'chord': 0}) -> music21.stream.Score:
-#
-#     beat_last = max(df.index.get_level_values(column_index))
-#
-#     parts = []
-#
-#     for name_part, position in partmap.items():
-#         part = music21.stream.Part()
-#         part.id = name_part
-#         parts.append(part)
-#
-#     part = parts[0]
-#
-#     measure = music21.stream.Measure()
-#
-#     for beat in range(1, beat_last):
-#         if beat % 4 == 1:
-#             part.append(measure)
-#             measure = music21.stream.Measure()
-#         chord: lib_chord.ChordMidi = df.loc[(beat, slice(None)), 'chord'].values[0]
-#         measure.append(
-#             music21.chord.Chord(
-#                 [music21.pitch.Pitch(midi=chord_midi.pitch).name for chord_midi in chord.notes],
-#                 duration=music21.duration.Duration(1.0)
-#             )
-#         )
-#
-#     score = music21.stream.Score()
-#
-#     score.insert(0, part)
-#
-#     return score
-
-
-# TODO: put in module
-# def struct_to_notes_live(struct_21, name_part):
-#     try:
-#         if struct_21.name == 'rest':
-#             return []
-#     except AttributeError:
-#         pass
-#
-#     notes = []
-#
-#     if name_part == 'melody':
-#         # if not object > 0:
-#         #     struct_score = note.Rest()
-#         # else:
-#         #     struct_score = note.Note(
-#         #         pitch=pitch.Pitch(
-#         #             midi=int(object)
-#         #         )
-#         #     )
-#         testing = 1
-#     elif name_part == 'chord':
-#         beats_offset = float(struct_21.offset)
-#         beats_duration = float(struct_21.duration.quarterLength)
-#         velocity = 90
-#         muted = 0
-#
-#         for pitch in struct_21.pitches:
-#             notes.append(
-#                 note_live.NoteLive.parse(
-#                     [pitch.midi, beats_offset, beats_duration, velocity, muted]
-#                 )
-#             )
-#
-#     elif name_part == 'bass':
-#         # struct_score = note.Note(
-#         #     pitch=object
-#         # )
-#         testing = 1
-#     elif name_part == 'segment':
-#         # struct_score = note.Note(
-#         #     pitch=pitch.Pitch(
-#         #         midi=60
-#         #     )
-#         # )
-#         testing = 1
-#     else:
-#         raise 'part ' + name_part + ' not able to be converted to Live'
-#
-#     return notes
-
-
-# def notes_live_to_struct():
-#     return
-
-# TODO: not generalized to chords yet
-
-def from_notes_live(notes_live, name_part, mode='monophonic'):  # -> music21.stream.Stream:
+def live_to_stream(
+        notes_live: List[nl.NoteLive],
+        beatmap: List[float],
+        s_beat_start: float,
+        s_beat_end: float,
+        tempo: float,
+        mode: str = 'monophonic',
+) -> music21.stream.Part:
 
     part = music21.stream.Part()
 
-    part.id = name_part
+    gran_map = mesh.MeshScore.get_gran_map(
+        mesh.MeshScore.trim_beatmap(beatmap, s_beat_start, s_beat_end),
+        0
+    )
 
-    for note in notes_live:
-        dur = music21.duration.Duration(note.beats_duration)
+    if mode == 'monophonic':
 
-        part.insert(
-            note.beat_start,
-            postp_mxl.get_struct_score(
-                note.pitch,
-                name_part,
-                dur
+        for note_live in notes_live:
+            note = music21.note.Note(
+                pitch=note_live.pitch
             )
-        )
+
+            offset_start = second_to_offset(
+                beat_to_second(
+                    note_live.beat_start,
+                    tempo_bpm=tempo
+                ),
+                gran_map=gran_map
+            )
+
+            note.duration = music21.duration.Duration(
+                _get_duration_granule(note_live.beats_duration)
+            )
+
+            part.insert(
+                _get_duration_granule(offset_start),
+                note
+            )
+
+    elif mode == 'polyphonic':
+        # TODO: this hard a hard requirement that they're sorted by beat beforehand
+        groups_notes = []
+        unique_onsets_beats = []
+
+        def get_beat_start(note):
+            return note.beat_start
+
+        for beat_start, group_note in groupby(notes_live, get_beat_start):
+            groups_notes.append(list(group_note))
+            unique_onsets_beats.append(beat_start)
+
+        for group in groups_notes:
+
+            chord = music21.chord.Chord([
+                music21.note.Note(
+                    pitch=music21.pitch.Pitch(
+                        midi=note_live.pitch
+                    )
+                ).name for
+                note_live
+                in group
+            ])
+
+            # TODO: this makes the assumption that all notes in the group have the same offsets and duration
+
+            chord.duration = music21.duration.Duration(
+                _get_duration_granule(group[-1].beats_duration)
+            )
+
+            offset_start = second_to_offset(
+                beat_to_second(
+                    group[-1].beat_start,
+                    tempo_bpm=tempo
+                ),
+                gran_map=gran_map
+            )
+
+            part.insert(
+                _get_duration_granule(offset_start),
+                chord
+            )
+
+    else:
+        raise 'mode ' + mode + 'not supported'
 
     return part
 
 
-def to_note_live(note_21):
-    return note_live.NoteLive(
+def _get_duration_granule(duration):
+    return Fraction(int(round(48 * duration)), 48)
+
+
+def second_to_beat(second: int, tempo_bpm: int) -> float:
+    tempo_bps = tempo_bpm/60
+    return float(tempo_bps * second)
+
+
+def offset_to_second(offset: float, gran_map: Dict[float, float]):
+    beat_nearest, s_nearest = min(list(gran_map.items()), key=lambda pair: abs(pair[0] - float(offset)))
+    return s_nearest
+
+
+def beat_to_second(beat: float, tempo_bpm: float) -> float:
+    tempo_bps = tempo_bpm/60
+    return float(beat/tempo_bps)
+
+
+def second_to_offset(second: float, gran_map: Dict[float, float]) -> float:
+    beat_nearest, s_nearest = min(list(gran_map.items()), key=lambda pair: abs(pair[1] - float(second)))
+    return beat_nearest
+
+
+def to_note_live(
+        note_21,
+        tempo,
+        gran_map
+):
+    beat_offset = second_to_beat(
+        offset_to_second(
+            float(note_21.offset),
+            gran_map
+        ),
+        tempo
+    )
+
+    return nl.NoteLive(
         pitch=int(note_21.pitch.midi),
-        beat_start=float(note_21.offset),
+        beat_start=float(beat_offset),
         beats_duration=float(note_21.duration.quarterLength),
         velocity=90,
         muted=0
     )
 
 
-def to_notes_live(stream):
+def to_notes_live(
+        stream: music21.stream.Stream,
+        beatmap: List[int],
+        s_beat_start: int,
+        s_beat_end: int,
+        tempo: int
+):
+
+    gran_map = mesh.MeshScore.get_gran_map(
+        mesh.MeshScore.trim_beatmap(beatmap, s_beat_start, s_beat_end),
+        0
+    )
+
     notes_live = []
 
     for struct_21 in stream:
@@ -136,11 +161,23 @@ def to_notes_live(stream):
         if isinstance(struct_21, music21.stream.Measure):
             for note in struct_21:
                 note_absolute_offset = note
-                note_absolute_offset.offset = struct_21.offset + note.offset
-                notes_live.append(to_note_live(note))
+                note_absolute_offset.offset = struct_21.offset + note.offset  # a note's offset is relative to the measure that contains it
+                notes_live.append(
+                    to_note_live(
+                        note_absolute_offset,
+                        tempo=tempo,
+                        gran_map=gran_map
+                    )
+                )
 
         if isinstance(struct_21, music21.note.Note):
-            notes_live.append(to_note_live(struct_21))
+            notes_live.append(
+                to_note_live(
+                    struct_21,
+                    tempo=tempo,
+                    gran_map=gran_map
+                )
+            )
 
         if isinstance(struct_21, music21.chord.Chord):
             offset = struct_21.offset
@@ -153,61 +190,10 @@ def to_notes_live(stream):
                 note.offset = offset
                 notes_live.append(
                     to_note_live(
-                        note
+                        note,
+                        tempo=tempo,
+                        gran_map=gran_map
                     )
                 )
 
     return notes_live
-
-
-# # TODO: abstract to any part
-# def df_grans_to_score(df_grans: pd.DataFrame, column_index='beat', partmap={'melody': 0}) -> music21.stream.Score:
-#     parts = []
-#
-#     for name_part, position in partmap.items():
-#         part = music21.stream.Part()
-#         part.id = name_part
-#         parts.append(part)
-#
-#     part = parts[0]
-#
-#     df_grans['event'] = (df_grans['melody'].shift(1) != df_grans['melody']).astype(int).cumsum()
-#
-#     df_events = df_grans.reset_index().groupby(['melody','event'])[column_index].apply(np.array)
-#
-#     beat_to_note = dict()
-#
-#     for i, span in df_events.iteritems():
-#         pitch_midi = i[0]
-#         beat_start = span[0]
-#         beat_end = span[-1]
-#         duration = beat_end - beat_start + 1/48
-#
-#         duration = music21.duration.Duration(duration)
-#
-#         if not pitch_midi > 0:
-#             note = music21.note.Rest(duration=duration)
-#         else:
-#             note = music21.note.Note(pitch=music21.pitch.Pitch(midi=int(pitch_midi)), duration=duration)
-#
-#         beat_to_note[beat_start] = note
-#
-#     measure = music21.stream.Measure()
-#
-#     for beat in df_grans.index.get_level_values(0).tolist():
-#         if int(beat) == beat and int(beat) % 4 == 0:
-#             part.append(measure)
-#             measure = music21.stream.Measure()
-#
-#         if beat in beat_to_note:
-#             note = beat_to_note[beat]
-#             measure.append(
-#                 note
-#             )
-#
-#     score = music21.stream.Score()
-#
-#     score.insert(0, part)
-#
-#     return score
-

@@ -2,7 +2,7 @@ from message import messenger as mes
 from utils import utils
 import argparse
 from filter import midi as filt_midi
-from music import song
+from quantize import mesh
 from postprocess import music_xml as postp_mxl
 from i_o import exporter as io_exporter
 from convert import music_xml as conv_mxl, midi as conv_mid, max as conv_max
@@ -43,7 +43,7 @@ def main(args):
         'melody'
     )
 
-    mesh_song = song.MeshSong()
+    mesh_song = mesh_song.MeshScore()
 
     sample_rate = .0029
 
@@ -51,7 +51,7 @@ def main(args):
 
     # TODO: add index s before quantizing
 
-    tree_melody = song.MeshSong.get_interval_tree(
+    tree_melody = mesh_song.MeshScore.get_interval_tree(
         df_melody_diff
     )
 

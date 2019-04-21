@@ -4,7 +4,7 @@ from utils import utils
 from i_o import importer as io_importer, exporter as io_exporter
 from convert import music_xml as convert_mxl, vamp as conv_vamp
 from postprocess import music_xml as postp_mxl
-from music import song
+from quantize import mesh
 from preprocess import vamp as prep_vamp
 from filter import midi as filt_midi
 from convert import live as conv_live
@@ -44,7 +44,7 @@ def main(args):
         sample_rate=float(1/100)
     )
 
-    mesh_song = song.MeshSong()
+    mesh_song = mesh.MeshScore()
 
     df = prep_vamp.monophony_to_df(
         (data_monophonic['vector'][0], data_monophonic['vector'][1]),
@@ -60,7 +60,7 @@ def main(args):
         sample_rate=float(1/100)
     )
 
-    interval_tree = song.MeshSong.get_interval_tree(
+    interval_tree = mesh.MeshScore.get_interval_tree(
         df_diff
     )
 

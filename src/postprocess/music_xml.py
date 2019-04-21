@@ -2,59 +2,17 @@ import pandas as pd
 import music21
 from live import note as nl
 from typing import List
-from itertools import groupby
-from fractions import Fraction
 from utils import utils
 import json
 
 
-def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Score:
+# TODO: this obviously only make sense for 4 voices...
+def force_texture(part_chord: music21.stream.Part, num_voices=4) -> music21.stream.Part:
+    for obj in part_chord:
+        if type(obj).__name__ is not 'Rest' and len(obj.pitches) < num_voices:
+            obj.add(obj.bass().midi + 12)
 
-    with open(filepath) as f:
-        json_read = json.load(f)
-
-    partmap = {}
-
-    for name_part in utils.intersection(parts, list(json_read.keys())):
-        part = music21.stream.Part()
-
-        notes = nl.NoteLive.parse_list(
-            json_read[name_part]['notes']
-        )
-
-        for note_live in notes:
-
-            note = note.Note(
-                pitch=note_live.pitch
-            )
-            note.duration = music21.duration.Duration(
-                note_live.beats_duration
-            )
-
-            part.insert(
-                note_live.beat_start,
-                note
-            )
-
-        if name_part == 'chord':
-            part.makeVoices()
-
-        part.makeRests(fillGaps=True)
-
-        part.makeMeasures()
-
-        part.id = name_part
-
-        part.partName = name_part
-
-        partmap[name_part] = part
-
-    score = music21.stream.Score()
-
-    for _, part in partmap.items():
-        score.append(part)
-
-    return score
+    return part_chord
 
 
 def get_lowest_note(chord):
@@ -176,12 +134,7 @@ def get_struct_score(object, name_part, dur):
 
 def df_grans_to_score(
         df_grans: pd.DataFrame,
-        parts=[
-            'melody',
-            'chord',
-            'bass',
-            'segment'
-        ]
+        parts: List[str]
 ) -> music21.stream.Score:
 
     score = music21.stream.Score()
@@ -237,62 +190,50 @@ def df_grans_to_score(
     return score
 
 
-# TODO: replace
-def live_to_stream(
-        notes_live: List[nl.NoteLive],
-        mode: str = 'monophonic'
-) -> music21.stream.Part:
+def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Score:
 
-    part = music21.stream.Part()
+    with open(filepath) as f:
+        json_read = json.load(f)
 
-    if mode == 'monophonic':
+    partmap = {}
 
-        for note_live in notes_live:
-            note = music21.note.Note(
+    for name_part in utils.intersection(parts, list(json_read.keys())):
+        part = music21.stream.Part()
+
+        notes = nl.NoteLive.parse_list(
+            json_read[name_part]['notes']
+        )
+
+        for note_live in notes:
+
+            note = note.Note(
                 pitch=note_live.pitch
             )
-
             note.duration = music21.duration.Duration(
-                Fraction(int(round(48 * note_live.beats_duration)), 48)
+                note_live.beats_duration
             )
 
             part.insert(
-                Fraction(int(round(48 * note_live.beat_start)), 48),
+                note_live.beat_start,
                 note
             )
 
-    elif mode == 'polyphonic':
-        # TODO: this hard a hard requirement that they're sorted by beat beforehand
-        groups_notes = []
-        unique_onsets_beats = []
+        if name_part == 'chord':
+            part.makeVoices()
 
-        def get_beat_start(note):
-            return note.beat_start
+        part.makeRests(fillGaps=True)
 
-        for beat_start, group_note in groupby(notes_live, get_beat_start):
-            groups_notes.append(list(group_note))
-            unique_onsets_beats.append(beat_start)
+        part.makeMeasures()
 
-        for group in groups_notes:
+        part.id = name_part
 
-            chord = music21.chord.Chord([
-                music21.note.Note(
-                    pitch=music21.pitch.Pitch(
-                        midi=note_live.pitch
-                    )
-                ).name for
-                note_live
-                in group
-            ])
+        part.partName = name_part
 
-            # TODO: this makes the assumption that all notes in the group have the same offsets and duration
+        partmap[name_part] = part
 
-            chord.duration = music21.duration.Duration(group[-1].beats_duration)
+    score = music21.stream.Score()
 
-            part.insert(group[-1].beat_start, chord)
+    for _, part in partmap.items():
+        score.append(part)
 
-    else:
-        raise 'mode ' + mode + 'not supported'
-
-    return part
-
+    return score
