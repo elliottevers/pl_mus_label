@@ -8,11 +8,12 @@ from quantize import mesh
 from preprocess import vamp as prep_vamp
 from filter import midi as filt_midi
 from convert import live as conv_live
+import os
 
 
 def main(args):
 
-    name_part = args.name_part.replace("\"", '')
+    name_part = utils.parse_arg(args.name_part)
 
     importer = io_importer.Importer(
         utils.get_file_json_comm()
@@ -22,24 +23,25 @@ def main(args):
 
     notes_live = importer.get_part(name_part)
 
-    use_warped = utils.b_use_warped()
-
     (
-        beat_start_marker,
-        beat_end_marker,
         s_beat_start,
         s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
         length_beats,
-        duration_s_audio,
         beatmap
-    ) = utils.get_grid_beats(
-        use_warped=use_warped
-    )
+    ) = utils.get_tuple_beats()
 
     data_monophonic = conv_vamp.to_data_monophonic(
         notes_live,
         offset_s_audio=0,
-        duration_s_audio=duration_s_audio,
+        duration_s_audio=utils.get_duration_s_audio(
+            filename=os.path.join(
+                utils.get_dirname_audio_warped() if utils.b_use_warped() else utils.get_dirname_audio(),
+                utils._get_name_project_most_recent() + '.wav'
+            )
+        ),
         beatmap=beatmap,
         sample_rate=float(1/100)
     )
@@ -73,7 +75,7 @@ def main(args):
         beatmap,
         s_beat_start,
         s_beat_end,
-        beat_start_marker,
+        0,
         columns=[name_part]
     )
 
@@ -92,7 +94,11 @@ def main(args):
     )
 
     notes_live = convert_mxl.to_notes_live(
-        stream
+        stream,
+        beatmap,
+        s_beat_start,
+        s_beat_end,
+        tempo
     )
 
     exporter = io_exporter.Exporter()

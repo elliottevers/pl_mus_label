@@ -37,8 +37,7 @@ def main(args):
         s_beat_start = 0
 
         s_beat_end = utils.get_duration_s_audio(
-            filename=filename_wav,
-            use_warped=use_warped
+            filename=filename_wav
         )
 
         beatmap = np.linspace(

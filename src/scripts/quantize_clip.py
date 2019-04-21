@@ -11,6 +11,8 @@ import os
 
 def main(args):
 
+    use_warped = utils.b_use_warped()
+
     name_part = utils.parse_arg(args.name_part)
 
     beat_multiple_quantization = utils.parse_arg(args.beat_multiple)
@@ -55,8 +57,7 @@ def main(args):
                 filename=os.path.join(
                     utils.get_dirname_audio_warped() if use_warped else utils.get_dirname_audio(),
                     utils._get_name_project_most_recent() + '.wav'
-                ),
-                use_warped=utils.b_use_warped()
+                )
             )
         )
 

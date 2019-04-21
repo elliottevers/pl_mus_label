@@ -8,16 +8,14 @@ def main(args):
     messenger = mes.Messenger()
 
     (
-        _,
-        _,
-        _,
-        _,
+        s_beat_start,
+        s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
         length_beats,
-        _,
-        _
-    ) = utils.get_grid_beats(
-        use_warped=utils.b_use_warped()
-    )
+        beatmap
+    ) = utils.get_tuple_beats()
 
     messenger.message(['length_beats', str(length_beats)])
 

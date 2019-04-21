@@ -10,19 +10,15 @@ from convert import music_xml as conv_mxl, midi as conv_mid, max as conv_max
 
 def main(args):
 
-    use_warped = utils.b_use_warped()
-
     (
-        beat_start_marker,
-        beat_end_marker,
         s_beat_start,
         s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
         length_beats,
-        duration_s_audio,
         beatmap
-    ) = utils.get_grid_beats(
-        use_warped=use_warped
-    )
+    ) = utils.get_tuple_beats()
 
     messenger = mes.Messenger()
 
@@ -43,7 +39,7 @@ def main(args):
         'melody'
     )
 
-    mesh_song = mesh_song.MeshScore()
+    mesh_score = mesh.MeshScore()
 
     sample_rate = .0029
 
@@ -51,16 +47,16 @@ def main(args):
 
     # TODO: add index s before quantizing
 
-    tree_melody = mesh_song.MeshScore.get_interval_tree(
+    tree_melody = mesh.MeshScore.get_interval_tree(
         df_melody_diff
     )
 
-    mesh_song.set_tree(
+    mesh_score.set_tree(
         tree_melody,
         type='melody'
     )
 
-    mesh_song.quantize(
+    mesh_score.quantize(
         beatmap,
         s_beat_start,
         s_beat_end,
@@ -69,7 +65,7 @@ def main(args):
     )
 
     score = postp_mxl.df_grans_to_score(
-        mesh_song.data_quantized['melody'],
+        mesh_score.data_quantized['melody'],
         parts=['melody']
     )
 
@@ -81,8 +77,14 @@ def main(args):
     )
 
     exporter.set_part(
-        conv_mxl.to_notes_live(part_melody),
-        'melody'
+        notes=conv_mxl.to_notes_live(
+            part_melody,
+            beatmap,
+            s_beat_start,
+            s_beat_end,
+            tempo
+        ),
+        name_part='melody'
     )
 
     exporter.export(

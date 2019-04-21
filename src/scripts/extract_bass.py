@@ -12,12 +12,15 @@ def main(args):
 
     messenger = mes.Messenger()
 
-    _, _, _, _, length_beats, _ = utils.get_tuple_beats(
-        os.path.join(
-            utils.get_dirname_beat(),
-            utils._get_name_project_most_recent() + '.pkl'
-        )
-    )
+    (
+        s_beat_start,
+        s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
+        length_beats,
+        beatmap
+    ) = utils.get_tuple_beats()
 
     messenger.message(['length_beats', str(length_beats)])
 
@@ -34,7 +37,11 @@ def main(args):
     )
 
     notes_live = convert_mxl.to_notes_live(
-        stream_bass
+        stream_bass,
+        beatmap,
+        s_beat_start,
+        s_beat_end,
+        tempo
     )
 
     exporter = io_exporter.Exporter()

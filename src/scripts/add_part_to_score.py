@@ -3,8 +3,9 @@ import argparse
 import os
 from utils import utils
 from i_o import importer as io_importer
-from postprocess import music_xml as postp_mxl
+from postprocess import live as postp_live
 from utils import musix_xml as utils_mxl
+from convert import music_xml as conv_mxl
 
 
 def main(args):
@@ -17,17 +18,27 @@ def main(args):
 
     importer.load([name_part])
 
-    notes_live = importer.get_part(name_part)
-
-    notes_live = list(filter(lambda note: note.beats_duration > 0, notes_live))
-
-    # convert ableton live notes to stream
+    notes_live = postp_live.filter_empty(importer.get_part(name_part))
 
     mode = 'polyphonic' if name_part == 'chord' else 'monophonic'
 
-    stream = postp_mxl.live_to_stream(
+    (
+        s_beat_start,
+        s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
+        length_beats,
+        beatmap
+    ) = utils.get_tuple_beats()
+
+    stream = conv_mxl.live_to_stream(
         notes_live,
-        mode
+        beatmap=beatmap,
+        s_beat_start=s_beat_start,
+        s_beat_end=s_beat_end,
+        tempo=tempo,
+        mode=mode
     )
 
     utils.create_dir_score()

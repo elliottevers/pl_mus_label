@@ -10,21 +10,17 @@ from utils import musix_xml as utils_mxl
 
 def main(args):
 
-    use_warped = True
-
     messenger = mes.Messenger()
 
     (
-        _,
-        _,
-        _,
-        _,
+        s_beat_start,
+        s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
         length_beats,
-        _,
-        _
-    ) = utils.get_grid_beats(
-        use_warped=use_warped
-    )
+        beatmap
+    ) = utils.get_tuple_beats()
 
     messenger.message(['length_beats', str(length_beats)])
 
@@ -58,7 +54,11 @@ def main(args):
     )
 
     notes_live = convert_mxl.to_notes_live(
-        part_key_centers
+        part_key_centers,
+        beatmap=beatmap,
+        s_beat_start=s_beat_start,
+        s_beat_end=s_beat_end,
+        tempo=tempo
     )
 
     exporter = io_exporter.Exporter()

@@ -44,7 +44,8 @@ def to_data_melody(data_midi, offset_s_audio, duration_s_audio, sample_rate=.002
 
     # TODO: change these
     beats_clip = 208
-    raise 'one should not hardcode things'
+
+    raise Exception('one should not hardcode things')
 
     def beat_to_second(beat):
         return (duration_s_audio/beats_clip) * beat

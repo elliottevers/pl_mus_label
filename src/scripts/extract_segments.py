@@ -19,16 +19,14 @@ def main(args):
     use_warped = utils.b_use_warped()
 
     (
-        beat_start_marker,
-        beat_end_marker,
         s_beat_start,
         s_beat_end,
+        tempo,
+        beat_start,
+        beat_end,
         length_beats,
-        duration_s_audio,
         beatmap
-    ) = utils.get_grid_beats(
-        use_warped=use_warped
-    )
+    ) = utils.get_tuple_beats()
 
     messenger.message(['length_beats', str(length_beats)])
 
@@ -59,22 +57,22 @@ def main(args):
             )
         )
 
-        mesh_song = mesh_song.MeshScore()
+        mesh_score = mesh.MeshScore()
 
         df_segments = prep_vamp.segments_to_df(
             data_segments
         )
 
-        segment_tree = mesh_song.MeshScore.get_interval_tree(
+        segment_tree = mesh.MeshScore.get_interval_tree(
             df_segments
         )
 
-        mesh_song.set_tree(
+        mesh_score.set_tree(
             segment_tree,
             type='segment'
         )
 
-        mesh_song.quantize(
+        mesh_score.quantize(
             beatmap,
             s_beat_start,
             s_beat_end,
@@ -82,7 +80,7 @@ def main(args):
             columns=['segment']
         )
 
-        data_quantized_chords = mesh_song.data_quantized['segment']
+        data_quantized_chords = mesh_score.data_quantized['segment']
 
         score = postp_mxl.df_grans_to_score(
             data_quantized_chords,
@@ -118,7 +116,11 @@ def main(args):
     )
 
     notes_live = convert_mxl.to_notes_live(
-        stream_segment
+        stream_segment,
+        beatmap,
+        s_beat_start,
+        s_beat_end,
+        tempo
     )
 
     exporter = io_exporter.Exporter()
