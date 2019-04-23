@@ -60,7 +60,6 @@ def main(args):
         beatmap,
         s_beat_start,
         s_beat_end,
-        0,
         columns=['melody']
     )
 

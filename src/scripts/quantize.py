@@ -48,6 +48,7 @@ def main(args):
         mode=mode
     )
 
+    # TODO: replace with logic in "granularize.py"
     if name_part == 'melody':
 
         data_melody = conv_vamp.to_data_melody(
@@ -83,7 +84,6 @@ def main(args):
             beatmap,
             s_beat_start,
             s_beat_end,
-            0,
             columns=['melody']
         )
 

@@ -35,14 +35,12 @@ class MeshScore(object):
             beatmap,
             s_beat_start,
             s_beat_end,
-            pos_first_beat,
             columns
     ) -> None:
         # TODO: if we trim the beatmap to only consider beats between the start and end beat, why do we need the position of the first beat?
         # TODO: this may have only been only incidentally working because the "beat_start_marker" has always been 0
         gran_map = MeshScore.get_gran_map(
-            self.trim_beatmap(beatmap, s_beat_start, s_beat_end),
-            pos_first_beat
+            self.trim_beatmap(beatmap, s_beat_start, s_beat_end)
         )
 
         self.data_quantized = self._get_maximum_overlap(gran_map, columns)
@@ -153,7 +151,6 @@ class MeshScore(object):
     @staticmethod
     def get_gran_map(
             beatmap,
-            offset_first_beat=0,  # sample at which the first beat occurs
             quantize='16T'
     ):
 
@@ -163,7 +160,7 @@ class MeshScore(object):
             num_samples = 49
 
         for beat, s in enumerate(beatmap[:-1], 0):
-            beat_interpolated = np.linspace(beat + offset_first_beat, beat + 1 + offset_first_beat, num_samples)
+            beat_interpolated = np.linspace(beat, beat + 1, num_samples)
             s_interpolated = np.linspace(beatmap[beat], beatmap[beat + 1], num_samples)
             gran_map.update(dict(zip(beat_interpolated, s_interpolated)))
 

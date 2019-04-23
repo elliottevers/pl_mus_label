@@ -64,8 +64,8 @@ def b_use_warped():
 
 
 def b_absolutely_equal(struct_former, struct_latter):
-    id_former = struct_former.id if struct_former is not None else None
-    id_latter = struct_latter.id if struct_latter is not None else None
+    id_former = struct_former.id if struct_former else None
+    id_latter = struct_latter.id if struct_latter else None
     return id_former == id_latter
 
 

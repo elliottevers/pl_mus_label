@@ -18,8 +18,7 @@ def live_to_stream(
     part = music21.stream.Part()
 
     gran_map = mesh.MeshScore.get_gran_map(
-        mesh.MeshScore.trim_beatmap(beatmap, s_beat_start, s_beat_end),
-        0
+        mesh.MeshScore.trim_beatmap(beatmap, s_beat_start, s_beat_end)
     )
 
     if mode == 'monophonic':
@@ -61,11 +60,6 @@ def live_to_stream(
         for group in groups_notes:
 
             chord = music21.chord.Chord([
-                # music21.note.Note(
-                #     pitch=music21.pitch.Pitch(
-                #         midi=note_live.pitch
-                #     )
-                # ).name for
                 note_live.pitch for
                 note_live
                 in group
@@ -151,8 +145,7 @@ def to_notes_live(
 ):
 
     gran_map = mesh.MeshScore.get_gran_map(
-        mesh.MeshScore.trim_beatmap(beatmap, s_beat_start, s_beat_end),
-        0
+        mesh.MeshScore.trim_beatmap(beatmap, s_beat_start, s_beat_end)
     )
 
     notes_live = []
