@@ -161,7 +161,8 @@ def to_notes_live(
         if isinstance(struct_21, music21.stream.Measure):
             for note in struct_21:
                 note_absolute_offset = note
-                note_absolute_offset.offset = struct_21.offset + note.offset  # a note's offset is relative to the measure that contains it
+                # NB: a note's offset is relative to the measure that contains it
+                note_absolute_offset.offset = struct_21.offset + note.offset
                 notes_live.append(
                     to_note_live(
                         note_absolute_offset,

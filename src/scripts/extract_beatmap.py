@@ -12,24 +12,25 @@ def main(args):
 
     messenger = mes.Messenger()
 
-    s_beat_start = utils.parse_arg(args.s_beat_start)
+    s_beat_start = float(utils.parse_arg(args.s_beat_start)) if utils.parse_arg(args.s_beat_start) else None
 
-    s_beat_end = utils.parse_arg(args.s_beat_end)
+    s_beat_end = float(utils.parse_arg(args.s_beat_end)) if utils.parse_arg(args.s_beat_end) else None
 
-    tempo = utils.parse_arg(args.tempo)
+    tempo = float(utils.parse_arg(args.tempo)) if utils.parse_arg(args.tempo) else None
 
-    beat_start = utils.parse_arg(args.beat_start)
+    beat_start = int(utils.parse_arg(args.beat_start)) if utils.parse_arg(args.beat_start) else None
 
-    beat_end = utils.parse_arg(args.beat_end)
+    beat_end = int(utils.parse_arg(args.beat_end)) if utils.parse_arg(args.beat_end) else None
 
-    length_beats = utils.parse_arg(args.length_beats)
+    length_beats = int(utils.parse_arg(args.length_beats)) if utils.parse_arg(args.length_beats) else None
 
     filename_wav = os.path.join(
         utils.get_dirname_audio_warped() if use_warped else utils.get_dirname_audio(),
         utils._get_name_project_most_recent() + '.wav'
     )
 
-    # NB: to look up beat in beatmap, given a beat in Live, subtract one from measure, multply by 4, then subtract one beat
+    # NB: to look up beat in beatmap, given a beat in Live
+    # subtract one from measure, multply by 4, then subtract one beat
     # e.g., 74.1.1 => beatmap_manual[73*4 + 0]
 
     if use_warped:
@@ -51,6 +52,11 @@ def main(args):
         beatmap = [val.to_float() for val in ir.extract_beats(filename_wav)]
 
         length_beats = utils.get_num_beats(beatmap, s_beat_start, s_beat_end)
+
+        if args.double:
+            length_beats = length_beats*2
+        elif args.halve:
+            length_beats = length_beats/2
 
         beat_start = 0
 
@@ -99,6 +105,10 @@ if __name__ == '__main__':
     parser.add_argument('--length_beats', help='length in beats')
 
     parser.add_argument('-m', help='manual', action='store_true')
+
+    parser.add_argument('-double', help='double beats in estimate', action='store_true')
+
+    parser.add_argument('-halve', help='halve beats in estimate', action='store_true')
 
     args = parser.parse_args()
 

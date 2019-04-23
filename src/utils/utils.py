@@ -30,8 +30,8 @@ def get_duration_s_audio(filename, use_warped=True) -> float:
     )
 
 
-def get_beat_nearest(beatmap, s_beat):
-    return min([abs(s_beat_beatmap - s_beat) for s_beat_beatmap in beatmap])
+def get_beat_nearest(beatmap, s_beat_arg):
+    return min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_arg))
 
 
 def get_num_beats(beatmap, s_beat_start, s_beat_end):

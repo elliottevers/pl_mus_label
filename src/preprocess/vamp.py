@@ -6,10 +6,11 @@ import music21
 
 # def beatmap_to_ts(beatmap: List[float]):
 def beatmap_to_ts(beatmap):
+    beatmap = beatmap.tolist() if type(beatmap) is not list else beatmap
     return dict(
         zip(
-            beatmap.tolist(),
-            [music21.note.Note('C') for _ in range(len(beatmap.tolist()))]
+            beatmap,
+            [music21.note.Note('C') for _ in range(len(beatmap))]
         )
     )
 
