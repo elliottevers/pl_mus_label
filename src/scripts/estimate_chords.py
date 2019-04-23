@@ -53,7 +53,8 @@ def main(args):
     )
 
     chord_tree = mesh.MeshScore.get_interval_tree(
-        df_chords
+        df_chords,
+        diff=False
     )
 
     mesh_score.set_tree(

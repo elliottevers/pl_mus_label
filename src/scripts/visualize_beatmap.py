@@ -26,12 +26,18 @@ def main(args):
 
     mesh_score = mesh.MeshScore()
 
-    df_beatmap = prep_vamp.beatmap_to_df(
+    ts_beatmap = prep_vamp.beatmap_to_ts(
         beatmap
     )
 
+    df_beatmap = prep_vamp.ts_beatmap_to_df(
+        ts_beatmap
+    )
+
     beatmap_tree = mesh.MeshScore.get_interval_tree(
-        df_beatmap
+        df_beatmap,
+        diff=False,
+        preserve_struct=True
     )
 
     mesh_score.set_tree(
@@ -51,7 +57,8 @@ def main(args):
 
     score = postp_mxl.df_grans_to_score(
         data_quantized_beats,
-        parts=['beatmap']
+        parts=['beatmap'],
+        type_equality='absolute'
     )
 
     stream_beatmap = postp_mxl.extract_part(

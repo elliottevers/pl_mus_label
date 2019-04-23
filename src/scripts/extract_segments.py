@@ -64,7 +64,8 @@ def main(args):
         )
 
         segment_tree = mesh.MeshScore.get_interval_tree(
-            df_segments
+            df_segments,
+            diff=False
         )
 
         mesh_score.set_tree(

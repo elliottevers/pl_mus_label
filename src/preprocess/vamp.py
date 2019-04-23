@@ -1,7 +1,17 @@
 import pandas as pd
 import numpy as np
-from typing import Dict, Any
+from typing import Dict, Any, List
 import music21
+
+
+# def beatmap_to_ts(beatmap: List[float]):
+def beatmap_to_ts(beatmap):
+    return dict(
+        zip(
+            beatmap.tolist(),
+            [music21.note.Note('C') for _ in range(len(beatmap.tolist()))]
+        )
+    )
 
 
 def monophony_to_df(data_monophonic, name_part, index_type='s'):
@@ -84,13 +94,9 @@ def segments_to_df(data_segments, index_type='s'):
     return df_segments
 
 
-def beatmap_to_df(beatmap, index_type='s'):
-
+def ts_beatmap_to_df(beatmap: Dict[Any, music21.note.Note], index_type='s'):
     df_beatmap = pd.DataFrame(
-        data={
-            'beatmap': beatmap
-        },
-        index=list(range(len(beatmap)))
+        data={'beatmap': list(beatmap.values())}, index=list(beatmap.keys())
     )
 
     df_beatmap.index.name = index_type

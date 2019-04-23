@@ -134,7 +134,8 @@ def get_struct_score(object, name_part, dur):
 
 def df_grans_to_score(
         df_grans: pd.DataFrame,
-        parts: List[str]
+        parts: List[str],
+        type_equality='default'
 ) -> music21.stream.Score:
 
     score = music21.stream.Score()
@@ -166,24 +167,58 @@ def df_grans_to_score(
             index_beat = index[0]
             obj = row[1]
 
-            if obj != obj_last:
+            if type_equality == 'absolute':
 
-                dur = music21.duration.Duration(index_beat - offset_last)
+                if not utils.b_absolutely_equal(obj, obj_last):
 
-                offset = offset_last
+                    dur = music21.duration.Duration(index_beat - offset_last)
 
-                part.insert(
-                    offset,
-                    get_struct_score(
-                        obj_last,
-                        name_part,
-                        dur
+                    offset = offset_last
+
+                    part.insert(
+                        offset,
+                        get_struct_score(
+                            obj_last,
+                            name_part,
+                            dur
+                        )
                     )
+
+                    obj_last = obj
+
+                    offset_last = index_beat
+            else:
+
+                if obj != obj_last:
+                    dur = music21.duration.Duration(index_beat - offset_last)
+
+                    offset = offset_last
+
+                    part.insert(
+                        offset,
+                        get_struct_score(
+                            obj_last,
+                            name_part,
+                            dur
+                        )
+                    )
+
+                    obj_last = obj
+
+                    offset_last = index_beat
+
+        # insert last
+
+        part.insert(
+            offset_last,
+            get_struct_score(
+                obj_last,
+                name_part,
+                music21.duration.Duration(
+                    list(df_grans.itertuples())[-1][0][0] - offset_last
                 )
-
-                obj_last = obj
-
-                offset_last = index_beat
+            )
+        )
 
         score.insert(i_part, part)
 

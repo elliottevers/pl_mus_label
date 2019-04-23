@@ -47,6 +47,12 @@ def b_use_warped():
     )
 
 
+def b_absolutely_equal(struct_former, struct_latter):
+    id_former = struct_former.id if struct_former is not None else None
+    id_latter = struct_latter.id if struct_latter is not None else None
+    return id_former == id_latter
+
+
 def rotate_items(dictionary, offset=0):
     return dict(zip(rotate(list(dictionary.keys()), offset), list(dictionary.values())))
 

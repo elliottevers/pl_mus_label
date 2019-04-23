@@ -29,7 +29,7 @@ def main(args):
         utils._get_name_project_most_recent() + '.wav'
     )
 
-    # NB: to look up beat in beatmap, subtract one from measure, multply by 4, then subtract one beat
+    # NB: to look up beat in beatmap, given a beat in Live, subtract one from measure, multply by 4, then subtract one beat
     # e.g., 74.1.1 => beatmap_manual[73*4 + 0]
 
     if use_warped:

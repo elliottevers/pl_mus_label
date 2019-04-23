@@ -2,6 +2,7 @@ import pandas as pd
 from typing import List, Dict, Tuple
 from intervaltree import IntervalTree, Interval
 import numpy as np
+from utils import utils
 
 
 class MeshScore(object):
@@ -15,6 +16,8 @@ class MeshScore(object):
     tree_bass: IntervalTree
 
     tree_segment: IntervalTree
+
+    tree_beatmap: IntervalTree
 
     data_quantized: pd.DataFrame
 
@@ -62,10 +65,10 @@ class MeshScore(object):
 
             beats = sorted(list(gran_map.keys()))
             endpoint_s_last = sorted(list(gran_map.values()))[0]
+            beat_last = beats[0]
 
-            # TODO: create an accumulator for automatic "diff"-ing
-
-            for beat in beats:
+            # for beat in beats:
+            for beat in beats[1:]:
 
                 s = gran_map[beat]
 
@@ -83,10 +86,10 @@ class MeshScore(object):
                         None
                     )
                     column_beat.append(
-                        beat
+                        beat_last
                     )
                     column_s_quantized.append(
-                        s
+                        endpoint_s_last
                     )
                 else:
                     interval_winner = max(
@@ -98,13 +101,42 @@ class MeshScore(object):
                         interval_winner.data
                     )
                     column_beat.append(
-                        beat
+                        beat_last
                     )
                     column_s_quantized.append(
-                        s
+                        endpoint_s_last
                     )
 
                 endpoint_s_last = s
+                beat_last = beat
+
+            # outside of loop now
+            if len(list(overlapping_intervals)) < 1:
+                column.append(
+                    None
+                )
+                column_beat.append(
+                    beats[-1]
+                )
+                column_s_quantized.append(
+                    gran_map[beats[-1]]
+                )
+            else:
+                # interval_winner = max(
+                #     list(overlapping_intervals),
+                #     key=lambda interval: MeshScore.get_overlap(s_interval, interval)
+                # )
+
+                # let's just use last winner.... what could go wrong?
+                column.append(
+                    interval_winner.data
+                )
+                column_beat.append(
+                    beats[-1]
+                )
+                column_s_quantized.append(
+                    gran_map[beats[-1]]
+                )
 
             dfs_quantized[name_column] = pd.DataFrame(
                 data={
@@ -130,10 +162,9 @@ class MeshScore(object):
         if quantize == '16T':
             num_samples = 49
 
-        for beat, s in enumerate(beatmap[:-1], 1):
-            index_beatmap = beat - 1
+        for beat, s in enumerate(beatmap[:-1], 0):
             beat_interpolated = np.linspace(beat + offset_first_beat, beat + 1 + offset_first_beat, num_samples)
-            s_interpolated = np.linspace(beatmap[index_beatmap], beatmap[index_beatmap + 1], num_samples)
+            s_interpolated = np.linspace(beatmap[beat], beatmap[beat + 1], num_samples)
             gran_map.update(dict(zip(beat_interpolated, s_interpolated)))
 
         return gran_map
@@ -171,7 +202,7 @@ class MeshScore(object):
             return obj
 
     @staticmethod
-    def get_interval_tree(df: pd.DataFrame) -> IntervalTree:
+    def get_interval_tree(df: pd.DataFrame, diff=True, preserve_struct=False) -> IntervalTree:
 
         struct_last = df.iloc[0].values[0]
         index_struct_last = df.index[0]
@@ -180,16 +211,27 @@ class MeshScore(object):
         for row in df.iloc[1:, :].itertuples(index=True, name=True):
             index = row[0]
             struct_current = row[1]
-            if struct_current != struct_last:
+
+            if not diff:
                 intervals_structs.append(
                     Interval(
                         index_struct_last,
                         index,
-                        MeshScore.get_struct(struct_current)
+                        MeshScore.get_struct(struct_last) if not preserve_struct else struct_last
                     )
                 )
-                struct_last = struct_current
-                index_struct_last = index
+            else:
+                if utils.b_absolutely_equal(struct_current, struct_last):
+                    intervals_structs.append(
+                        Interval(
+                            index_struct_last,
+                            index,
+                            MeshScore.get_struct(struct_last) if not preserve_struct else struct_last
+                        )
+                    )
+
+            struct_last = struct_current
+            index_struct_last = index
 
         return IntervalTree(
             Interval(begin, end, data)
