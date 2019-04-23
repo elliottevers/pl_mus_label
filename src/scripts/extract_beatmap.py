@@ -108,9 +108,9 @@ if __name__ == '__main__':
 
     parser.add_argument('-m', help='manual', action='store_true')
 
-    parser.add_argument('--double', help='double beats in estimate', action='store_true')
+    parser.add_argument('-double', help='double beats in estimate', action='store_true')
 
-    parser.add_argument('--halve', help='halve beats in estimate', action='store_true')
+    parser.add_argument('-halve', help='halve beats in estimate', action='store_true')
 
     args = parser.parse_args()
 

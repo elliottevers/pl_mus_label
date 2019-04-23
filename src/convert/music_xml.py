@@ -61,11 +61,12 @@ def live_to_stream(
         for group in groups_notes:
 
             chord = music21.chord.Chord([
-                music21.note.Note(
-                    pitch=music21.pitch.Pitch(
-                        midi=note_live.pitch
-                    )
-                ).name for
+                # music21.note.Note(
+                #     pitch=music21.pitch.Pitch(
+                #         midi=note_live.pitch
+                #     )
+                # ).name for
+                note_live.pitch for
                 note_live
                 in group
             ])

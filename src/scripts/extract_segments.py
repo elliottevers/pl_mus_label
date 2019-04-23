@@ -30,13 +30,13 @@ def main(args):
 
     messenger.message(['length_beats', str(length_beats)])
 
-    representation = args.representation.replace("\"", '')
+    representation = utils.parse_arg(args.representation)
 
     if representation == 'symbolic':
 
         filename_pickle = os.path.join(
             utils.get_dirname_score(),
-            'melody',
+            'segment',
             ''.join([utils._get_name_project_most_recent(), '.pkl'])
         )
 
