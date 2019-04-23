@@ -173,9 +173,9 @@ class MeshScore(object):
     @staticmethod
     def trim_beatmap(beatmap: List[float], s_beat_start, s_beat_end) -> List[float]:
 
-        s_beat_first_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_start))
+        s_beat_first_quantized = utils.get_beat_nearest(beatmap, s_beat_start)
 
-        s_beat_last_quantized = min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_end))
+        s_beat_last_quantized = utils.get_beat_nearest(beatmap, s_beat_end)
 
         return list(filter(lambda beat: s_beat_first_quantized <= beat <= s_beat_last_quantized, beatmap))
 

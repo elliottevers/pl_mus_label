@@ -54,8 +54,10 @@ def main(args):
         length_beats = utils.get_num_beats(beatmap, s_beat_start, s_beat_end)
 
         if args.double:
+            beatmap = utils.double_beatmap(beatmap)
             length_beats = length_beats*2
         elif args.halve:
+            beatmap = utils.halve_beatmap(beatmap)
             length_beats = length_beats/2
 
         beat_start = 0
@@ -106,9 +108,9 @@ if __name__ == '__main__':
 
     parser.add_argument('-m', help='manual', action='store_true')
 
-    parser.add_argument('-double', help='double beats in estimate', action='store_true')
+    parser.add_argument('--double', help='double beats in estimate', action='store_true')
 
-    parser.add_argument('-halve', help='halve beats in estimate', action='store_true')
+    parser.add_argument('--halve', help='halve beats in estimate', action='store_true')
 
     args = parser.parse_args()
 

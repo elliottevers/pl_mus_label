@@ -30,6 +30,22 @@ def get_duration_s_audio(filename, use_warped=True) -> float:
     )
 
 
+def halve_beatmap(beatmap):
+    return beatmap[::2]
+
+
+def double_beatmap(beatmap):
+    interpolated = []
+
+    for i_beat, beat in enumerate(beatmap[:-1], 0):
+        interpolated.append(beatmap[i_beat])
+        interpolated.append((beatmap[i_beat] + beatmap[i_beat + 1]) / 2)
+
+    interpolated.append(beatmap[-1])
+
+    return interpolated
+
+
 def get_beat_nearest(beatmap, s_beat_arg):
     return min(list(beatmap), key=lambda s_beat: abs(s_beat - s_beat_arg))
 
