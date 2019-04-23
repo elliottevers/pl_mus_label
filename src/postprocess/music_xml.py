@@ -28,15 +28,7 @@ def get_highest_notes(chord_local):
         )
 
 
-def extract_bass(df_chords) -> pd.DataFrame:
-    return df_chords['chord'].apply(get_lowest_note).to_frame(name='bass')
-
-
-def extract_upper_voices(df_chords) -> pd.DataFrame:
-    return df_chords['chord'].apply(get_highest_notes).to_frame(name='chord')
-
-
-def extract_upper_voices_stream(stream) -> music21.stream.Part:
+def extract_upper_voices(stream: music21.stream.Stream) -> music21.stream.Part:
     part_upper = music21.stream.Part()
     part_upper.id = 'chord'
 
@@ -52,6 +44,24 @@ def extract_upper_voices_stream(stream) -> music21.stream.Part:
         part_upper.insert(offset, obj)
 
     return part_upper
+
+
+def extract_bass(stream: music21.stream.Stream) -> music21.stream.Part:
+    part_bass = music21.stream.Part()
+    part_bass.id = 'bass'
+
+    for obj in stream:
+        offset = obj.offset
+        duration = obj.duration
+        if isinstance(obj, music21.chord.Chord):
+            obj = music21.note.Note(
+                obj.pitches[0],
+                duration=duration
+            )
+
+        part_bass.insert(offset, obj)
+
+    return part_bass
 
 
 def extract_parts(score: music21.stream.Score, parts=['chord', 'bass']) -> music21.stream.Score:

@@ -32,7 +32,7 @@ def main(args):
         )
     )
 
-    stream_upper_voices = postp_mxl.extract_upper_voices_stream(
+    stream_upper_voices = postp_mxl.extract_upper_voices(
         stream_chord
     )
 
