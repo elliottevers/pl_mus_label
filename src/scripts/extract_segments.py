@@ -9,7 +9,7 @@ import os
 from convert import music_xml as convert_mxl
 from i_o import exporter as io_exporter
 from utils import musix_xml as utils_mxl
-from analysis_discrete import music_xml
+from analysis_discrete import music_xml as analysis_mxl
 
 
 def main(args):
@@ -36,7 +36,7 @@ def main(args):
 
         filename_pickle = os.path.join(
             utils.get_dirname_score(),
-            'segment',
+            'melody',
             ''.join([utils._get_name_project_most_recent(), '.pkl'])
         )
 
@@ -44,7 +44,7 @@ def main(args):
             filename_pickle
         )
 
-        stream_segment = music_xml.get_segments(
+        stream_segment = analysis_mxl.get_segments(
             part_melody
         )
 

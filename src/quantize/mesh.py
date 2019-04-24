@@ -199,7 +199,7 @@ class MeshScore(object):
             return obj
 
     @staticmethod
-    def get_interval_tree(df: pd.DataFrame, diff=True, preserve_struct=False) -> IntervalTree:
+    def get_interval_tree(df: pd.DataFrame, diff=True, preserve_struct=False, type_equality='default') -> IntervalTree:
 
         struct_last = df.iloc[0].values[0]
         index_struct_last = df.index[0]
@@ -218,7 +218,9 @@ class MeshScore(object):
                     )
                 )
             else:
-                if utils.b_absolutely_equal(struct_current, struct_last):
+                structs_equal = utils.b_absolutely_equal(struct_current, struct_last) if type_equality == 'absolute' else struct_current == struct_last
+
+                if not structs_equal:
                     intervals_structs.append(
                         Interval(
                             index_struct_last,

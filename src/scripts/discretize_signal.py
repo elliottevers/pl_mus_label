@@ -2,22 +2,16 @@ from message import messenger as mes
 import argparse
 from convert import max as conv_max
 import music21
+from utils import utils
 # import string
-# from utils import utils
 # from collections import OrderedDict
 # from pyts.quantization import SAX, SFA, MCB
-
-# range_midi_notes = 24
 
 
 def main(args):
 
-    note_midi_lower = int(args.note_midi_lower.replace("\"", ''))
-
-    note_midi_upper = int(args.note_midi_upper.replace("\"", ''))
-
-    # if note_midi_upper - note_midi_lower != range_midi_notes:
-    #     note_midi_upper = note_midi_lower + range_midi_notes
+    note_midi_lower = int(utils.parse_arg(args.note_midi_lower))
+    note_midi_upper = int(utils.parse_arg(args.note_midi_upper))
 
     chromatic_scale = music21.scale.ChromaticScale(
         music21.pitch.Pitch(midi=note_midi_lower)
