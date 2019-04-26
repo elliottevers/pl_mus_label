@@ -1,7 +1,9 @@
-from message import messenger as mes
+import sys
+sys.path.insert(0, '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/music/src')
 import argparse
-from utils import utils
 import subprocess
+from message import messenger as mes
+from utils import utils
 
 
 def main(args):
@@ -62,7 +64,7 @@ def main(args):
         stdout=subprocess.PIPE
     ).stdout.rstrip().decode("utf-8")
 
-    messenger = mes.Messenger(key_route='')
+    messenger = mes.Messenger()
 
     messenger.message(['done', 'bang'])
 
@@ -75,8 +77,6 @@ if __name__ == '__main__':
     parser.add_argument('--path-executable', help='path to YouTube DL')
 
     parser.add_argument('-x', help='audio only', action='store_true')
-
-    # parser.add_argument('--o', help='output dir')
 
     parser.add_argument('--audio-format', help='e.g, wav')
 

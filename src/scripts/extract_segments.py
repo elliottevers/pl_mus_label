@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/music/src')
 from information_retrieval import extraction as ir
 from message import messenger as mes
 import argparse

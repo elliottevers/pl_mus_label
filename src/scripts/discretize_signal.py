@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/music/src')
 from message import messenger as mes
 import argparse
 from convert import max as conv_max
