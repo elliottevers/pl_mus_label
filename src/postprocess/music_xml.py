@@ -259,7 +259,7 @@ def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Sco
 
         for note_live in notes:
 
-            note = note.Note(
+            note = music21.note.Note(
                 pitch=note_live.pitch
             )
             note.duration = music21.duration.Duration(
