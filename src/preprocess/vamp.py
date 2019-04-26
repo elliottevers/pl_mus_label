@@ -4,13 +4,15 @@ from typing import Dict, Any, List
 import music21
 
 
-# def beatmap_to_ts(beatmap: List[float]):
 def beatmap_to_ts(beatmap):
     beatmap = beatmap.tolist() if type(beatmap) is not list else beatmap
+    # let's assume the tempo will not slow to half abruptly, for now....
+    factor_tempo_shrink_max = .5
+    note_cowbell = 'D'
     return dict(
         zip(
             beatmap,
-            [music21.note.Note('C') for _ in range(len(beatmap))]
+            [music21.note.Note(note_cowbell, duration=music21.duration.Duration(factor_tempo_shrink_max)) for _ in range(len(beatmap))]
         )
     )
 

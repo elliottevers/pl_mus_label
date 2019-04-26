@@ -100,7 +100,7 @@ def set_tempo(score: music21.stream.Score, bpm: int = 60) -> music21.stream.Scor
     # add new
     for measure in score.parts[0].getElementsByClass(music21.stream.Measure):
         if measure.offset == 0.0:
-            tempo = tempo.MetronomeMark(number=bpm)
+            tempo = music21.tempo.MetronomeMark(number=bpm)
             tempo.offset = 0.0
             measure.append(tempo)
 
@@ -108,6 +108,8 @@ def set_tempo(score: music21.stream.Score, bpm: int = 60) -> music21.stream.Scor
 
 
 def get_struct_score(object, name_part, dur):
+    duration_override = None
+
     if name_part == 'melody':
         if not object > 0:
             struct_score = music21.note.Rest()
@@ -128,16 +130,22 @@ def get_struct_score(object, name_part, dur):
         struct_score = music21.note.Note(
             pitch=object
         )
-    elif name_part in ['segment', 'beatmap']:
+    elif name_part == 'beatmap':
+        factor_tempo_shrink_max = .5
+        duration_override = music21.duration.Duration(factor_tempo_shrink_max)
+        note_cowbell = 'D3'
         struct_score = music21.note.Note(
-            pitch=music21.pitch.Pitch(
-                midi=60
-            )
+            note_cowbell
+        )
+    elif name_part == 'segment':
+        note_crash_cymbal = 'C#3'
+        struct_score = music21.note.Note(
+            note_crash_cymbal
         )
     else:
         raise 'part ' + name_part + ' not in dataframe to render to score'
 
-    struct_score.duration = dur
+    struct_score.duration = dur if not duration_override else duration_override
 
     return struct_score
 
