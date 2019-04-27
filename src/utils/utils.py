@@ -17,7 +17,7 @@ def parse_arg(arg):
     return arg if arg is None else arg.replace("\"", '')
 
 
-def get_duration_s_audio(filename, use_warped=True) -> float:
+def get_duration_s_audio(filename) -> float:
     y, sr = librosa.load(
         filename
     )
@@ -121,6 +121,10 @@ def get_dirname_audio_warped():
     return os.path.join(get_project_dir(), 'audio_warped')
 
 
+def get_dirname_vocals():
+    return os.path.join(get_project_dir(), 'vocals')
+
+
 def get_dirname_tempo():
     return os.path.join(get_project_dir(), 'tempo')
 
@@ -197,6 +201,10 @@ def get_path_dir_audio_warped():
     return os.path.join(get_project_dir(), 'audio_warped')
 
 
+def get_path_dir_vocals():
+    return os.path.join(get_project_dir(), 'vocals')
+
+
 def get_path_dir_video_warped():
     return os.path.join(get_project_dir(), 'video_warped')
 
@@ -240,6 +248,19 @@ def create_dir_audio_warped():
     else:
         return subprocess.run(
             ['mkdir', path_dir_audio_warped],
+            stdout=subprocess.PIPE
+        )
+
+
+def create_dir_vocals():
+    path_dir_vocals = get_path_dir_vocals()
+    if os.path.exists(
+            path_dir_vocals
+    ):
+        return
+    else:
+        return subprocess.run(
+            ['mkdir', path_dir_vocals],
             stdout=subprocess.PIPE
         )
 

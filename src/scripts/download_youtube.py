@@ -16,6 +16,8 @@ def main(args):
 
     utils.create_dir_audio_warped()
 
+    utils.create_dir_vocals()
+
     utils.create_dir_session()
 
     audio_only = args.x

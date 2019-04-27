@@ -41,6 +41,10 @@ def main(args):
         beatmap
     ) = utils.get_tuple_beats()
 
+    messenger = mes.Messenger()
+
+    messenger.message(['length_beats', str(length_beats)])
+
     stream = convert_mxl.live_to_stream(
         notes_live,
         beatmap=beatmap,
@@ -119,8 +123,6 @@ def main(args):
     exporter.set_part(notes_live, name_part)
 
     exporter.export(utils.get_file_json_comm())
-
-    messenger = mes.Messenger()
 
     messenger.message(['done', 'bang'])
 

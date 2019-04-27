@@ -78,10 +78,10 @@ def main(args):
     data_beats = {
         's_beat_start': float(s_beat_start),
         's_beat_end': float(s_beat_end),
-        'tempo': int(tempo),
-        'beat_start': int(beat_start),
-        'beat_end': int(beat_end),
-        'length_beats': int(length_beats),
+        'tempo': float(tempo),
+        'beat_start': float(beat_start),
+        'beat_end': float(beat_end),
+        'length_beats': float(length_beats),
         'beatmap': beatmap
     }
 
