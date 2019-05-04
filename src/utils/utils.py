@@ -7,6 +7,8 @@ from itertools import zip_longest
 import numpy as np
 import math
 import librosa
+import glob
+
 
 dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
 
@@ -55,12 +57,7 @@ def get_num_beats(beatmap, s_beat_start, s_beat_end):
 
 
 def b_use_warped():
-    return os.path.exists(
-        os.path.join(
-            get_dirname_audio_warped(),
-
-        )
-    )
+    return len(glob.glob(os.path.join(get_dirname_audio_warped(), '*.wav'))) > 0
 
 
 def b_absolutely_equal(struct_former, struct_latter):

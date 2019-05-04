@@ -128,12 +128,6 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract Chords')
 
-    # parser.add_argument('beats_length_track_live', help='length of track in Live')
-    #
-    # parser.add_argument('beat_start', help='first beat in Live')
-    #
-    # parser.add_argument('beat_end', help='last beat in Live')
-
     args = parser.parse_args()
 
     main(args)

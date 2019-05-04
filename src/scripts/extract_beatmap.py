@@ -20,11 +20,11 @@ def main(args):
 
     tempo = float(utils.parse_arg(args.tempo)) if utils.parse_arg(args.tempo) else None
 
-    beat_start = int(utils.parse_arg(args.beat_start)) if utils.parse_arg(args.beat_start) else None
+    beat_start = float(utils.parse_arg(args.beat_start)) if utils.parse_arg(args.beat_start) else None
 
-    beat_end = int(utils.parse_arg(args.beat_end)) if utils.parse_arg(args.beat_end) else None
+    beat_end = float(utils.parse_arg(args.beat_end)) if utils.parse_arg(args.beat_end) else None
 
-    length_beats = int(utils.parse_arg(args.length_beats)) if utils.parse_arg(args.length_beats) else None
+    length_beats = float(utils.parse_arg(args.length_beats)) if utils.parse_arg(args.length_beats) else None
 
     filename_wav = os.path.join(
         utils.get_dirname_audio_warped() if use_warped else utils.get_dirname_audio(),
@@ -62,6 +62,7 @@ def main(args):
             beatmap = utils.halve_beatmap(beatmap)
             length_beats = length_beats/2
 
+        # TODO: does this mean that all unwarped audio is assumed to be cropped?
         beat_start = 0
 
         beat_end = beat_start + length_beats - 1

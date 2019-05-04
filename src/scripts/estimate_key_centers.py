@@ -50,6 +50,20 @@ def main(args):
         ''.join([utils._get_name_project_most_recent(), '.pkl'])
     )
 
+    ################ TODO: remove
+
+    # filename_part = os.path.join(
+    #     utils.get_dirname_score(),
+    #     'key_center',
+    #     utils._get_name_project_most_recent() + '.pkl'
+    # )
+    #
+    # part_key_centers = utils_mxl.thaw_stream(
+    #     filename_part
+    # )
+
+    ###############
+
     utils_mxl.freeze_stream(
         part_key_centers,
         filename_pickle
