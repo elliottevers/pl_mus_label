@@ -1,0 +1,1 @@
+This is the information retrieval component of an ambitious ear training project - it's main function is to estimate high-level musical information such as beat, key centers, chords, bass, melody directly from raw audio.  A video demo of the project can be seen [here](https://www.youtube.com/watch?v=GW2PdRcoAPk) 
