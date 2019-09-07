@@ -31,6 +31,11 @@ def main(args):
         utils._get_name_project_most_recent() + '.wav'
     )
 
+    if args.a:
+        s_beat_start = 0
+        s_beat_end = utils.get_duration_s_audio(filename=filename_wav)
+
+
     # NB: to look up beat in beatmap, given a beat in Live
     # subtract one from measure, multply by 4, then subtract one beat
     # e.g., 74.1.1 => beatmap_manual[73*4 + 0]
@@ -77,14 +82,18 @@ def main(args):
     )
 
     data_beats = {
-        's_beat_start': float(s_beat_start),
-        's_beat_end': float(s_beat_end),
-        'tempo': float(tempo),
+        's_beat_start': s_beat_start,
+        's_beat_end': s_beat_end,
+        'tempo': tempo,
         'beat_start': float(beat_start),
         'beat_end': float(beat_end),
         'length_beats': float(length_beats),
         'beatmap': beatmap
     }
+
+    if args.dump_estimates:
+        for beat in beatmap:
+            messenger.message(['beat', str(beat)])
 
     utils.to_pickle(
         data_beats,
@@ -110,6 +119,10 @@ if __name__ == '__main__':
     parser.add_argument('--length_beats', help='length in beats')
 
     parser.add_argument('-m', help='manual', action='store_true')
+
+    parser.add_argument('-a', help='automatically determine begin and end time', action='store_true')
+
+    parser.add_argument('-dump_estimates', help='message the estimates', action='store_true')
 
     parser.add_argument('-double', help='double beats in estimate', action='store_true')
 
