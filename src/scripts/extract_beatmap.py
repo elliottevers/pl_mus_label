@@ -93,7 +93,7 @@ def main(args):
 
     if args.dump_estimates:
         for beat in beatmap:
-            messenger.message(['beat', str(beat)])
+            messenger.message(['beat_position_percentile', str(beat/s_beat_end)])
 
     utils.to_pickle(
         data_beats,
