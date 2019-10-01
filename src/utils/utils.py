@@ -10,7 +10,7 @@ import librosa
 import glob
 
 
-dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
+dir_projects = os.path.dirname('/Users/elliottevers/Documents/git-repos.nosync/tk_music_projects/')
 
 file_log = os.path.join(dir_projects, '.log.txt')
 
