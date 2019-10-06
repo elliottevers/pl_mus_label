@@ -4,9 +4,9 @@ from postprocess import hz as hz_postp
 import numpy as np
 
 
-file_ts_coll = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/ts_hz.txt'
+file_ts_coll = '/Users/elliottevers/Documents/git-repos.nosync/tk_music_projects/ts_hz.txt'
 
-file_ts_coll_discrete = '/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/ts_hz_discretized.txt'
+file_ts_coll_discrete = '/Users/elliottevers/Documents/git-repos.nosync/tk_music_projects/ts_hz_discretized.txt'
 
 
 def hz_to_mid(hz):

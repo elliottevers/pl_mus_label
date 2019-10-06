@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import subprocess
 from utils import utils
 
-dir_projects = os.path.dirname('/Users/elliottevers/Documents/DocumentsSymlinked/git-repos.nosync/tk_music_projects/')
+dir_projects = os.path.dirname('/Users/elliottevers/Documents/git-repos.nosync/tk_music_projects/')
 file_log = os.path.join(dir_projects, '.log.txt')
 
 
