@@ -115,7 +115,8 @@ def main(args):
         beatmap=beatmap,
         s_beat_start=s_beat_start,
         s_beat_end=s_beat_end,
-        tempo=tempo
+        tempo=tempo,
+        bypass_seconds=True
     )
 
     exporter = io_exporter.Exporter()

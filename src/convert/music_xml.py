@@ -117,15 +117,19 @@ def second_to_offset(second: float, gran_map: Dict[float, float]) -> float:
 def to_note_live(
         note_21,
         tempo,
-        gran_map
+        gran_map,
+        bypass_seconds: bool = False
 ):
-    beat_offset = second_to_beat(
-        offset_to_second(
-            float(note_21.offset),
-            gran_map
-        ),
-        tempo
-    )
+    if bypass_seconds:
+        beat_offset = float(note_21.offset)
+    else:
+        beat_offset = second_to_beat(
+            offset_to_second(
+                float(note_21.offset),
+                gran_map
+            ),
+            tempo
+        )
 
     return nl.NoteLive(
         pitch=int(note_21.pitch.midi),
@@ -141,7 +145,8 @@ def to_notes_live(
         beatmap: List[int],
         s_beat_start: int,
         s_beat_end: int,
-        tempo: int
+        tempo: int,
+        bypass_seconds: bool
 ):
 
     gran_map = mesh.MeshScore.get_gran_map(
@@ -170,7 +175,8 @@ def to_notes_live(
                 to_note_live(
                     struct_21,
                     tempo=tempo,
-                    gran_map=gran_map
+                    gran_map=gran_map,
+                    bypass_seconds=True
                 )
             )
 
