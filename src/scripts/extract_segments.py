@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/music/src')
+sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/tk_music_py/src')
 from information_retrieval import extraction as ir
 from message import messenger as mes
 import argparse

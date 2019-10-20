@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/music/src')
+sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/tk_music_py/src')
 import argparse
 import subprocess
 from message import messenger as mes
