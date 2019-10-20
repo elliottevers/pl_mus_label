@@ -146,7 +146,7 @@ def to_notes_live(
         s_beat_start: int,
         s_beat_end: int,
         tempo: int,
-        bypass_seconds: bool
+        bypass_seconds: bool = False
 ):
 
     gran_map = mesh.MeshScore.get_gran_map(
@@ -166,7 +166,8 @@ def to_notes_live(
                     to_note_live(
                         note_absolute_offset,
                         tempo=tempo,
-                        gran_map=gran_map
+                        gran_map=gran_map,
+                        bypass_seconds=bypass_seconds
                     )
                 )
 
@@ -176,7 +177,7 @@ def to_notes_live(
                     struct_21,
                     tempo=tempo,
                     gran_map=gran_map,
-                    bypass_seconds=True
+                    bypass_seconds=bypass_seconds
                 )
             )
 
@@ -193,7 +194,8 @@ def to_notes_live(
                     to_note_live(
                         note,
                         tempo=tempo,
-                        gran_map=gran_map
+                        gran_map=gran_map,
+                        bypass_seconds=bypass_seconds
                     )
                 )
 
