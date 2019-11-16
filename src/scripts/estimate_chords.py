@@ -41,7 +41,7 @@ def main(args):
 
     mesh_score = mesh.MeshScore()
 
-    non_empty_chords = vamp_filter.vamp_filter_non_chords(
+    non_empty_chords = vamp_filter.filter_non_chords(
         data_chords
     )
 

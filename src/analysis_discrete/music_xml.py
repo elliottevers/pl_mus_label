@@ -1,7 +1,6 @@
 import music21
 from typing import List
 from utils import utils
-from postprocess import music_xml as postp_mxl
 
 
 def get_key_center_estimates(

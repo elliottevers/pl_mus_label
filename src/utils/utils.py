@@ -99,41 +99,6 @@ def write_name_project(name_project):
     )
 
 
-def _get_name_project_most_recent():
-    return subprocess.run(
-        ['tail', '-1', file_log],
-        stdout=subprocess.PIPE
-    ).stdout.rstrip().decode("utf-8")
-
-
-def get_project_dir():
-    return os.path.join(dir_projects, 'projects', _get_name_project_most_recent())
-
-
-def get_dirname_audio():
-    return os.path.join(get_project_dir(), 'audio')
-
-
-def get_dirname_audio_warped():
-    return os.path.join(get_project_dir(), 'audio_warped')
-
-
-def get_dirname_vocals():
-    return os.path.join(get_project_dir(), 'vocals')
-
-
-def get_dirname_tempo():
-    return os.path.join(get_project_dir(), 'tempo')
-
-
-def get_dirname_beat():
-    return os.path.join(get_project_dir(), 'beat')
-
-
-def get_dirname_score():
-    return os.path.join(get_project_dir(), 'score')
-
-
 def get_tuple_beats():
     obj_beat = from_pickle(
         os.path.join(
@@ -172,6 +137,48 @@ def to_json_live(dict, filename_chords_to_live):
             dict,
             outfile
         )
+
+
+def get_file_json_comm():
+
+    return os.path.join(
+        dir_projects, 'json_live.json'
+    )
+
+
+def _get_name_project_most_recent():
+    return subprocess.run(
+        ['tail', '-1', file_log],
+        stdout=subprocess.PIPE
+    ).stdout.rstrip().decode("utf-8")
+
+
+def get_project_dir():
+    return os.path.join(dir_projects, 'projects', _get_name_project_most_recent())
+
+
+def get_dirname_audio():
+    return os.path.join(get_project_dir(), 'audio')
+
+
+def get_dirname_audio_warped():
+    return os.path.join(get_project_dir(), 'audio_warped')
+
+
+def get_dirname_vocals():
+    return os.path.join(get_project_dir(), 'vocals')
+
+
+def get_dirname_tempo():
+    return os.path.join(get_project_dir(), 'tempo')
+
+
+def get_dirname_beat():
+    return os.path.join(get_project_dir(), 'beat')
+
+
+def get_dirname_score():
+    return os.path.join(get_project_dir(), 'score')
 
 
 def create_dir_project():
@@ -358,10 +365,3 @@ def create_dir_key_center():
             ['mkdir', os.path.join(get_project_dir(), 'score', 'key_center')],
             stdout=subprocess.PIPE
         )
-
-
-def get_file_json_comm():
-
-    return os.path.join(
-        dir_projects, 'json_live.json'
-    )

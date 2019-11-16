@@ -6,7 +6,6 @@ from utils import utils
 import json
 
 
-# TODO: this obviously only make sense for 4 voices...
 def force_texture(part_chord: music21.stream.Part, num_voices=4) -> music21.stream.Part:
     for obj in part_chord:
         if type(obj).__name__ is not 'Rest' and len(obj.pitches) < num_voices:

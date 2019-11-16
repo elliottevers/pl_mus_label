@@ -110,7 +110,7 @@ def mid_to_series(
 
     notes_intervals_tick: List[Dict[int, List]] = []
 
-    last_msg_type_note_on = False
+    # last_msg_type_note_on = False
 
     stack_note_sounding = [None]
 

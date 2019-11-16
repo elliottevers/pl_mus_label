@@ -21,9 +21,6 @@ class MeshScore(object):
 
     data_quantized: pd.DataFrame
 
-    def __init__(self):
-        self.data = None
-
     def set_tree(self, interval_tree: IntervalTree, type: str) -> None:
         if type not in ['melody', 'chord', 'bass', 'segment', 'key_center', 'beatmap']:
             raise('interval tree of type ' + type + ' not supported')
@@ -65,7 +62,6 @@ class MeshScore(object):
             endpoint_s_last = sorted(list(gran_map.values()))[0]
             beat_last = beats[0]
 
-            # for beat in beats:
             for beat in beats[1:]:
 
                 s = gran_map[beat]
@@ -120,10 +116,6 @@ class MeshScore(object):
                     gran_map[beats[-1]]
                 )
             else:
-                # interval_winner = max(
-                #     list(overlapping_intervals),
-                #     key=lambda interval: MeshScore.get_overlap(s_interval, interval)
-                # )
 
                 # let's just use last winner.... what could go wrong?
                 column.append(
@@ -166,7 +158,7 @@ class MeshScore(object):
 
         return gran_map
 
-    # NB: s_beat_start and s_beat_end are determined by human, set via Ableton Live clip end markers
+    # NB: s_beat_start and s_beat_end are determined by user, set via Ableton Live clip end markers
     @staticmethod
     def trim_beatmap(beatmap: List[float], s_beat_start, s_beat_end) -> List[float]:
 

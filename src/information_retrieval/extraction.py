@@ -2,7 +2,7 @@ import librosa
 import vamp
 import os
 from preprocess import vamp as vamp_prep
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any
 import subprocess
 from utils import utils
 

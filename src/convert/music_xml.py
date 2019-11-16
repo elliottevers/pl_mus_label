@@ -1,6 +1,6 @@
 import music21
 from live import note as nl
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from quantize import mesh
 from itertools import groupby
 from fractions import Fraction
