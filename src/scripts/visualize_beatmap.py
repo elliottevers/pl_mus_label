@@ -4,7 +4,7 @@ from message import messenger as mes
 import argparse
 from preprocess import vamp as prep_vamp
 from postprocess import music_xml as postp_mxl
-from quantize import mesh
+from quantize import quantize
 from utils import utils
 from convert import music_xml as convert_mxl
 from i_o import exporter as io_exporter
@@ -26,8 +26,6 @@ def main(args):
 
     messenger.message(['length_beats', str(length_beats)])
 
-    mesh_score = mesh.MeshScore()
-
     ts_beatmap = prep_vamp.beatmap_to_ts(
         beatmap
     )
@@ -36,25 +34,22 @@ def main(args):
         ts_beatmap
     )
 
-    beatmap_tree = mesh.MeshScore.get_interval_tree(
+    beatmap_tree = quantize.get_interval_tree(
         df_beatmap,
         diff=False,
         preserve_struct=True
     )
 
-    mesh_score.set_tree(
-        beatmap_tree,
-        type='beatmap'
-    )
-
-    mesh_score.quantize(
+    data_quantized = quantize.quantize(
         beatmap,
         s_beat_start,
         s_beat_end,
-        columns=['beatmap']
+        trees={
+            'beatmap': beatmap_tree
+        }
     )
 
-    data_quantized_beats = mesh_score.data_quantized['beatmap']
+    data_quantized_beats = data_quantized['beatmap']
 
     score = postp_mxl.df_grans_to_score(
         data_quantized_beats,

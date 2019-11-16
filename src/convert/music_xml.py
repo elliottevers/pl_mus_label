@@ -1,7 +1,7 @@
 import music21
 from live import note as nl
 from typing import List, Dict
-from quantize import mesh
+from quantize import quantize
 from itertools import groupby
 from fractions import Fraction
 
@@ -17,8 +17,8 @@ def live_to_stream(
 
     part = music21.stream.Part()
 
-    gran_map = mesh.MeshScore.get_gran_map(
-        mesh.MeshScore.trim_beatmap(beatmap, s_beat_start, s_beat_end)
+    gran_map = quantize.get_gran_map(
+        quantize.trim_beatmap(beatmap, s_beat_start, s_beat_end)
     )
 
     if mode == 'monophonic':
@@ -149,8 +149,8 @@ def to_notes_live(
         bypass_seconds: bool = False
 ):
 
-    gran_map = mesh.MeshScore.get_gran_map(
-        mesh.MeshScore.trim_beatmap(beatmap, s_beat_start, s_beat_end)
+    gran_map = quantize.get_gran_map(
+        quantize.trim_beatmap(beatmap, s_beat_start, s_beat_end)
     )
 
     notes_live = []

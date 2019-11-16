@@ -4,7 +4,7 @@ from message import messenger as mes
 from utils import utils
 import argparse
 from filter import midi as filt_midi
-from quantize import mesh
+from quantize import quantize
 from postprocess import music_xml as postp_mxl
 from i_o import exporter as io_exporter
 from convert import music_xml as conv_mxl, midi as conv_mid, max as conv_max
@@ -41,32 +41,27 @@ def main(args):
         'melody'
     )
 
-    mesh_score = mesh.MeshScore()
-
     sample_rate = .0029
 
     df_melody_diff.index = df_melody_diff.index * sample_rate
 
     # TODO: add index s before quantizing
 
-    tree_melody = mesh.MeshScore.get_interval_tree(
+    tree_melody = quantize.get_interval_tree(
         df_melody_diff
     )
 
-    mesh_score.set_tree(
-        tree_melody,
-        type='melody'
-    )
-
-    mesh_score.quantize(
+    data_quantized = quantize.quantize(
         beatmap,
         s_beat_start,
         s_beat_end,
-        columns=['melody']
+        trees={
+            'melody': tree_melody
+        }
     )
 
     score = postp_mxl.df_grans_to_score(
-        mesh_score.data_quantized['melody'],
+        data_quantized['melody'],
         parts=['melody']
     )
 

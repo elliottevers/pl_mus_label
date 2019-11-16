@@ -6,7 +6,7 @@ from utils import utils
 from i_o import importer as io_importer, exporter as io_exporter
 from convert import music_xml as convert_mxl, vamp as conv_vamp
 from postprocess import music_xml as postp_mxl
-from quantize import mesh
+from quantize import quantize
 from preprocess import vamp as prep_vamp
 import os
 
@@ -68,8 +68,6 @@ def main(args):
             )
         )
 
-        mesh_score = mesh.MeshScore()
-
         df_melody = prep_vamp.melody_to_df(
             (data_melody['vector'][0], data_melody['vector'][1]),
             index_type='s'
@@ -77,23 +75,20 @@ def main(args):
 
         df_melody[df_melody['melody'] < 0] = 0
 
-        melody_tree = mesh.MeshScore.get_interval_tree(
+        melody_tree = quantize.get_interval_tree(
             df_melody
         )
 
-        mesh_score.set_tree(
-            melody_tree,
-            type='melody'
-        )
-
-        mesh_score.quantize(
+        data_quantized = quantize.quantize(
             beatmap,
             s_beat_start,
             s_beat_end,
-            columns=['melody']
+            trees={
+                'melody': melody_tree
+            }
         )
 
-        data_quantized_melody = mesh_score.data_quantized['melody']
+        data_quantized_melody = data_quantized['melody']
 
         score = postp_mxl.df_grans_to_score(
             data_quantized_melody,

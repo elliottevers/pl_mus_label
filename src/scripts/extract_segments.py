@@ -5,7 +5,7 @@ from message import messenger as mes
 import argparse
 from preprocess import vamp as prep_vamp
 from postprocess import music_xml as postp_mxl
-from quantize import mesh
+from quantize import quantize
 from utils import utils
 import os
 from convert import music_xml as convert_mxl
@@ -59,33 +59,28 @@ def main(args):
             )
         )
 
-        mesh_score = mesh.MeshScore()
-
         df_segments = prep_vamp.segments_to_df(
             data_segments
         )
 
-        segment_tree = mesh.MeshScore.get_interval_tree(
+        segment_tree = quantize.get_interval_tree(
             df_segments,
             diff=False
         )
 
-        mesh_score.set_tree(
-            segment_tree,
-            type='segment'
-        )
-
-        mesh_score.quantize(
+        data_quantized = quantize.quantize(
             beatmap,
             s_beat_start,
             s_beat_end,
-            columns=['segment']
+            trees={
+                'segment': segment_tree
+            }
         )
 
-        data_quantized_chords = mesh_score.data_quantized['segment']
+        data_quantized_segments = data_quantized['segment']
 
         score = postp_mxl.df_grans_to_score(
-            data_quantized_chords,
+            data_quantized_segments,
             parts=['segment']
         )
 

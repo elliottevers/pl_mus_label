@@ -10,7 +10,7 @@ from preprocess import vamp as prep_vamp
 from postprocess import music_xml as postp_mxl
 from convert import music_xml as convert_mxl
 from i_o import exporter as io_exporter
-from quantize import mesh
+from quantize import quantize
 import music21
 from utils import utils, musix_xml as utils_mxl
 import os
@@ -39,8 +39,6 @@ def main(args):
         )
     )
 
-    mesh_score = mesh.MeshScore()
-
     non_empty_chords = vamp_filter.filter_non_chords(
         data_chords
     )
@@ -54,29 +52,21 @@ def main(args):
         events_chords
     )
 
-    chord_tree = mesh.MeshScore.get_interval_tree(
+    chord_tree = quantize.get_interval_tree(
         df_chords,
         diff=False
     )
 
-    mesh_score.set_tree(
-        chord_tree,
-        type='chord'
-    )
-
-    mesh_score.set_tree(
-        chord_tree,
-        type='chord'
-    )
-
-    mesh_score.quantize(
+    data_quantized = quantize.quantize(
         beatmap,
         s_beat_start,
         s_beat_end,
-        columns=['chord']
+        trees={
+            'chord': chord_tree
+        }
     )
 
-    data_quantized_chords = mesh_score.data_quantized['chord']
+    data_quantized_chords = data_quantized['chord']
 
     score = postp_mxl.df_grans_to_score(
         data_quantized_chords,
