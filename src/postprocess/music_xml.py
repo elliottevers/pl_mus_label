@@ -6,12 +6,35 @@ from utils import utils
 import json
 
 
+# TODO: make way better
 def force_texture(part_chord: music21.stream.Part, num_voices=4) -> music21.stream.Part:
     for obj in part_chord:
-        if type(obj).__name__ is not 'Rest' and len(obj.pitches) < num_voices:
+        # if type(obj).__name__ is not 'Rest' and len(obj.pitches) < num_voices:
+        if type(obj).__name__ is not 'Rest' and len(obj.pitches) == 3:
             obj.add(obj.bass().midi + 12)
+        elif type(obj).__name__ is not 'Rest' and len(obj.pitches) == 2:
+            for p in obj.pitches:
+                obj.add(p.midi + 12)
 
     return part_chord
+
+
+def extract_voice(part_homophony: music21.stream.Part, index_voice) -> music21.stream.Part:
+    part_voice = music21.stream.Part()
+    part_voice.id = 'voice'
+
+    for obj in part_homophony:
+        offset = obj.offset
+        duration = obj.duration
+        if isinstance(obj, music21.chord.Chord):
+            obj = music21.note.Note(
+                obj.pitches[index_voice],
+                duration=duration
+            )
+
+            part_voice.insert(offset, obj)
+
+    return part_voice
 
 
 def get_lowest_note(chord):

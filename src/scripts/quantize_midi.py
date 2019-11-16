@@ -124,7 +124,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Quantize Chords')
+    parser = argparse.ArgumentParser(description='Quantize Notes from Ableton Live')
 
     parser.add_argument('--beat_multiple', help='e.g., if 4, quantize to the measure')
 
