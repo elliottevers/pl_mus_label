@@ -7,6 +7,11 @@ from message import messenger as mes
 from postprocess import music_xml as postp_mxl
 
 
+num_measures_lead_in = 2
+
+# TODO: explicitly skip first measure
+# TODO: read all measures afterwards, if there is no chord symbol, use the last one read
+
 def main(args):
     messenger = mes.Messenger()
 
@@ -22,25 +27,40 @@ def main(args):
 
     for p in score:
         if isinstance(p, stream.Part):
-            for m in p:
-                if isinstance(m, stream.Measure):
-                    chord_symbols = [c for c in m if isinstance(c, harmony.ChordSymbol)]
+            for i in range(num_measures_lead_in + 1, p.measure(-1).measureNumber + 1):
+                m = p.measure(i)
 
+                chord_symbols = [c for c in m if isinstance(c, harmony.ChordSymbol)]
+
+                if len(chord_symbols) == 0:
+                    chord_new = chord.Chord(
+                        [p.midi for p in chord_sym_last.pitches],  # NB: we want to fail in this case
+                        duration=duration.Duration(4)
+                    )
+                    part_new.append(chord_new)
+                    chord_sym_last = chord_new
+                else:
                     for sym in chord_symbols:
                         if name_part == 'chord':
                             chord_new = chord.Chord(
                                 [p.midi for p in sym.pitches],
                                 duration=duration.Duration(4/len(chord_symbols))
                             )
-
                             part_new.append(chord_new)
+                            chord_sym_last = chord_new
                         elif name_part == 'bass':
                             note_new = note.Note(
                                 [p.midi for p in sym.pitches][0],
-                                duration=duration.Duration(4 / len(chord_symbols))
+                                duration=duration.Duration(4/len(chord_symbols))
                             )
 
                             part_new.append(note_new)
+                            chord_sym_last = chord.Chord(
+                                [p.midi for p in sym.pitches],
+                                duration=duration.Duration(4/len(chord_symbols))
+                            )
+                        else:
+                            raise Exception('cannot parse name_part from BIAB musicxml')
 
     if name_part == 'chord':
         part_new = postp_mxl.force_texture(
