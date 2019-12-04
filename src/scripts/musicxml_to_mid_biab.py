@@ -9,8 +9,6 @@ from postprocess import music_xml as postp_mxl
 
 num_measures_lead_in = 2
 
-# TODO: explicitly skip first measure
-# TODO: read all measures afterwards, if there is no chord symbol, use the last one read
 
 def main(args):
     messenger = mes.Messenger()
