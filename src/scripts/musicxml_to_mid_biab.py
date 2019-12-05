@@ -31,12 +31,25 @@ def main(args):
                 chord_symbols = [c for c in m if isinstance(c, harmony.ChordSymbol)]
 
                 if len(chord_symbols) == 0:
-                    chord_new = chord.Chord(
-                        [p.midi for p in chord_sym_last.pitches],  # NB: we want to fail in this case
-                        duration=duration.Duration(4)
-                    )
-                    part_new.append(chord_new)
-                    chord_sym_last = chord_new
+                    if name_part == 'chord':
+                        chord_new = chord.Chord(
+                            [p.midi for p in chord_sym_last.pitches],  # NB: we want to fail in this case
+                            duration=duration.Duration(4)
+                        )
+                        part_new.append(chord_new)
+                        chord_sym_last = chord_new
+                    elif name_part == 'root':
+                        note_new = chord.Chord(
+                            [[p.midi for p in chord_sym_last.pitches][0]],  # NB: we want to fail in this case
+                            duration=duration.Duration(4)
+                        )
+                        part_new.append(note_new)
+                        chord_sym_last = chord.Chord(
+                            [p.midi for p in chord_sym_last.pitches],
+                            duration=duration.Duration(4)
+                        )
+                    else:
+                        raise Exception('cannot parse name_part from BIAB musicxml')
                 else:
                     for sym in chord_symbols:
                         if name_part == 'chord':
