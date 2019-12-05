@@ -34,12 +34,12 @@ def main(args):
         )
     )
 
-    stream_bass = postp_mxl.extract_bass(
+    stream_root = postp_mxl.extract_root(
         stream_chord
     )
 
     notes_live = convert_mxl.to_notes_live(
-        stream_bass,
+        stream_root,
         beatmap,
         s_beat_start,
         s_beat_end,
@@ -48,7 +48,7 @@ def main(args):
 
     exporter = io_exporter.Exporter()
 
-    exporter.set_part(notes_live, 'bass')
+    exporter.set_part(notes_live, 'root')
 
     exporter.export(utils.get_file_json_comm())
 

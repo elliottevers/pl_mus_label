@@ -68,9 +68,9 @@ def extract_upper_voices(stream: music21.stream.Stream) -> music21.stream.Part:
     return part_upper
 
 
-def extract_bass(stream: music21.stream.Stream) -> music21.stream.Part:
-    part_bass = music21.stream.Part()
-    part_bass.id = 'bass'
+def extract_root(stream: music21.stream.Stream) -> music21.stream.Part:
+    part_root = music21.stream.Part()
+    part_root.id = 'root'
 
     for obj in stream:
         offset = obj.offset
@@ -81,12 +81,12 @@ def extract_bass(stream: music21.stream.Stream) -> music21.stream.Part:
                 duration=duration
             )
 
-        part_bass.insert(offset, obj)
+        part_root.insert(offset, obj)
 
-    return part_bass
+    return part_root
 
 
-def extract_parts(score: music21.stream.Score, parts=['chord', 'bass']) -> music21.stream.Score:
+def extract_parts(score: music21.stream.Score, parts=['chord', 'root']) -> music21.stream.Score:
     score_diminished = music21.stream.Score()
 
     for i_part, name_part in enumerate(parts):
@@ -148,7 +148,7 @@ def get_struct_score(object, name_part, dur):
             struct_score = music21.chord.Chord()
             struct_score.pitches = object
 
-    elif name_part == 'bass':
+    elif name_part == 'root':
         struct_score = music21.note.Note(
             pitch=object
         )
@@ -265,7 +265,7 @@ def df_grans_to_score(
     return score
 
 
-def from_json(filepath, parts=['melody', 'chord', 'bass']) -> music21.stream.Score:
+def from_json(filepath, parts=['melody', 'chord', 'root']) -> music21.stream.Score:
 
     with open(filepath) as f:
         json_read = json.load(f)

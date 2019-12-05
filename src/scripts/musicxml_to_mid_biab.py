@@ -46,7 +46,7 @@ def main(args):
                             )
                             part_new.append(chord_new)
                             chord_sym_last = chord_new
-                        elif name_part == 'bass':
+                        elif name_part == 'root':
                             note_new = note.Note(
                                 [p.midi for p in sym.pitches][0],
                                 duration=duration.Duration(4/len(chord_symbols))
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--file_output', help='destination midi file')
 
-    parser.add_argument('--name_part', help='bass or chord')
+    parser.add_argument('--name_part', help='root or chord')
 
     args = parser.parse_args()
 
