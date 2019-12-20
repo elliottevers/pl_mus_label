@@ -9,10 +9,11 @@ librosa==0.6.3
 llvmlite==0.28.0
 matplotlib==3.0.3
 mido==1.2.9
-music21==5.5.0
+music21==5.7.1
 numba==0.43.1
 numpy==1.16.2
 pandas==0.24.2
+pycharm===debug
 pyparsing==2.4.0
 python-dateutil==2.8.0
 pyts==0.7.5

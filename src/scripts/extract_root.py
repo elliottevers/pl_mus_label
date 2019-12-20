@@ -56,7 +56,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Extract Segments')
+    parser = argparse.ArgumentParser(description='Extract Roots')
 
     args = parser.parse_args()
 
