@@ -1,8 +1,13 @@
 import sys
 sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/tk_music_py/src')
-import argparse
 from mido import Message, MidiFile, MidiTrack
-from music21 import *
+import argparse
+from music21 import chord
+from utils import utils
+from message import messenger as mes
+
+import pydevd
+pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
 
 
 def get_object_potentially_callable(obj):
@@ -11,7 +16,13 @@ def get_object_potentially_callable(obj):
 
 def main(args):
 
-    index_part_extract = 5
+    messenger = mes.Messenger()
+
+    filepath_input = utils.parse_arg(args.file_input)
+
+    filepath_output = utils.parse_arg(args.file_output)
+
+    index_part_extract = int(utils.parse_arg(args.index_part_extract))
 
     index_part_to_interval = {
         1: 'root',
@@ -25,7 +36,7 @@ def main(args):
     ts_note_on = {}
     ts_note_off = {}
 
-    file_input = MidiFile('/Users/elliottevers/Downloads/tiny_dancer.mid')
+    file_input = MidiFile(filepath_input)
 
     # TODO:
     # create MIDI timeseries (s -> List[Note])
@@ -34,7 +45,6 @@ def main(args):
     # create new midi file
     time_current = 0
     for msg in file_input.tracks[1]:
-        # for msg in track:
             time_current = time_current + msg.time
             if msg.type == 'note_on':
                 ts_note_on[time_current] = ts_note_on.get(time_current, []) + [msg.note]
@@ -43,7 +53,6 @@ def main(args):
 
     time_current = 0
     for msg in file_input.tracks[2]:
-        # for msg in track:
         time_current = time_current + msg.time
         if msg.type == 'note_on':
             ts_note_on[time_current] = ts_note_on.get(time_current, []) + [msg.note]
@@ -78,11 +87,19 @@ def main(args):
         )
     )
 
-    file_output.save('/Users/elliottevers/Downloads/tiny_dancer_output.mid')
+    file_output.save(filepath_output)
+
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Chordify')
+    parser = argparse.ArgumentParser(description='Extract chord tones from Chordify MIDI file')
+
+    parser.add_argument('--file_input', help='Chordify MIDI file')
+
+    parser.add_argument('--file_output', help='extracted part')
+
+    parser.add_argument('--index_part_extract', help='1, 3, 5 - root, third, fifth')
 
     args = parser.parse_args()
 
