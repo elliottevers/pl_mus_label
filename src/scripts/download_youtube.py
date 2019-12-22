@@ -6,6 +6,10 @@ from message import messenger as mes
 from utils import utils
 
 
+# import pydevd
+# pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
+
+
 def main(args):
 
     utils.write_name_project(args.name_project)
@@ -61,7 +65,7 @@ def main(args):
         args.url[0]
     ]
 
-    subprocess.run(
+    res = subprocess.run(
         command_to_audio,
         stdout=subprocess.PIPE
     ).stdout.rstrip().decode("utf-8")

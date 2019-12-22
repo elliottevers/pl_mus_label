@@ -6,9 +6,6 @@ from music21 import chord
 from utils import utils
 from message import messenger as mes
 
-import pydevd
-pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
-
 
 def get_object_potentially_callable(obj):
     return obj() if hasattr(obj, '__call__') else obj
