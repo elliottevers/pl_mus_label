@@ -39,6 +39,23 @@ def in_triads_fall(scale_midi):
     return flatten([[scale_midi[i + 4], scale_midi[i + 2], p_midi] for i, p_midi in enumerate(scale_midi) if i < len(scale_midi) - 4])
 
 
+def in_triads_rise_first_inv(scale_midi):
+    return flatten([[p_midi, scale_midi[i + 3], scale_midi[i + 5]] for i, p_midi in enumerate(scale_midi) if i < len(scale_midi) - 5])
+
+
+def in_triads_fall_first_inv(scale_midi):
+    return flatten([[scale_midi[i + 5], scale_midi[i + 3], p_midi] for i, p_midi in enumerate(scale_midi) if i < len(scale_midi) - 5])
+
+
+def in_triads_rise_second_inv(scale_midi):
+    return flatten([[p_midi, scale_midi[i + 2], scale_midi[i + 6]] for i, p_midi in enumerate(scale_midi) if i < len(scale_midi) - 6])
+
+
+def in_triads_fall_second_inv(scale_midi):
+    return flatten([[scale_midi[i + 6], scale_midi[i + 2], p_midi] for i, p_midi in enumerate(scale_midi) if i < len(scale_midi) - 6])
+
+
+
 def main():
     edgeList = ['P5'] * 6 + ['d6'] + ['P5'] * 5
     net5ths = sc.intervalNetwork.IntervalNetwork()
@@ -80,6 +97,22 @@ def main():
     print('in triads falling')
     for scale in [s.getPitches('g2', 'f5', direction='ascending') for s in scales_over_fiths]:
         print(str(in_triads_fall([p.midi for p in scale])) + ',')
+
+    print('in triads 1st inversion rising')
+    for scale in [s.getPitches('g2', 'f5', direction='ascending') for s in scales_over_fiths]:
+        print(str(in_triads_rise_first_inv([p.midi for p in scale])) + ',')
+
+    print('in triads 1st inversion falling')
+    for scale in [s.getPitches('g2', 'f5', direction='ascending') for s in scales_over_fiths]:
+        print(str(in_triads_fall_first_inv([p.midi for p in scale])) + ',')
+
+    print('in triads 2nd inversion rising')
+    for scale in [s.getPitches('g2', 'f5', direction='ascending') for s in scales_over_fiths]:
+        print(str(in_triads_rise_second_inv([p.midi for p in scale])) + ',')
+
+    print('in triads 2nd inversion falling')
+    for scale in [s.getPitches('g2', 'f5', direction='ascending') for s in scales_over_fiths]:
+        print(str(in_triads_fall_second_inv([p.midi for p in scale])) + ',')
 
 
 if __name__ == '__main__':

@@ -15,6 +15,10 @@ dir_projects = os.path.dirname('/Users/elliottevers/Documents/git-repos.nosync/t
 file_log = os.path.join(dir_projects, '.log.txt')
 
 
+def get_object_potentially_callable(obj):
+    return obj() if hasattr(obj, '__call__') else obj
+
+
 def parse_arg(arg):
     return arg if arg is None else arg.replace("\"", '')
 

@@ -1,14 +1,12 @@
 import sys
+
 sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/tk_music_py/src')
+from utils.utils import get_object_potentially_callable
 from mido import Message, MidiFile, MidiTrack
 import argparse
 from music21 import chord
 from utils import utils
 from message import messenger as mes
-
-
-def get_object_potentially_callable(obj):
-    return obj() if hasattr(obj, '__call__') else obj
 
 
 def main(args):
