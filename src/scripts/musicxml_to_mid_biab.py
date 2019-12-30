@@ -79,7 +79,7 @@ def main(args):
 
                             note_new = note.Note(
                                 get_object_potentially_callable(obj),
-                                duration=duration.Duration(4)
+                                duration=duration.Duration(4/len(chord_symbols))
                             )
 
                             part_new.append(note_new)
