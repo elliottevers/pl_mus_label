@@ -35,6 +35,10 @@ def in_triads_rise(scale_midi):
     return flatten([[p_midi, scale_midi[i + 2], scale_midi[i + 4]] for i, p_midi in enumerate(scale_midi) if i < len(scale_midi) - 4])
 
 
+def in_triads_rise_and_fall(scale_midi):
+    return flatten([[scale_midi[i + 2], scale_midi[i + 4], p_midi] for i, p_midi in enumerate(scale_midi) if i < len(scale_midi) - 4])
+
+
 def in_triads_fall(scale_midi):
     return flatten([[scale_midi[i + 4], scale_midi[i + 2], p_midi] for i, p_midi in enumerate(scale_midi) if i < len(scale_midi) - 4])
 
@@ -93,6 +97,10 @@ def main():
     print('in triads rising')
     for scale in [s.getPitches('g2', 'f5', direction='ascending') for s in scales_over_fiths]:
         print(str(in_triads_rise([p.midi for p in scale])) + ',')
+
+    print('in triads rising and falling')
+    for scale in [s.getPitches('g2', 'f5', direction='ascending') for s in scales_over_fiths]:
+        print(str(in_triads_rise_and_fall([p.midi for p in scale])) + ',')
 
     print('in triads falling')
     for scale in [s.getPitches('g2', 'f5', direction='ascending') for s in scales_over_fiths]:

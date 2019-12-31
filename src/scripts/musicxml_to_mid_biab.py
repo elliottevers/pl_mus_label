@@ -36,6 +36,33 @@ def main(args):
 
     interval = index_part_to_interval[index_part_extract]
 
+    def process_chord_symbol(chord_sym, num_chord_symbols):
+        dividend = num_chord_symbols if num_chord_symbols > 0 else 1
+
+        if name_part == 'chord':
+            chord_new = chord.Chord(
+                [p.midi for p in chord_sym.pitches],  # NB: we want to fail in this case
+                duration=duration.Duration(4 / dividend)
+            )
+            to_append = chord_new
+            chord_sym_last = chord_new
+        elif name_part == 'chord_tone':
+            obj = getattr(chord_sym, interval)
+
+            note_new = note.Note(
+                get_object_potentially_callable(obj),
+                duration=duration.Duration(4 / dividend)
+            )
+            to_append = note_new
+            chord_sym_last = chord.Chord(
+                [p.midi for p in chord_sym.pitches],
+                duration=duration.Duration(4 / dividend)
+            )
+        else:
+            raise Exception('cannot parse name_part from BIAB musicxml')
+
+        return to_append, chord_sym_last
+
     for p in score:
         if isinstance(p, stream.Part):
             for i in range(num_measures_lead_in + 1, p.measure(-1).measureNumber + 1):
@@ -44,52 +71,18 @@ def main(args):
                 chord_symbols = [c for c in m if isinstance(c, harmony.ChordSymbol)]
 
                 if len(chord_symbols) == 0:  # chord_sym_last should be defined here
-                    if name_part == 'chord':
-                        chord_new = chord.Chord(
-                            [p.midi for p in chord_sym_last.pitches],  # NB: we want to fail in this case
-                            duration=duration.Duration(4)
-                        )
-                        part_new.append(chord_new)
-                        chord_sym_last = chord_new
-                    elif name_part == 'chord_tone':
-                        obj = getattr(chord_sym_last, interval)
-
-                        note_new = note.Note(
-                            get_object_potentially_callable(obj),
-                            duration=duration.Duration(4)
-                        )
-                        part_new.append(note_new)
-                        chord_sym_last = chord.Chord(
-                            [p.midi for p in chord_sym_last.pitches],
-                            duration=duration.Duration(4)
-                        )
-                    else:
-                        raise Exception('cannot parse name_part from BIAB musicxml')
+                    to_append, chord_sym_last = process_chord_symbol(
+                        chord_sym=chord_sym_last,
+                        num_chord_symbols=0
+                    )
+                    part_new.append(to_append)
                 else:
                     for sym in chord_symbols:
-                        if name_part == 'chord':
-                            chord_new = chord.Chord(
-                                [p.midi for p in sym.pitches],
-                                duration=duration.Duration(4/len(chord_symbols))
-                            )
-                            part_new.append(chord_new)
-                            chord_sym_last = chord_new
-                        elif name_part == 'chord_tone':
-                            obj = getattr(sym, interval)
-
-                            note_new = note.Note(
-                                get_object_potentially_callable(obj),
-                                duration=duration.Duration(4/len(chord_symbols))
-                            )
-
-                            part_new.append(note_new)
-
-                            chord_sym_last = chord.Chord(
-                                [p.midi for p in sym.pitches],
-                                duration=duration.Duration(4/len(chord_symbols))
-                            )
-                        else:
-                            raise Exception('cannot parse name_part from BIAB musicxml')
+                        to_append, chord_sym_last = process_chord_symbol(
+                            chord_sym=sym,
+                            num_chord_symbols=len(chord_symbols)
+                        )
+                        part_new.append(to_append)
 
     if name_part == 'chord':
         part_new = postp_mxl.force_texture(
