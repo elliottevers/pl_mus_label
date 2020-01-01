@@ -12,9 +12,6 @@ from utils.utils import get_object_potentially_callable
 
 num_measures_lead_in = 2
 
-# import pydevd
-# pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
-
 
 def main(args):
     messenger = mes.Messenger()
@@ -61,9 +58,9 @@ def main(args):
             chord_sym_last = chord_sym
         elif name_part == 'arpeggio':
             to_append = [
-                note.Note(chord_sym.root().name, duration=duration.Duration(4 / dividend / 3)),
-                note.Note(chord_sym.third.name if chord_sym.third else chord_sym.pitches[1].name, duration=duration.Duration(4 / dividend / 3)),
-                note.Note(chord_sym.fifth.name, duration=duration.Duration(4 / dividend / 3))
+                note.Note(chord_sym.root().midi, duration=duration.Duration(4 / dividend / 4)),
+                note.Note(chord_sym.third.midi if chord_sym.third else chord_sym.pitches[1].midi, duration=duration.Duration(4 / dividend / 4)),
+                note.Note(chord_sym.fifth.midi, duration=duration.Duration(4 / dividend / 2))
             ]
             chord_sym_last = chord_sym
         else:
