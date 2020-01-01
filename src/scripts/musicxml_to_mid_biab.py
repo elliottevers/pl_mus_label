@@ -12,6 +12,9 @@ from utils.utils import get_object_potentially_callable
 
 num_measures_lead_in = 2
 
+# import pydevd
+# pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
+
 
 def main(args):
     messenger = mes.Messenger()
@@ -41,7 +44,7 @@ def main(args):
 
         if name_part == 'chord':
             chord_new = chord.Chord(
-                [p.midi for p in chord_sym.pitches],  # NB: we want to fail in this case
+                [p.midi for p in chord_sym.pitches],  # NB: we want to fail in this case TODO: get rid of call to pitches
                 duration=duration.Duration(4 / dividend)
             )
             to_append = chord_new
@@ -54,10 +57,15 @@ def main(args):
                 duration=duration.Duration(4 / dividend)
             )
             to_append = note_new
-            chord_sym_last = chord.Chord(
-                [p.midi for p in chord_sym.pitches],
-                duration=duration.Duration(4 / dividend)
-            )
+            chord_sym.duration = duration.Duration(4 / dividend)
+            chord_sym_last = chord_sym
+        elif name_part == 'arpeggio':
+            to_append = [
+                note.Note(chord_sym.root().name, duration=duration.Duration(4 / dividend / 3)),
+                note.Note(chord_sym.third.name if chord_sym.third else chord_sym.pitches[1].name, duration=duration.Duration(4 / dividend / 3)),
+                note.Note(chord_sym.fifth.name, duration=duration.Duration(4 / dividend / 3))
+            ]
+            chord_sym_last = chord_sym
         else:
             raise Exception('cannot parse name_part from BIAB musicxml')
 
