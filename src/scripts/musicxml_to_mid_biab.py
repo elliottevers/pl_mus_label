@@ -9,8 +9,22 @@ from postprocess import music_xml as postp_mxl
 
 from utils.utils import get_object_potentially_callable
 
+# import pydevd
+# pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
 
 num_measures_lead_in = 2
+
+
+def map_midi(pitch_midi_raw, intervalDesired):
+    if intervalDesired:
+        if pitch_midi_raw > intervalDesired[1]:
+            while (pitch_midi_raw > intervalDesired[1]):
+                pitch_midi_raw -= 12
+        elif pitch_midi_raw < intervalDesired[0]:
+            while (pitch_midi_raw < intervalDesired[0]):
+                pitch_midi_raw += 12
+
+    return pitch_midi_raw
 
 
 def main(args):
@@ -22,9 +36,13 @@ def main(args):
 
     name_part = utils.parse_arg(args.name_part)
 
+    buffer = bool(int(utils.parse_arg(args.buffer)))
+
     score = converter.parse(file_input)
 
     part_new = stream.Part()
+
+    interval_map_midi = list(map(int, utils.parse_arg(args.interval).split(',')))
 
     index_part_extract = int(utils.parse_arg(args.index_part_extract))
 
@@ -49,19 +67,43 @@ def main(args):
         elif name_part == 'chord_tone':
             obj = getattr(chord_sym, interval)
 
-            note_new = note.Note(
-                get_object_potentially_callable(obj),
-                duration=duration.Duration(4 / dividend)
-            )
-            to_append = note_new
+            pitch = get_object_potentially_callable(obj).midi
+
+            if buffer:
+                to_append = [
+                    note.Rest(duration=duration.Duration(4 / dividend / 4)),
+                    note.Note(
+                        map_midi(pitch, interval_map_midi),
+                        duration=duration.Duration((4 / dividend / 4) * 3)
+                    )
+                ]
+            else:
+                to_append = [
+                    note.Note(
+                        map_midi(pitch, interval_map_midi),
+                        duration=duration.Duration(4 / dividend)
+                    )
+                ]
+
             chord_sym.duration = duration.Duration(4 / dividend)
             chord_sym_last = chord_sym
         elif name_part == 'arpeggio':
+
+            pitch_root = chord_sym.root().midi
+
+            diff_third = (chord_sym.third.midi if chord_sym.third else chord_sym.pitches[1].midi) - pitch_root
+
+            diff_fifth = chord_sym.fifth.midi - pitch_root
+
+            pitch_root_new = map_midi(pitch_root, interval_map_midi)
+
             to_append = [
-                note.Note(chord_sym.root().midi, duration=duration.Duration(4 / dividend / 4)),
-                note.Note(chord_sym.third.midi if chord_sym.third else chord_sym.pitches[1].midi, duration=duration.Duration(4 / dividend / 4)),
-                note.Note(chord_sym.fifth.midi, duration=duration.Duration(4 / dividend / 2))
+                note.Rest(duration=duration.Duration(4 / dividend / 4)),
+                note.Note(pitch_root_new, duration=duration.Duration(4 / dividend / 4)),
+                note.Note(pitch_root_new + diff_third, duration=duration.Duration(4 / dividend / 4)),
+                note.Note(pitch_root_new + diff_fifth, duration=duration.Duration(4 / dividend / 4))
             ]
+
             chord_sym_last = chord_sym
         else:
             raise Exception('cannot parse name_part from BIAB musicxml')
@@ -109,7 +151,11 @@ if __name__ == '__main__':
 
     parser.add_argument('--name_part', help='root or chord')
 
+    parser.add_argument('--buffer', help='space between start of measure and note ground truth')
+
     parser.add_argument('--index_part_extract', help='1, 3, 5 - root, third, fifth')
+
+    parser.add_argument('--interval', help='interval to restrict tones to')
 
     args = parser.parse_args()
 
