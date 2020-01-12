@@ -1,9 +1,13 @@
 import sys
 sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/tk_music_py/src')
 
-import random
+import random, argparse
 from music21 import scale, pitch, key, stream, chord, roman, duration, note
+from utils import utils
+from message import messenger as mes
 
+# import pydevd
+# pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
 
 roman_numerals = {
     1: 'I',
@@ -28,32 +32,25 @@ edgeList = ['P5'] * 6 + ['d6'] + ['P5'] * 5
 net5ths = scale.intervalNetwork.IntervalNetwork()
 net5ths.fillBiDirectedEdges(edgeList)
 circle_of_fifths = net5ths.realizePitch(pitch.Pitch('C1'))
-# TODO: random walk around circle from random starting point?
-
-# generate random scale from circle of fifths
-# TODO: random walk up and down scale?
-
 
 SCALAR = 'scalar'
 FIFTHS = 'fifths'
 
 
 def main():
-    # generate 4 chords for 4 measures, then change key
-    # always introduce new key with dominant?
+    messenger = mes.Messenger()
 
-    stream_all = stream.Stream()
+    mode = utils.parse_arg(args.mode)
 
     part_predict = stream.Part()
 
     part_gt = stream.Part()
 
-    mode = SCALAR
-
     if mode == SCALAR:
-        struct_tones = scale.MajorScale(circle_of_fifths[random.choice(list(range(0, len(circle_of_fifths) - 1)))]).pitches
+        # generate random scale from circle of fifths
+        struct_tones = scale.MajorScale(circle_of_fifths[random.choice(list(range(0, len(circle_of_fifths) - 1)))]).pitches[:-1]
     elif mode == FIFTHS:
-        struct_tones = circle_of_fifths
+        struct_tones = circle_of_fifths[:-1]
     else:
         raise('mode not supported')
 
@@ -63,7 +60,7 @@ def main():
 
     key_current = key.Key(tone_current)
 
-    for i_measure in range(0, 4 * 6):
+    for i_measure in range(0, 4 * 8):
         if i_measure % 4 == 0:
             degree_current = 1
             n = note.Note(
@@ -94,18 +91,17 @@ def main():
             c
         )
 
-    stream_all.append(
-        part_predict
-    )
+    part_predict.write('midi', fp='/Users/elliottevers/Downloads/predict.mid')
+    part_gt.write('midi', fp='/Users/elliottevers/Downloads/gt.mid')
 
-    stream_all.append(
-        part_gt
-    )
-
-    stream_all.show('midi')
-
-
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate Modulation Chord Progressions')
+
+    parser.add_argument('--mode', help='scalar or fifths')
+
+    args = parser.parse_args()
+
     main()
