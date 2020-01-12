@@ -27,6 +27,8 @@ graph = {
     6: [2, 4, 5]
 }
 
+beats_buffer = 2
+
 # generate circle of fifths
 edgeList = ['P5'] * 6 + ['d6'] + ['P5'] * 5
 net5ths = scale.intervalNetwork.IntervalNetwork()
@@ -60,15 +62,21 @@ def main():
 
     key_current = key.Key(tone_current)
 
-    for i_measure in range(0, 4 * 8):
+    length_beats = 4 * 8
+
+    for i_measure in range(0, length_beats):
         if i_measure % 4 == 0:
             degree_current = 1
-            n = note.Note(
-                tone_current,
-                duration=duration.Duration(4 * 4),
-            )
+            n = [
+                note.Rest(duration=duration.Duration(beats_buffer)),
+                note.Note(
+                    tone_current,
+                    duration=duration.Duration(4 * 2 - 2),
+                ),
+                note.Rest(duration=duration.Duration(4 * 2)) if i_measure < length_beats - 4 else note.Note(tone_current, duration=duration.Duration(4 * 2))
+            ]
 
-            n.octave = 3
+            n[1].octave = 3
 
             part_gt.append(
                 n
