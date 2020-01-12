@@ -48,9 +48,7 @@ def main():
 
     part_gt = stream.Part()
 
-    mode = FIFTHS
-
-    struct_tones = None
+    mode = SCALAR
 
     if mode == SCALAR:
         struct_tones = scale.MajorScale(circle_of_fifths[random.choice(list(range(0, len(circle_of_fifths) - 1)))]).pitches
@@ -61,11 +59,11 @@ def main():
 
     index_tones_current = random.choice(list(range(0, len(struct_tones) - 1)))
 
-    tone_current = struct_tones[(index_tones_current) % len(struct_tones)]
+    tone_current = struct_tones[index_tones_current]
 
     key_current = key.Key(tone_current)
 
-    for i_measure in range(0, 4 * 4):
+    for i_measure in range(0, 4 * 6):
         if i_measure % 4 == 0:
             degree_current = 1
             n = note.Note(
@@ -80,17 +78,20 @@ def main():
             )
         elif i_measure % 4 == 3:
             key_next_diff = 1 if random.uniform(0, 1) > .5 else -1
-            tone_current = struct_tones[(index_tones_current + key_next_diff) % len(struct_tones)]
+            index_tones_current = (index_tones_current + key_next_diff) % len(struct_tones)
+            tone_current = struct_tones[index_tones_current]
             key_current = key.Key(tone_current)
             degree_current = 5
         else:
             degree_current = random.choice(graph[degree_current])
 
+        c = chord.Chord(
+            roman.RomanNumeral(roman_numerals[degree_current], key_current),
+            duration=duration.Duration(4)
+        ).closedPosition(forceOctave=4)
+
         part_predict.append(
-            chord.Chord(
-                roman.RomanNumeral(roman_numerals[degree_current], key_current),
-                duration=duration.Duration(4)
-            ).closedPosition(forceOctave=4)
+            c
         )
 
     stream_all.append(
