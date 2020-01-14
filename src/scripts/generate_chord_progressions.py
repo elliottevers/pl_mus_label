@@ -13,7 +13,7 @@ roman_numerals = {
     1: 'I',
     2: 'ii',
     3: 'iii',
-    4: 'iv',
+    4: 'IV',
     5: 'V',
     6: 'vi'
 }
@@ -38,6 +38,8 @@ circle_of_fifths = net5ths.realizePitch(pitch.Pitch('C1'))
 SCALAR = 'scalar'
 FIFTHS = 'fifths'
 
+note_crash_cymbal = 'C#3'
+
 
 def main():
     messenger = mes.Messenger()
@@ -47,6 +49,8 @@ def main():
     part_predict = stream.Part()
 
     part_gt = stream.Part()
+
+    part_segment = stream.Part()
 
     if mode == SCALAR:
         # generate random scale from circle of fifths
@@ -73,7 +77,7 @@ def main():
                     tone_current,
                     duration=duration.Duration(4 * 2 - 2),
                 ),
-                note.Rest(duration=duration.Duration(4 * 2)) if i_measure < length_beats - 4 else note.Note(tone_current, duration=duration.Duration(4 * 2))
+                note.Rest(duration=duration.Duration(4 * 2))
             ]
 
             n[1].octave = 3
@@ -81,6 +85,19 @@ def main():
             part_gt.append(
                 n
             )
+
+            part_segment.append(
+                [
+                    note.Note(
+                        note_crash_cymbal,
+                        duration=duration.Duration(4 * 2)
+                    ),
+                    note.Rest(
+                        duration=duration.Duration(4 * 2)
+                    )
+                ]
+            )
+
         elif i_measure % 4 == 3:
             key_next_diff = 1 if random.uniform(0, 1) > .5 else -1
             index_tones_current = (index_tones_current + key_next_diff) % len(struct_tones)
@@ -95,12 +112,14 @@ def main():
             duration=duration.Duration(4)
         ).closedPosition(forceOctave=4)
 
-        part_predict.append(
-            c
-        )
+        if i_measure < length_beats - 2:
+            part_predict.append(
+                c
+            )
 
     part_predict.write('midi', fp='/Users/elliottevers/Downloads/predict.mid')
     part_gt.write('midi', fp='/Users/elliottevers/Downloads/gt.mid')
+    part_segment.write('midi', fp='/Users/elliottevers/Downloads/segment.mid')
 
     messenger.message(['done', 'bang'])
 
