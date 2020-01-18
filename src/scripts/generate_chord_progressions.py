@@ -27,7 +27,7 @@ graph = {
     6: [2, 4, 5]
 }
 
-beats_buffer = 2
+beats_buffer = 2  # half the duration of a chord
 
 # generate circle of fifths
 edgeList = ['P5'] * 6 + ['d6'] + ['P5'] * 5
@@ -66,25 +66,11 @@ def main():
 
     key_current = key.Key(tone_current)
 
-    length_beats = 4 * 8
+    length_beats = 4 * 8 * 2
 
     for i_measure in range(0, length_beats):
         if i_measure % 4 == 0:
             degree_current = 1
-            n = [
-                note.Rest(duration=duration.Duration(beats_buffer)),
-                note.Note(
-                    tone_current,
-                    duration=duration.Duration(4 * 2 - 2),
-                ),
-                note.Rest(duration=duration.Duration(4 * 2))
-            ]
-
-            n[1].octave = 3
-
-            part_gt.append(
-                n
-            )
 
             part_segment.append(
                 [
@@ -107,6 +93,27 @@ def main():
         else:
             degree_current = random.choice(graph[degree_current])
 
+        arp = chord.Chord(
+            roman.RomanNumeral(roman_numerals[degree_current], key_current),
+            duration=duration.Duration(4)
+        ).closedPosition(forceOctave=3)
+
+        n = [
+            note.Rest(duration=duration.Duration(beats_buffer)),
+            note.Note(
+                arp.pitches[0],
+                duration=duration.Duration(beats_buffer/3),
+            ),
+            note.Note(
+                arp.pitches[1],
+                duration=duration.Duration(beats_buffer/3),
+            ),
+            note.Note(
+                arp.pitches[2],
+                duration=duration.Duration(beats_buffer/3),
+            )
+        ]
+
         c = chord.Chord(
             roman.RomanNumeral(roman_numerals[degree_current], key_current),
             duration=duration.Duration(4)
@@ -115,6 +122,9 @@ def main():
         if i_measure < length_beats - 2:
             part_predict.append(
                 c
+            )
+            part_gt.append(
+                n
             )
 
     part_predict.write('midi', fp='/Users/elliottevers/Downloads/predict.mid')
