@@ -37,8 +37,33 @@ circle_of_fifths = net5ths.realizePitch(pitch.Pitch('C1'))
 
 SCALAR = 'scalar'
 FIFTHS = 'fifths'
+COMBINED = 'combined'
 
 note_crash_cymbal = 'C#3'
+
+
+def diff_next_key_combined():
+    res = random.uniform(0, 1)
+    if res > 0 and res < 1/6:
+        return 1
+    elif res > 1/6 and res < 2/6:
+        return -1
+    elif res > 2/6 and res < 3/6:
+        return 2
+    elif res > 3/6 and res < 4/6:
+        return -2
+    elif res > 4/6 and res < 5/6:
+        return 7
+    else:
+        return -7
+
+
+def diff_next_key():
+    res = random.uniform(0, 1)
+    if res > .5:
+        return 1
+    else:
+        return -1
 
 
 def main():
@@ -55,7 +80,7 @@ def main():
     if mode == SCALAR:
         # generate random scale from circle of fifths
         struct_tones = scale.MajorScale(circle_of_fifths[random.choice(list(range(0, len(circle_of_fifths) - 1)))]).pitches[:-1]
-    elif mode == FIFTHS:
+    elif mode == FIFTHS or mode == COMBINED:
         struct_tones = circle_of_fifths[:-1]
     else:
         raise('mode not supported')
@@ -85,7 +110,7 @@ def main():
             )
 
         elif i_measure % 4 == 3:
-            key_next_diff = 1 if random.uniform(0, 1) > .5 else -1
+            key_next_diff = diff_next_key_combined() if mode == COMBINED else diff_next_key()
             index_tones_current = (index_tones_current + key_next_diff) % len(struct_tones)
             tone_current = struct_tones[index_tones_current]
             key_current = key.Key(tone_current)
