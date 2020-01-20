@@ -124,7 +124,7 @@ def main():
         ).closedPosition(forceOctave=3)
 
         n = [
-            note.Rest(duration=duration.Duration(beats_buffer)),
+            note.Rest(duration=duration.Duration(beats_buffer / 2)),
             note.Note(
                 arp.pitches[0],
                 duration=duration.Duration(beats_buffer/3),
@@ -136,7 +136,8 @@ def main():
             note.Note(
                 arp.pitches[2],
                 duration=duration.Duration(beats_buffer/3),
-            )
+            ),
+            note.Rest(duration=duration.Duration(beats_buffer / 2))
         ]
 
         c = chord.Chord(
