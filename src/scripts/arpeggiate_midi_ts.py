@@ -10,7 +10,7 @@ from message import messenger as mes
 
 import pytube
 
-ratio_buffer = .65
+ratio_buffer = .5
 
 
 def main(args):
@@ -21,7 +21,7 @@ def main(args):
 
     dir_download = '/Users/elliottevers/Downloads/'
 
-    pytube.YouTube(url).streams.filter(only_audio=True).first().download(dir_download)
+    # pytube.YouTube(url).streams.filter(only_audio=True).first().download(dir_download)
 
     # exit(0)
 
@@ -69,58 +69,31 @@ def main(args):
     file_output.tracks.append(file_input.tracks[0])
     file_output.tracks.append(track)
 
-    time_last = 0
-    pitch21_last = chord.Chord(list(ts_note_on.values())[0]).root()
+    note_buffer = 48  # pitch21_last.midi
 
-    track.append(Message('note_on', note=pitch21_last.midi, velocity=0, time=0))
+    chords = list(ts_note_on.items())
 
-    for time, pitches in ts_note_on.items():
+    for i, (time, pitches) in enumerate(chords[:-1]):
 
-        duration = time - time_last
+        duration = chords[i + 1][0] - time
 
         c = chord.Chord(pitches).closedPosition(forceOctave=4)
 
-        # tones = [t for t in [c.root(), c.third, c.fifth] if t] # TODO: add back in for arpeggiation
-        tones = [t for t in [c.root()] if t]
+        tones_chord = c.pitches  # [c.root()]
 
-        len_buffer = ratio_buffer * (duration / len(tones))
-        len_audible = (1 - ratio_buffer) * (duration / len(tones))
+        len_buffer = ratio_buffer * duration
+        len_audible = (1 - ratio_buffer) * (duration / len(tones_chord))
 
         # silent (buffer)
-        track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(len_buffer)))
-        track.append(Message('note_on', note=pitch21_last.midi, velocity=0, time=0))
+        track.append(Message('note_on', note=note_buffer, velocity=0, time=0))
+        track.append(Message('note_off', note=note_buffer, velocity=0, time=int(len_buffer)))
 
-        for tone in tones:
-            # len_buffer = ratio_buffer * (duration/len(tones))
-            # len_audible = (1 - ratio_buffer) * (duration/len(tones))
-
-            # # silent (buffer)
-            # track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(len_buffer)))
-            # track.append(Message('note_on', note=tone.midi, velocity=0, time=0))
-
+        for tone in tones_chord:
             # audible
-            track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(len_audible)))
             track.append(Message('note_on', note=tone.midi, velocity=90, time=0))
+            track.append(Message('note_off', note=tone.midi, velocity=0, time=int(len_audible)))
 
-            pitch21_last = tone
-            time_last = time
-
-        # # silent (buffer)
-        # track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(len_buffer)))
-        # track.append(Message('note_on', note=tone.midi, velocity=0, time=0))
-
-    obj = chord.Chord(list(ts_note_off.values())[-1]).root()
-
-    note_off_final_midi = get_object_potentially_callable(obj).midi
-
-    track.append(
-        Message(
-            'note_off',
-            note=note_off_final_midi,
-            velocity=0,
-            time=list(zip(list(ts_note_on), list(ts_note_off)))[-1][1] - list(zip(list(ts_note_on), list(ts_note_off)))[-1][0]
-        )
-    )
+    # TODO: add final chord
 
     file_output.save(filepath_output)
 
