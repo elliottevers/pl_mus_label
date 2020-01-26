@@ -66,6 +66,10 @@ def main(args):
 
     chords = list(ts_note_on.items())
 
+    # possible silence at beginning
+    track.append(Message('note_on', note=note_buffer, velocity=0, time=0))
+    track.append(Message('note_off', note=note_buffer, velocity=0, time=int(list(ts_note_on)[0])))
+
     for i, (time, pitches) in enumerate(chords[:-1]):
 
         duration = chords[i + 1][0] - time
