@@ -15,10 +15,6 @@ ratio_buffer = .5
 # pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
 
 
-def unsafe_parse(arg):
-    return arg[1:-1]
-
-
 def main(args):
 
     messenger = mes.Messenger()
@@ -28,12 +24,11 @@ def main(args):
     include_video = args.include_video
 
     if include_video:
-        url = unsafe_parse(utils.parse_arg(args.url))
-        pytube.YouTube(url).streams.filter(only_audio=True).first().download(dir_download)
+        pytube.YouTube(utils.parse_arg(args.url)).streams.filter(only_audio=True).first().download(dir_download)
 
-    filepath_input = dir_download + unsafe_parse(utils.parse_arg(args.file_input))
+    filepath_input = utils.parse_arg(args.file_input)
 
-    filepath_output = dir_download + unsafe_parse(utils.parse_arg(args.file_output))
+    filepath_output = utils.parse_arg(args.file_output)
 
     # NB: relying on preservation of insertion order
     ts_note_on = {}
