@@ -72,7 +72,9 @@ def main(args):
 
         c = chord.Chord(pitches).closedPosition(forceOctave=4)
 
-        tones_chord = c.pitches  # [c.root()]
+        # tones_chord = c.pitches  # [c.root()]
+
+        tones_chord = [c.root()]
 
         len_buffer = ratio_buffer * duration
         len_audible = (1 - ratio_buffer) * (duration / len(tones_chord))
