@@ -1,7 +1,6 @@
 import sys
 
 sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/tk_music_py/src')
-from utils.utils import get_object_potentially_callable
 from mido import Message, MidiFile, MidiTrack
 import argparse
 from music21 import chord
@@ -12,30 +11,29 @@ import pytube
 
 ratio_buffer = .5
 
+# import pydevd
+# pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
+
+
+def unsafe_parse(arg):
+    return arg[1:-1]
+
 
 def main(args):
 
-    # video to sync midi to
-
-    url = 'https://www.youtube.com/watch?v=2PTEqZURh4o'
+    messenger = mes.Messenger()
 
     dir_download = '/Users/elliottevers/Downloads/'
 
-    # pytube.YouTube(url).streams.filter(only_audio=True).first().download(dir_download)
+    include_video = args.include_video
 
-    # exit(0)
+    if include_video:
+        url = unsafe_parse(utils.parse_arg(args.url))
+        pytube.YouTube(url).streams.filter(only_audio=True).first().download(dir_download)
 
-    # midi timeseries
+    filepath_input = dir_download + unsafe_parse(utils.parse_arg(args.file_input))
 
-    # messenger = mes.Messenger()
-
-    # filepath_input = utils.parse_arg(args.file_input)
-
-    # filepath_output = utils.parse_arg(args.file_output)
-
-    filepath_input = utils.parse_arg(dir_download + 'Chordify_Lyin-Eyes-2018-Remaster_Time_Aligned_130_BPM.mid')
-
-    filepath_output = utils.parse_arg(dir_download + 'buffered_arpeggio.mid')
+    filepath_output = dir_download + unsafe_parse(utils.parse_arg(args.file_output))
 
     # NB: relying on preservation of insertion order
     ts_note_on = {}
@@ -97,7 +95,7 @@ def main(args):
 
     file_output.save(filepath_output)
 
-    # messenger.message(['done', 'bang'])
+    messenger.message(['done', 'bang'])
 
 
 if __name__ == '__main__':
@@ -107,7 +105,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--file_output', help='extracted part')
 
-    parser.add_argument('--index_part_extract', help='1, 3, 5 - root, third, fifth')
+    parser.add_argument('--url', help='YouTube URL')
+
+    parser.add_argument('--include_video', help='include YouTube download', action='store_true')
 
     args = parser.parse_args()
 
