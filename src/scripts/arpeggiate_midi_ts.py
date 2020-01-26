@@ -10,18 +10,20 @@ from message import messenger as mes
 
 import pytube
 
+ratio_buffer = .65
+
 
 def main(args):
 
     # video to sync midi to
 
-    url = 'https://www.youtube.com/watch?v=dO1rMeYnOmM'
+    url = 'https://www.youtube.com/watch?v=2PTEqZURh4o'
 
     dir_download = '/Users/elliottevers/Downloads/'
 
     pytube.YouTube(url).streams.filter(only_audio=True).first().download(dir_download)
 
-    exit(0)
+    # exit(0)
 
     # midi timeseries
 
@@ -31,7 +33,7 @@ def main(args):
 
     # filepath_output = utils.parse_arg(args.file_output)
 
-    filepath_input = utils.parse_arg(dir_download + 'Chordify_Jim-Croce-Time-in-a-bottle-1973_Time_Aligned_136_BPM.mid')
+    filepath_input = utils.parse_arg(dir_download + 'Chordify_Lyin-Eyes-2018-Remaster_Time_Aligned_130_BPM.mid')
 
     filepath_output = utils.parse_arg(dir_download + 'buffered_arpeggio.mid')
 
@@ -70,19 +72,42 @@ def main(args):
     time_last = 0
     pitch21_last = chord.Chord(list(ts_note_on.values())[0]).root()
 
+    track.append(Message('note_on', note=pitch21_last.midi, velocity=0, time=0))
+
     for time, pitches in ts_note_on.items():
 
         duration = time - time_last
 
         c = chord.Chord(pitches).closedPosition(forceOctave=4)
 
-        tones = [x for x in [c.root(), c.third, c.fifth] if x]
+        # tones = [t for t in [c.root(), c.third, c.fifth] if t] # TODO: add back in for arpeggiation
+        tones = [t for t in [c.root()] if t]
+
+        len_buffer = ratio_buffer * (duration / len(tones))
+        len_audible = (1 - ratio_buffer) * (duration / len(tones))
+
+        # silent (buffer)
+        track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(len_buffer)))
+        track.append(Message('note_on', note=pitch21_last.midi, velocity=0, time=0))
 
         for tone in tones:
-            track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(duration/len(tones))))
+            # len_buffer = ratio_buffer * (duration/len(tones))
+            # len_audible = (1 - ratio_buffer) * (duration/len(tones))
+
+            # # silent (buffer)
+            # track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(len_buffer)))
+            # track.append(Message('note_on', note=tone.midi, velocity=0, time=0))
+
+            # audible
+            track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(len_audible)))
             track.append(Message('note_on', note=tone.midi, velocity=90, time=0))
+
             pitch21_last = tone
             time_last = time
+
+        # # silent (buffer)
+        # track.append(Message('note_off', note=pitch21_last.midi, velocity=0, time=int(len_buffer)))
+        # track.append(Message('note_on', note=tone.midi, velocity=0, time=0))
 
     obj = chord.Chord(list(ts_note_off.values())[-1]).root()
 
