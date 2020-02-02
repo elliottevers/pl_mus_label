@@ -3,7 +3,7 @@ sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/tk_music_py/s
 
 import random, argparse
 from music21 import scale, pitch, key, stream, chord, roman, duration, note
-from utils import utils
+from utils import utils, midi
 from message import messenger as mes
 
 # import pydevd
@@ -123,18 +123,24 @@ def main():
             duration=duration.Duration(4)
         ).closedPosition(forceOctave=3)
 
+        root_correct_register = midi.map_midi(arp.pitches[0].midi, [40, 51])
+
+        diff_third = arp.pitches[1].midi - arp.pitches[0].midi
+
+        diff_fifth = arp.pitches[2].midi - arp.pitches[0].midi
+
         n = [
             note.Rest(duration=duration.Duration(beats_buffer / 2)),
             note.Note(
-                arp.pitches[0],
+                root_correct_register,
                 duration=duration.Duration(beats_buffer/3),
             ),
             note.Note(
-                arp.pitches[1],
+                root_correct_register + diff_third,
                 duration=duration.Duration(beats_buffer/3),
             ),
             note.Note(
-                arp.pitches[2],
+                root_correct_register + diff_fifth,
                 duration=duration.Duration(beats_buffer/3),
             ),
             note.Rest(duration=duration.Duration(beats_buffer / 2))

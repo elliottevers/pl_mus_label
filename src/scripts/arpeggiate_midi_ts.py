@@ -4,12 +4,12 @@ sys.path.insert(0, '/Users/elliottevers/Documents/git-repos.nosync/tk_music_py/s
 from mido import Message, MidiFile, MidiTrack
 import argparse
 from music21 import chord
-from utils import utils
+from utils import utils, midi
 from message import messenger as mes
 
 import pytube
 
-ratio_buffer = .5
+ratio_buffer = .25
 
 # import pydevd
 # pydevd.settrace('localhost', port=8008, stdoutToServer=True, stderrToServer=True)
@@ -89,8 +89,8 @@ def main(args):
 
         for tone in tones_chord:
             # audible
-            track.append(Message('note_on', note=tone.midi, velocity=90, time=0))
-            track.append(Message('note_off', note=tone.midi, velocity=0, time=int(len_audible)))
+            track.append(Message('note_on', note=midi.map_midi(tone.midi, [40 + 12, 51 + 12]), velocity=90, time=0))
+            track.append(Message('note_off', note=midi.map_midi(tone.midi, [40 + 12, 51 + 12]), velocity=0, time=int(len_audible)))
 
     # TODO: add final chord
 
