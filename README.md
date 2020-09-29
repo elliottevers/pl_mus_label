@@ -1,4 +1,4 @@
-This is the information retrieval component of an ambitious ear training library - it's main function is to estimate high-level musical information such as beat, key centers, chords, bass, melody directly from raw audio.  Video demos of the project can be seen [here](https://elliottevers.github.io/).
+This is the information retrieval component of an ambitious ear training library - it's main function is to estimate high-level musical information such as beat, key centers, chords, bass, melody directly from raw audio.
 
 Remote Debugging:
 
